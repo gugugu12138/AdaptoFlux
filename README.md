@@ -8,7 +8,7 @@ FDIA（Function Set-based Intelligence Algorithm）是一种基于功能集的�
 ## 进展情况
 - `main.py` 中的**神经退回部分**仍有部分问题待解决。
 - **模型化简**和**新函数生成**部分仍在开发中。
-- 正在编写**基于该算法优化 MLP（多层感知机，Multi-Layer Perceptron）**的示例代码，并持续优化。
+- 正在编写**基于该算法优化 MLP（多层感知机，Multi-Layer Perceptron**的示例代码，并持续优化。
 
 ## 未来工作
 - 继续完善神经退回部分，修复相关问题。

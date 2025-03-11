@@ -17,6 +17,7 @@ FDIA（Function Set-based Intelligence Algorithm）是一种基于功能集的�
 - 完成并优化 MLP 优化示例代码，使其更具参考价值。
 
 # 数据处理模型结构说明
+![基础结构](./assets/images/基础结构图2.0.png)
 
 ## 模型处理流程
 1. **输入层处理**  
@@ -108,7 +109,3 @@ f_n(a,b) = a \cdot c_n + b \cdot d_n
 - 坍缩结果与标签方差
 - 分类准确率
 
----
-
-> 注：公式中符号使用Unicode数学符号表示，实际应用时建议采用LaTeX数学环境进行渲染。
-```

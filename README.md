@@ -3,7 +3,7 @@
 **一种基于功能集（包含多种类型的函数的集合）实现智能的算法**
 
 ## 项目概述
-FDIA（Function Set-based Intelligence Algorithm）是一种基于功能集的智能算法。该算法通过不同类型的函数组合，实现智能计算和优化。
+FDIA（Function Set-based Intelligence Algorithm）是一种基于功能集的智能算法。不同于传统的深度学习，该算法通过生成一个基于路径的操作流程，实现智能计算和优化。
 
 ## 进展情况
 - `main.py` 中的**神经退回部分**仍有部分问题待解决。

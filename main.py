@@ -413,8 +413,11 @@ class Figure_Link_Network:
                     #     self.histroy_method_input_values.append(self.method_input_values)
                     #     self.history_method_input_val_values.append(self.method_input_val_values)
                     #     break
-                    if ((new_variance_trian < last_variance_trian or 
-                        last_accuracy_trian < new_accuracy_trian) and
+                    # if ((new_variance_trian < last_variance_trian or 
+                    #     last_accuracy_trian < new_accuracy_trian) and
+                    #     new_last_values.size != 0):
+                    if (last_accuracy_trian <= new_accuracy_trian and 
+                        (new_variance_trian < last_variance_trian or last_accuracy_trian < new_accuracy_trian) and
                         new_last_values.size != 0):
                         self.paths.append(last_method)
                         self.histroy_values.append(new_last_values)

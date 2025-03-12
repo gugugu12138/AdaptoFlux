@@ -33,7 +33,7 @@ print(f"测试损失: {loss}")
 print(f"测试准确率: {accuracy}")
 
 # 7. 保存模型
-# model.save('mnist_model.h5')
+model.save('mnist_model.h5')
 
 # 8. 加载模型并测试（可选）
 # loaded_model = tf.keras.models.load_model('mnist_model.h5')

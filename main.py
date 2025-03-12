@@ -449,8 +449,10 @@ class Figure_Link_Network:
                 f.write(str(item) + "\n")
 
 
-
-    
+    def evaluate(self,inputs, targets):
+        return
+        #for i in range(len(self.paths)):
+        
 # 示例使用
 if __name__ == "__main__":
     # 1. 加载 MNIST 数据集

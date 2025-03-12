@@ -1,11 +1,10 @@
 import random
 from enum import Enum
 import uuid
-from tensorflow.keras.datasets import mnist
 import numpy as np
 import inspect
 import importlib.util
-from sklearn.model_selection import train_test_split
+
 import math
 import traceback
 
@@ -288,12 +287,12 @@ class AdaptoFlux:
             #计算训练集方差和正确率
             last_collapse_values = np.apply_along_axis(self.collapse, axis=1, arr=self.last_values)
             new_collapse_values = np.apply_along_axis(self.collapse, axis=1, arr=new_last_values)
-            last_vs_train = last_collapse_values == y_train  # 返回布尔数组，表示每个元素是否相等
-            new_vs_train = new_collapse_values == y_train
+            last_vs_train = last_collapse_values == self.labels  # 返回布尔数组，表示每个元素是否相等
+            new_vs_train = new_collapse_values == self.labels
             #计算前后方差
-            last_difference_trian = last_collapse_values - y_train
+            last_difference_trian = last_collapse_values - self.labels
             last_variance_trian = np.var(last_difference_trian)
-            new_difference_trian = new_collapse_values - y_train
+            new_difference_trian = new_collapse_values - self.labels
             new_variance_trian = np.var(new_difference_trian)
             #计算准确率
             last_accuracy_trian = np.mean(last_vs_train)  # 相等的比例，准确率
@@ -365,12 +364,12 @@ class AdaptoFlux:
                     #计算训练集方差和正确率
                     last_collapse_values = np.apply_along_axis(self.collapse, axis=1, arr=self.last_values)
                     new_collapse_values = np.apply_along_axis(self.collapse, axis=1, arr=new_last_values)
-                    last_vs_train = last_collapse_values == y_train  # 返回布尔数组，表示每个元素是否相等
-                    new_vs_train = new_collapse_values == y_train
+                    last_vs_train = last_collapse_values == self.labels  # 返回布尔数组，表示每个元素是否相等
+                    new_vs_train = new_collapse_values == self.labels
                     #计算前后方差
-                    last_difference_trian = last_collapse_values - y_train
+                    last_difference_trian = last_collapse_values - self.labels
                     last_variance_trian = np.var(last_difference_trian)
-                    new_difference_trian = new_collapse_values - y_train
+                    new_difference_trian = new_collapse_values - self.labels
                     new_variance_trian = np.var(new_difference_trian)
                     #计算准确率
                     last_accuracy_trian = np.mean(last_vs_train)  # 相等的比例，准确率

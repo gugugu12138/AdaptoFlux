@@ -1,3 +1,7 @@
+import AdaptoFlux
+from tensorflow.keras.datasets import mnist
+from sklearn.model_selection import train_test_split
+
 # 示例使用
 if __name__ == "__main__":
     # 1. 加载 MNIST 数据集
@@ -19,7 +23,7 @@ if __name__ == "__main__":
     #                             y_train,
     #                             x_val.reshape(x_val.shape[0], -1),
     #                             y_val)
-    model = Figure_Link_Network(x_train.reshape(x_train.shape[0], -1),
+    model = AdaptoFlux.AdaptoFlux(x_train.reshape(x_train.shape[0], -1),
                             y_train)
     
     

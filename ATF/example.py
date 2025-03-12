@@ -1,11 +1,11 @@
 import AdaptoFlux
-from tensorflow.keras.datasets import mnist
+from tensorflow.keras.datasets import cifar10
 from sklearn.model_selection import train_test_split
 
 # 示例使用
 if __name__ == "__main__":
     # 1. 加载 MNIST 数据集
-    (x_train, y_train), (x_test, y_test) = mnist.load_data()
+    (x_train, y_train), (x_test, y_test) = cifar10.load_data()
 
     # 2. 数据预处理
     x_train = x_train / 255.0  # 将像素值归一化到 [0, 1]

@@ -4,7 +4,6 @@ import uuid
 import numpy as np
 import inspect
 import importlib.util
-
 import math
 import traceback
 
@@ -14,6 +13,7 @@ class CollapseMethod(Enum):
     AVERAGE = 2   # 平均
     VARIANCE = 3  # 方差
     PRODUCT = 4   # 相乘
+    CUSTOM = 5  #用于自定义方法
 
 class AdaptoFlux:
     def __init__(self, values, labels, collapse_method=CollapseMethod.SUM):
@@ -53,6 +53,17 @@ class AdaptoFlux:
         # self.method_input_val_values = {}
         # # 存储历史验证集推理过程中每个方法预输入的值
         # self.history_method_input_val_values = []
+    
+    def add_collapse_method(self, collapse_function):
+        """
+        允许用户自定义坍缩方法，并替换现有的坍缩方法
+        :param collapse_function: 传入一个函数
+        """
+        if callable(collapse_function):
+            self.custom_collapse_function = collapse_function
+            self.collapse_method = CollapseMethod.CUSTOM  # 标记当前使用的是自定义坍缩方法
+        else:
+            raise ValueError("提供的坍缩方法必须是一个可调用函数")
 
     # 添加处理方法到字典
     def add_method(self, method_name, method, input_count=1):
@@ -108,6 +119,8 @@ class AdaptoFlux:
             return self._collapse_variance(values)
         elif self.collapse_method == CollapseMethod.PRODUCT:
             return self._collapse_product(values)
+        elif self.collapse_method == CollapseMethod.CUSTOM and self.custom_collapse_function:
+            return self.custom_collapse_function(values)
         else:
             raise ValueError("未知的坍缩方法")
     

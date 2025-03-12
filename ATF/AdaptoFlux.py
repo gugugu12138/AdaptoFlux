@@ -335,8 +335,11 @@ class AdaptoFlux:
             #     self.histroy_method_inputs.append(self.method_inputs)
             #     self.histroy_method_input_values.append(self.method_input_values)
             #     self.history_method_input_val_values.append(self.method_input_val_values)
-            if ((new_variance_trian < last_variance_trian or 
-                last_accuracy_trian < new_accuracy_trian) and
+            # if ((new_variance_trian < last_variance_trian or 
+            #     last_accuracy_trian < new_accuracy_trian) and
+            #     new_last_values.size != 0):
+            if (last_accuracy_trian <= new_accuracy_trian and 
+                (new_variance_trian < last_variance_trian or last_accuracy_trian < new_accuracy_trian) and
                 new_last_values.size != 0):
 
                 self.paths.append(last_method)

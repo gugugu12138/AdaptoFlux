@@ -300,7 +300,7 @@ class AdaptoFlux:
         # 清空路径列表
         self.paths = []
         # 创建动态权重控制器
-        dynamicWeightController = DynamicWeightController(epochs)
+        dynamicWeightController = DynamicWeightController.DynamicWeightController(epochs)
 
         for i in range(epochs):
             print("epoch:",i)

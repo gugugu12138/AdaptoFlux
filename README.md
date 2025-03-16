@@ -88,9 +88,7 @@ H = \sum_{i=1}^{k} W_i I_i
 ```math
 n₀ \cdot H^L = n_L
 ```
-$$
-\text{RedundancyPenalty} = \sum_{i=1}^N \sum_{j=i+1}^N \frac{C_{i,j}}{L} \cdot \mathbb{I}(C_{i,j} \geq \theta) + \lambda \cdot \sum_{o \in O} \left(f(o) - \frac{1}{|O|}\right)^2
-$$
+
 ---
 
 ## 函数集特性分析

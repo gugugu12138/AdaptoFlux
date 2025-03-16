@@ -6,6 +6,7 @@ import inspect
 import importlib.util
 import math
 import traceback
+import DynamicWeightController
 
 # 定义一个枚举表示不同的坍缩方法
 class CollapseMethod(Enum):
@@ -40,12 +41,18 @@ class AdaptoFlux:
         self.method_input_values = {}
         # 存储历史推理过程中每个方法预输入的值
         self.histroy_method_input_values = []
+        # 用于监控当前任务指标
+        self.metrics = {
+            "accuracy": 0.0, # 准确率
+            "entropy": 0.0, # 路径熵值
+            "redundancy_penalty": 0.0, # 冗余惩罚
+        }
 
         # # 存储验证集值 (一维元素)
         # self.val_values = val_values  # 默认空列表
         # # 存储验证集标签
         # self.val_labels = val_labels  # 默认空列表
-        # # 存储最后一次处理后的验证集值
+        # # 存储最后一次处理后的验证集值 
         # self.last_val_values = val_values  # 默认空列表
         # # 存储历史验证集值
         # self.histroy_val_values = [val_values]
@@ -292,6 +299,9 @@ class AdaptoFlux:
     def training(self, epochs=10000, depth_interval=1,depth_reverse=1, step = 2):
         # 清空路径列表
         self.paths = []
+        # 创建动态权重控制器
+        DynamicWeightController = DynamicWeightController(epochs)
+
         for i in range(epochs):
             print("epoch:",i)
             last_method = self.process_random_method()

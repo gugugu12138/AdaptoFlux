@@ -29,7 +29,6 @@ AdaptoFlux是一种基于功能集的智能算法。不同于传统的深度学�
 ## 指导值
 用于指导神经的生长或退化。
 
-- 一种指导值的计算公式示例：
 - 指标分类与层级划分：
 
   | 类别   | 示例指标       | 调整目标      | 影响权重 |
@@ -44,10 +43,14 @@ AdaptoFlux是一种基于功能集的智能算法。不同于传统的深度学�
   指导值 = \sum \omega_i \cdot 核心指标_i + \sum \phi_j \cdot 路径指标_j - \sum \psi_k \cdot 效率指标_k
   $$
 
-- 一种指导值的示例：
+- **示例计算公式**：
   $$
   \text{指导值} = \alpha \cdot \text{准确率} + \beta \cdot \text{路径熵} - \gamma \cdot \text{冗余操作惩罚}
+  $$
+  $$
   \text{路径熵} = -\sum P(\text{路径}) \cdot \log P(\text{路径})
+  $$
+  $$
   \text{冗余操作惩罚} = \sum (\text{无效计算次数})
   $$
 

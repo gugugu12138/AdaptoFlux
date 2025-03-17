@@ -44,15 +44,18 @@ AdaptoFlux是一种基于功能集的智能算法。不同于传统的深度学�
   $$
 
 - **示例计算公式**：
-  $$
-  \text{指导值} = \alpha \cdot \text{准确率} + \beta \cdot \text{路径熵} - \gamma \cdot \text{冗余操作惩罚}
-  $$
-  $$
-  \text{路径熵} = -\sum P(\text{路径}) \cdot \log P(\text{路径})
-  $$
-  $$
-  \text{冗余操作惩罚} = \sum (\text{无效计算次数})
-  $$
+
+   $$
+   \text{指导值} = \alpha \cdot \text{准确率} + \beta \cdot \text{路径熵} - \gamma \cdot \text{冗余操作惩罚}
+   $$
+
+   $$
+   \text{路径熵} = -\sum P(\text{路径}) \cdot \log P(\text{路径})
+   $$
+
+   $$
+   \text{冗余操作惩罚} = \sum (\text{无效计算次数})
+   $$
 
 ## 功能集（Q）
 包含多种类型的函数的集合。

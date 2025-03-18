@@ -18,48 +18,45 @@ class CollapseMethod(Enum):
 
 class AdaptoFlux:
     def __init__(self, values, labels, collapse_method=CollapseMethod.SUM):
-        # 存储值(一维元素)
-        self.values = values
-        # 存储标签
-        self.labels = labels
-        # 存储最后一次处理后的值
-        self.last_values = values
-        # 存储历史处理值
-        self.histroy_values = [values]
-        # 存储方法的字典
-        self.methods = {}
-        # 存储每个方法预输入的索引
-        self.method_inputs = {}
-        # 存储历史每层每个方法预输入的索引
-        # 意外发现即使不使用历史记录和清空不可取的网络残余（即被清空的网络依然参与预输入索引和预输入值计算）依然会出现概率上升和方差下降
-        self.histroy_method_inputs = [] # 这个变量理论上可以不需要，但如果使用的函数集输入和输出不完全是唯一对应的话准确值无法反推只能反推出索引，所以两个都搞方便点
-        # 存储每个值对应的路径
-        self.paths = []  
-        # 存储最终使用的坍缩方法（默认值为 CollapseMethod.SUM）
-        self.collapse_method = collapse_method
-        # 存储推理过程中每个方法预输入的值
-        self.method_input_values = {}
-        # 存储历史推理过程中每个方法预输入的值
-        self.histroy_method_input_values = []
-        # 用于监控当前任务指标
-        self.metrics = {
-            "accuracy": 0.0, # 准确率
-            "entropy": 0.0, # 路径熵值
-            "redundancy_penalty": 0.0, # 冗余惩罚
-        }
+        """
+        初始化 AdaptoFlux 类的实例
+        
+        :param values: 一维数据值列表
+        :param labels: 每个值对应的标签列表
+        :param collapse_method: 选择的坍缩方法，默认为 SUM
+        """
+        
+        # 存储输入数据
+        self.values = values  # 原始数值列表
+        self.labels = labels  # 对应的标签列表
 
-        # # 存储验证集值 (一维元素)
-        # self.val_values = val_values  # 默认空列表
-        # # 存储验证集标签
-        # self.val_labels = val_labels  # 默认空列表
-        # # 存储最后一次处理后的验证集值 
-        # self.last_val_values = val_values  # 默认空列表
-        # # 存储历史验证集值
-        # self.histroy_val_values = [val_values]
-        # # 存储验证集推理过程中每个方法预输入的值
-        # self.method_input_val_values = {}
-        # # 存储历史验证集推理过程中每个方法预输入的值
-        # self.history_method_input_val_values = []
+        # 存储处理过程中的值
+        self.last_values = values  # 记录上一次处理后的值
+        self.histroy_values = [values]  # 记录历史处理值
+
+        # 记录方法及其预输入信息
+        self.methods = {}  # 存储方法的字典
+        self.method_inputs = {}  # 存储每个方法的预输入索引
+        self.histroy_method_inputs = []  # 记录历史每层的预输入索引
+        # 意外发现即使不使用历史记录和清空不可取的网络残余（即被清空的网络依然参与预输入索引和预输入值计算）依然会出现概率上升和方差下降
+        
+        # 存储路径信息
+        self.paths = []  # 记录每个值对应的路径
+
+        # 选择的坍缩方法
+        self.collapse_method = collapse_method  # 默认使用 SUM 方法
+        self.custom_collapse_function = None  # 预定义自定义坍缩方法，默认值为 None
+        
+        # 记录推理过程中的输入值
+        self.method_input_values = {}  # 记录当前层的方法输入值
+        self.histroy_method_input_values = []  # 记录历史层的方法输入值
+        
+        # 监控当前任务的性能指标
+        self.metrics = {
+            "accuracy": 0.0,  # 准确率
+            "entropy": 0.0,  # 路径熵值
+            "redundancy_penalty": 0.0,  # 冗余惩罚
+        }
     
     def add_collapse_method(self, collapse_function):
         """
@@ -116,8 +113,15 @@ class AdaptoFlux:
         # self.history_method_input_val_values.append(self.method_input_val_values)
         print(self.methods)
 
-    # 根据不同的坍缩方法选择不同的函数
+    # 根据当前选择的坍缩方法，对输入值进行计算
     def collapse(self, values):
+        """
+        根据设定的坍缩方法（collapse_method）对输入值进行聚合计算。
+
+        :param values: 需要进行坍缩计算的数值列表
+        :return: 计算后的坍缩值
+        :raises ValueError: 如果指定的坍缩方法未知，则抛出异常
+        """
         if self.collapse_method == CollapseMethod.SUM:
             return self._collapse_sum(values)
         elif self.collapse_method == CollapseMethod.AVERAGE:
@@ -130,59 +134,116 @@ class AdaptoFlux:
             return self.custom_collapse_function(values)
         else:
             raise ValueError("未知的坍缩方法")
-    
+
+    # 计算输入值的总和
     def _collapse_sum(self, values):
+        """
+        计算输入值的总和。
+
+        :param values: 需要计算的数值列表
+        :return: values 的总和
+        """
         return np.sum(values)
+
+    # 计算输入值的平均值
     def _collapse_average(self, values):
+        """
+        计算输入值的平均值。
+
+        :param values: 需要计算的数值列表
+        :return: values 的均值
+        """
         return np.mean(values)
 
+    # 计算输入值的方差
     def _collapse_variance(self, values):
+        """
+        计算输入值的方差。
+
+        :param values: 需要计算的数值列表
+        :return: values 的方差
+        """
         return np.var(values)
 
+    # 计算输入值的乘积
     def _collapse_product(self, values):
+        """
+        计算输入值的乘积。
+
+        :param values: 需要计算的数值列表
+        :return: values 的乘积
+        """
         return np.prod(values)
 
-    # 生成单次路径选择    
-    def process_random_method(self):
-        if not self.methods:
-            raise ValueError("方法字典为空，无法处理！")
-        if self.last_values.size == 0:  # 对于 numpy 数组
-            raise ValueError("值列表为空，无法处理！")
-
-        # 存储每个元素使用的方法列表
-        method_list = []
-        # 确定values中每个元素中长度
-        num_elements = self.last_values.shape[1]
-        for i in range(num_elements):
-            method_id = random.choice(list(self.methods.keys()))
-            method_data = self.methods[method_id]
-            input_count = method_data["input_count"]
-            if input_count == 1:
-                # 方法只需要一个输入值，直接记录方法
-                method_list.append(method_id)
-            else:
-                method_list.append(f"-{method_id}")
+    def clear_method_inputs(self):
+        """
+        清空 self.method_inputs 字典中的旧索引数据，以确保后续计算的正确性。
         
-
-        for index, i in enumerate(method_list):
-            if i.startswith('-'):
-                method_id = i.lstrip('-')
-                method_data = self.methods[method_id] # 在未编写本行代码时也能体现概率的逐渐上升
-                input_count = method_data["input_count"]
-                self.method_inputs[method_id].append(index)  # 向字典中添加索引
-                if len(self.method_inputs[method_id]) == input_count:
-                    for j in range(len(self.method_inputs[method_id])):
-                        if self.method_inputs[method_id][j] == None:#这里一开始使用的 if self.method_inputs[method_id][j] >= len(new_list):显然有问题，但是运行起来可以正常收敛
-                            continue
-                        method_list[self.method_inputs[method_id][j]] = method_id
-                    self.method_inputs[method_id] = []
-
+        - 该方法不会改变字典的键（方法 ID），也不会修改列表的长度。
+        - 仅将每个方法的输入索引列表中的元素置为 None，以避免上一轮计算的残留数据索引影响下一轮计算。
+        - 确保在后续匹配输入索引时，方法能够正确获取新的输入数据，而不会因为旧数据干扰导致错误匹配。
+        """
         for key, value_list in self.method_inputs.items():
-            # 将列表中的每个元素替换为 None
             for i in range(len(value_list)):
                 value_list[i] = None
 
+    # 生成单次路径选择
+    def process_random_method(self):
+        """
+        生成一个随机的方法选择路径，并确保多输入方法的输入索引匹配。
+
+        :return: method_list，包含为每个元素随机分配的方法（可能是单输入或多输入方法）
+        :raises ValueError: 如果方法字典为空或值列表为空，则抛出异常
+        """
+        if not self.methods:
+            raise ValueError("方法字典为空，无法处理！")
+        if self.last_values.size == 0:  # 处理 NumPy 数组的情况
+            raise ValueError("值列表为空，无法处理！")
+
+        # 存储每个元素对应的方法（单输入方法直接存储方法 ID，多输入方法存储占位符 "-method_id"）
+        method_list = []
+
+        # 获取 values 列数，即每个元素的数量
+        num_elements = self.last_values.shape[1]
+
+        # 随机选择方法并处理单输入和多输入方法
+        for i in range(num_elements):
+            method_id = random.choice(list(self.methods.keys()))  # 随机选择一个方法 ID
+            method_data = self.methods[method_id]
+            input_count = method_data["input_count"]  # 获取该方法需要的输入值数量
+
+            if input_count == 1:
+                # 如果方法只需要一个输入值，则直接存储方法 ID
+                method_list.append(method_id)
+            else:
+                # 多输入方法使用占位符，以便后续匹配输入索引
+                method_list.append(f"-{method_id}")
+
+        # 处理多输入方法的输入索引匹配
+        for index, i in enumerate(method_list):
+            if i.startswith('-'):  # 识别多输入方法
+                method_id = i.lstrip('-')  # 去除占位符前缀，获取真正的方法 ID
+                method_data = self.methods[method_id]
+                input_count = method_data["input_count"]  # 获取该方法所需的输入值数量
+
+                # 记录方法所需的输入索引
+                self.method_inputs[method_id].append(index)
+
+                # 当方法的输入索引数达到所需数量时，进行替换
+                if len(self.method_inputs[method_id]) == input_count:
+                    for j in range(len(self.method_inputs[method_id])):
+                        if self.method_inputs[method_id][j] is None:
+                            # 忽略无效索引
+                            continue
+                        # 替换 method_list 中的占位符 # 这一行出现过报错，但是无法复现，很奇怪定位不了问题在哪
+                        method_list[self.method_inputs[method_id][j]] = method_id
+                    # 清空已处理的方法输入索引
+                    self.method_inputs[method_id] = []
+        
+        self.clear_method_inputs()
+
         return method_list
+
 
     # 接受导向列表，返回有n个元素不同的新列表
     def replace_random_elements(self, method_list, n):
@@ -222,11 +283,8 @@ class AdaptoFlux:
                             continue
                         new_list[self.method_inputs[method_id][j]] = method_id
                     self.method_inputs[method_id] = []
-        
-        for key, value_list in self.method_inputs.items():
-            # 将列表中的每个元素替换为 None
-            for i in range(len(value_list)):
-                value_list[i] = None
+
+        self.clear_method_inputs()
 
         return new_list
 
@@ -242,6 +300,7 @@ class AdaptoFlux:
                 new_number = 0 #用于计数新值的位置
                 for i in range(len(method_list)):
                     if method_list[i].startswith('-'):
+                        self.method_input_values[method_list[i].lstrip('-')].append(self.last_values[j,i])
                         continue
                     else:
                         if self.methods[method_list[i]]['input_count'] == 1:
@@ -361,9 +420,10 @@ class AdaptoFlux:
             # if ((new_variance_trian < last_variance_trian or 
             #     last_accuracy_trian < new_accuracy_trian) and
             #     new_last_values.size != 0):
-            if (last_accuracy_trian <= new_accuracy_trian and 
-                (new_variance_trian < last_variance_trian or last_accuracy_trian < new_accuracy_trian) and
-                new_last_values.size != 0):
+            if (last_accuracy_trian < new_accuracy_trian or
+                (last_accuracy_trian == new_accuracy_trian and new_variance_trian < last_variance_trian)) and \
+                new_last_values.size != 0:
+
 
                 self.paths.append(last_method)
                 self.histroy_values.append(new_last_values)
@@ -441,9 +501,9 @@ class AdaptoFlux:
                     # if ((new_variance_trian < last_variance_trian or 
                     #     last_accuracy_trian < new_accuracy_trian) and
                     #     new_last_values.size != 0):
-                    if (last_accuracy_trian <= new_accuracy_trian and 
-                        (new_variance_trian < last_variance_trian or last_accuracy_trian < new_accuracy_trian) and
-                        new_last_values.size != 0):
+                    if (last_accuracy_trian < new_accuracy_trian or
+                        (last_accuracy_trian == new_accuracy_trian and new_variance_trian < last_variance_trian)) and \
+                        new_last_values.size != 0:
                         self.paths.append(last_method)
                         self.histroy_values.append(new_last_values)
                         # self.histroy_val_values.append(new_last_val_values)

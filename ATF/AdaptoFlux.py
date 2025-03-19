@@ -458,13 +458,10 @@ class AdaptoFlux:
                         print(f"在当层重新寻找适合的路径：当前重随机数{i}")
                         if self.history_method_inputs:  # 检查是否有历史输入
                             self.method_inputs = self.history_method_inputs[-1]
-                        else:
-                            self.method_inputs = {}
 
                         if self.history_method_input_values:  # 检查是否有历史输入值
                             self.method_input_values = self.history_method_input_values[-1]
-                        else:
-                            self.method_input_values = {}
+
                         last_method = self.replace_random_elements(last_method, i)  # 替换方法中的随机元素
                         i *= step  # 增加重随机的步长
                         

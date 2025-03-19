@@ -379,10 +379,14 @@ class AdaptoFlux:
             print(self.last_values.shape)
             return self.last_values
 
-
+    def save_model(self):
+        # 打开文件并写入路径数据
+        with open("output.txt", "w") as f:
+            for item in self.paths:
+                f.write(str(item) + "\n")
                 
     # 训练方法,epochs决定最终训练出来的模型层数,step用于控制重随机时每次增加几个重随机的指数上升速度
-    def training(self, epochs=10000, depth_interval=1, depth_reverse=1, step=2):
+    def training(self, epochs=10000, depth_interval=1, depth_reverse=1, step=2, target_accuracy=None):
         """
         训练方法，用于训练模型，执行指定的轮次并在每一轮中根据训练集和验证集的表现进行调整。
         
@@ -442,6 +446,11 @@ class AdaptoFlux:
                     self.last_values = new_last_values
                     self.history_method_inputs.append(self.method_inputs)
                     self.history_method_input_values.append(self.method_input_values)
+                    if target_accuracy is not None and new_accuracy_trian >= target_accuracy:
+                        print(f"训练提前停止，准确率达到 {new_accuracy_trian}，大于等于目标 {target_accuracy}")
+                        # 保存模型或处理
+                        self.save_model()  # 假设 save_model 方法已经定义
+                        break
                 else:
                     # 如果本轮训练不符合要求，重随机重新寻找合适的路径
                     i = 1
@@ -496,21 +505,15 @@ class AdaptoFlux:
                         self.last_values = self.history_values[-1]
 
             # 打开文件并写入路径数据
-            with open("output.txt", "w") as f:
-                for item in self.paths:
-                    f.write(str(item) + "\n")
+            self.save_model()
 
         except KeyboardInterrupt:
             print("\n检测到中断，正在导出路径数据...")
-            with open("output.txt", "w") as f:
-                for item in self.paths:
-                    f.write(str(item) + "\n")
+            self.save_model()
             print(f"已导出 {len(self.paths)} 层路径到 output.txt。训练结束。")
         except Exception as e:
             print(f"\n发生异常: {str(e)}，正在导出路径数据...")
-            with open("output.txt", "w") as f:
-                for item in self.paths:
-                    f.write(str(item) + "\n")
+            self.save_model()
             print(f"已导出 {len(self.paths)} 层路径到 output.txt。训练结束。")
 
 

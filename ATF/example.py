@@ -30,4 +30,4 @@ if __name__ == "__main__":
     
     file_path = "methods.py"
     model.import_methods_from_file(file_path)
-    model.training()
+    model.training(target_accuracy=0.7)

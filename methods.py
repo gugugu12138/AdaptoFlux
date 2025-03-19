@@ -30,19 +30,6 @@ def multiply_values(x, y):
     """
     return [x * y]
 
-#实验证明这个函数不适合用于这个操作建议不要使用#但其实即使这个函数导致路径出现指数爆炸也能训练回来一个合适的值#但还是不建议用
-# def power(x, n):
-#     """
-#     返回第一个数的第二个数次方。如果指数为0，则返回 x 和 n。
-#     :param x: 底数
-#     :param n: 指数
-#     :return: 底数的指数次方，如果 n 为 0，返回 x 和 n
-#     """
-#     try:
-#         return [x ** n]  # 返回底数的指数次方
-#     except:
-#         return [random.choice([x, n])]
-
 
 def return_two_values(x):
     """
@@ -74,6 +61,17 @@ def ignore(x):
     """
     return []
 
+def double(x):
+    """
+    翻倍该数值
+    """
+    return [2*x]
+
+def halve(x):
+    """
+    减半该数值
+    """
+    return [0.5*x]
 def ceil_number(number):
     return [math.ceil(number)]  # 向上取整
 

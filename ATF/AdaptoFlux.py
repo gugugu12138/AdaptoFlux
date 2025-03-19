@@ -505,13 +505,13 @@ class AdaptoFlux:
             with open("output.txt", "w") as f:
                 for item in self.paths:
                     f.write(str(item) + "\n")
-            print(f"已导出 {len(self.paths)} 个路径到 output.txt。训练结束。")
+            print(f"已导出 {len(self.paths)} 层路径到 output.txt。训练结束。")
         except Exception as e:
             print(f"\n发生异常: {str(e)}，正在导出路径数据...")
             with open("output.txt", "w") as f:
                 for item in self.paths:
                     f.write(str(item) + "\n")
-            print(f"已导出 {len(self.paths)} 个路径到 output.txt。训练结束。")
+            print(f"已导出 {len(self.paths)} 层路径到 output.txt。训练结束。")
 
 
     def load_paths_from_file(self, file_path="output.txt"):

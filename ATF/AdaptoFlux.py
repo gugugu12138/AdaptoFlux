@@ -385,7 +385,7 @@ class AdaptoFlux:
             for item in self.paths:
                 f.write(str(item) + "\n")
                 
-    # 训练方法,epochs决定最终训练出来的模型层数,step用于控制重随机时每次增加几个重随机的指数上升速度
+    # 训练方法,epochs决定最终训练出来的模型层数,step用于控制重随机时每次增加几个重随机的指数上升速度 # 第一轮训练如果直接失败会出现错误，待解决
     def training(self, epochs=10000, depth_interval=1, depth_reverse=1, step=2, target_accuracy=None):
         """
         训练方法，用于训练模型，执行指定的轮次并在每一轮中根据训练集和验证集的表现进行调整。
@@ -456,8 +456,15 @@ class AdaptoFlux:
                     i = 1
                     while i <= len(last_method):
                         print(f"在当层重新寻找适合的路径：当前重随机数{i}")
-                        self.method_inputs = self.history_method_inputs[-1]
-                        self.method_input_values = self.history_method_input_values[-1]
+                        if self.history_method_inputs:  # 检查是否有历史输入
+                            self.method_inputs = self.history_method_inputs[-1]
+                        else:
+                            self.method_inputs = {}
+
+                        if self.history_method_input_values:  # 检查是否有历史输入值
+                            self.method_input_values = self.history_method_input_values[-1]
+                        else:
+                            self.method_input_values = {}
                         last_method = self.replace_random_elements(last_method, i)  # 替换方法中的随机元素
                         i *= step  # 增加重随机的步长
                         

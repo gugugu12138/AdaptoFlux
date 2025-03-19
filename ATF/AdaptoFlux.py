@@ -501,8 +501,11 @@ class AdaptoFlux:
                     else:
                         # 如果找不到合适的路径，则清除上一层网络并重新寻找
                         print('清除上一层网络')
-                        self.history_method_inputs.pop()
-                        self.history_method_input_values.pop()
+                        if self.history_method_inputs:  # 检查是否有历史输入
+                            self.history_method_inputs.pop()
+                        if self.history_method_input_values:  # 检查是否有历史输入值
+                            self.history_method_input_values.pop()
+                            
                         if len(self.history_values) > 1:
                             self.history_values.pop()
                             self.paths.pop()

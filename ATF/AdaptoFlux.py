@@ -512,7 +512,10 @@ class AdaptoFlux:
             self.save_model()
             print(f"已导出 {len(self.paths)} 层路径到 output.txt。训练结束。")
         except Exception as e:
+            exception_details = traceback.format_exc()
             print(f"\n发生异常: {str(e)}，正在导出路径数据...")
+            with open("error_log.txt", "w", encoding="utf-8") as error_file:
+                error_file.write(exception_details)
             self.save_model()
             print(f"已导出 {len(self.paths)} 层路径到 output.txt。训练结束。")
 

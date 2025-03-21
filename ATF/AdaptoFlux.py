@@ -395,23 +395,27 @@ class AdaptoFlux:
         :param window_size: 计算熵的窗口长度（默认为 None，表示计算所有历史路径）
         :return: 计算得到的路径熵值
         """
-        if window_size is None or window_size >= len(data):
-            data = [abs(int(x)) for row in self.paths for x in row]
+        try:
+            if window_size is None or window_size >= len(self.paths):
+                data = [abs(int(x)) for row in self.paths for x in row]
+            else:
+                data = [abs(int(x)) for row in self.paths[-window_size:] for x in row]
+
             # 计算整个数据的概率分布
             counts = Counter(data)
             total = len(data)
             probabilities = [count / total for count in counts.values()]
+
             entropy = -sum(p * np.log2(p) for p in probabilities if p > 0)
             return entropy
-        
-        else:
-            data = [abs(int(x)) for row in self.paths[-window_size:] for x in row]
-            # 计算整个数据的概率分布
-            counts = Counter(data)
-            total = len(data)
-            probabilities = [count / total for count in counts.values()]
-            entropy = -sum(p * np.log2(p) for p in probabilities if p > 0)
-            return entropy
+        except ValueError:
+            # 捕捉整数转换错误
+            print("路径数据中存在无法转换为整数的值")
+            return None
+        except Exception as e:
+            # 捕捉其他未知错误
+            print(f"计算路径熵时发生错误: {e}")
+            return None
 
 
                 

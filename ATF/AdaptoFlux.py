@@ -9,6 +9,8 @@ import traceback
 import DynamicWeightController
 from threading import Thread, Event
 from collections import Counter
+import os
+import shutil
 
 # 定义一个枚举表示不同的坍缩方法
 class CollapseMethod(Enum):
@@ -19,13 +21,14 @@ class CollapseMethod(Enum):
     CUSTOM = 5  #用于自定义方法
 
 class AdaptoFlux:
-    def __init__(self, values, labels, collapse_method=CollapseMethod.SUM):
+    def __init__(self, values, labels, methods_path, collapse_method=CollapseMethod.SUM):
         """
         初始化 AdaptoFlux 类的实例
         
         :param values: 一维数据值列表
         :param labels: 每个值对应的标签列表
         :param collapse_method: 选择的坍缩方法，默认为 SUM
+        :param methods_path: 存储方法路径的文件路径，默认为 "methods.py"
         """
         
         # 存储输入数据
@@ -61,6 +64,9 @@ class AdaptoFlux:
             "entropy": 0.0,  # 路径熵值
             "redundancy_penalty": 0.0,  # 冗余惩罚
         }
+
+        # 存储文件路径
+        self.methods_path = methods_path  # 默认为 "methods.py"
     
     def add_collapse_method(self, collapse_function):
         """
@@ -95,13 +101,13 @@ class AdaptoFlux:
         # self.method_input_val_values[method_id] = []
         self._method_counter += 1  # 增加计数器
     
-    def import_methods_from_file(self, file_path):
+    def import_methods_from_file(self):
         """
         从指定文件中导入所有方法并添加到方法字典中。
         :param file_path: Python 文件路径
         """
         # 动态加载模块
-        spec = importlib.util.spec_from_file_location("module.name", file_path)
+        spec = importlib.util.spec_from_file_location("module.name", self.methods_path)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
 
@@ -382,11 +388,23 @@ class AdaptoFlux:
             print(self.last_values.shape)
             return self.last_values
 
-    def save_model(self):
+    def save_model(self, folder="models"):
+        # 确保文件夹存在，如果不存在则创建
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+
+        # 构建文件路径
+        file_path = os.path.join(folder, "output.txt")
+
         # 打开文件并写入路径数据
         with open("output.txt", "w") as f:
             for item in self.paths:
                 f.write(str(item) + "\n")
+
+        # 复制 methods_path 文件到保存的文件夹
+        if os.path.exists(self.methods_path):  # 确保源文件存在
+            shutil.copy(self.methods_path, folder)  # 复制文件到目标文件夹
+
 
     def get_path_entropy(self, window_size=None):
         """
@@ -416,8 +434,6 @@ class AdaptoFlux:
             # 捕捉其他未知错误
             print(f"计算路径熵时发生错误: {e}")
             return None
-
-
                 
     # 训练方法,epochs决定最终训练出来的模型层数,step用于控制重随机时每次增加几个重随机的指数上升速度 # 第一轮训练如果直接失败会出现错误，待解决
     def training(self, epochs=10000, depth_interval=1, depth_reverse=1, step=2, target_accuracy=None):

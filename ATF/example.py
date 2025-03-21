@@ -24,10 +24,11 @@ if __name__ == "__main__":
     #                             y_train,
     #                             x_val.reshape(x_val.shape[0], -1),
     #                             y_val)
-    model = AdaptoFlux.AdaptoFlux(x_train.reshape(x_train.shape[0], -1),
-                            y_train)
-    
-    
+
     file_path = "methods.py"
-    model.import_methods_from_file(file_path)
+    model = AdaptoFlux.AdaptoFlux(x_train.reshape(x_train.shape[0], -1),
+                            y_train, file_path)
+
+    
+    model.import_methods_from_file()
     model.training(target_accuracy=0.7)

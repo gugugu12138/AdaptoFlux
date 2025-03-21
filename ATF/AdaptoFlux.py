@@ -8,6 +8,7 @@ import math
 import traceback
 import DynamicWeightController
 from threading import Thread, Event
+from collections import Counter
 
 # 定义一个枚举表示不同的坍缩方法
 class CollapseMethod(Enum):
@@ -43,6 +44,7 @@ class AdaptoFlux:
         
         # 存储路径信息
         self.paths = []  # 记录每个值对应的路径
+        self.max_probability_path = [] # 记录最高概率对应的路径
 
         # 选择的坍缩方法
         self.collapse_method = collapse_method  # 默认使用 SUM 方法
@@ -55,6 +57,7 @@ class AdaptoFlux:
         # 监控当前任务的性能指标
         self.metrics = {
             "accuracy": 0.0,  # 准确率
+            "max_accuracy": 0.0,  # 最高准确率
             "entropy": 0.0,  # 路径熵值
             "redundancy_penalty": 0.0,  # 冗余惩罚
         }
@@ -384,6 +387,33 @@ class AdaptoFlux:
         with open("output.txt", "w") as f:
             for item in self.paths:
                 f.write(str(item) + "\n")
+
+    def get_path_entropy(self, window_size=None):
+        """
+        获取当前路径熵
+
+        :param window_size: 计算熵的窗口长度（默认为 None，表示计算所有历史路径）
+        :return: 计算得到的路径熵值
+        """
+        if window_size is None or window_size >= len(data):
+            data = [abs(int(x)) for row in self.paths for x in row]
+            # 计算整个数据的概率分布
+            counts = Counter(data)
+            total = len(data)
+            probabilities = [count / total for count in counts.values()]
+            entropy = -sum(p * np.log2(p) for p in probabilities if p > 0)
+            return entropy
+        
+        else:
+            data = [abs(int(x)) for row in self.paths[-window_size:] for x in row]
+            # 计算整个数据的概率分布
+            counts = Counter(data)
+            total = len(data)
+            probabilities = [count / total for count in counts.values()]
+            entropy = -sum(p * np.log2(p) for p in probabilities if p > 0)
+            return entropy
+
+
                 
     # 训练方法,epochs决定最终训练出来的模型层数,step用于控制重随机时每次增加几个重随机的指数上升速度 # 第一轮训练如果直接失败会出现错误，待解决
     def training(self, epochs=10000, depth_interval=1, depth_reverse=1, step=2, target_accuracy=None):

@@ -331,9 +331,9 @@ class AdaptoFlux:
     # 根据输入的列表更改数组,处于神经待处理队列状态的值采用暂时不处理方案, 还有一种方案是先将这些值置于最后
     # 使用该方法会导致数据收敛到一定数量级时可能出现所有数据都在待处理队列中导致数组全为空的情况发生
     # 这种方法坍缩时不会将待处理数据加入计算
-    def process_array_with_list(self, method_list, last_values=None, max_values_multipie=5):
+    def process_array_with_list(self, method_list, values=None, max_values_multipie=5):
         """
-        根据输入的 method_list 处理数组 self.last_values。
+        根据输入的 method_list 处理数组 values。
         - 处于待处理队列的值采用暂时不处理方案（跳过计算）。
         - 另一种方案是将这些值暂存，并在满足输入要求后一起计算。
         - 该方法可能导致数据收敛到一定数量级时所有数据都在待处理队列中，导致数组全为空。
@@ -345,14 +345,14 @@ class AdaptoFlux:
         返回值：
             np.ndarray: 处理后的新数组。
         """
-        if last_values is None:
-            last_values = self.last_values  # 使用默认值
+        if values is None:
+            values = self.last_values  # 使用默认值
 
         try:
             # 预分配一个较大的数组用于存储计算结果，避免动态扩展带来的性能开销
-            new_last_values = np.empty((last_values.shape[0], max_values_multipie * len(method_list)))
+            new_values = np.empty((values.shape[0], max_values_multipie * len(method_list)))
             
-            for j in range(last_values.shape[0]):  # 遍历每一行数据
+            for j in range(values.shape[0]):  # 遍历每一行数据
                 new_number = 0  # 记录新数组的当前存储位置
                 
                 for i in range(len(method_list)):
@@ -360,33 +360,33 @@ class AdaptoFlux:
                     
                     if method_name.startswith('-'):
                         # 以 '-' 开头的方法不处理，直接存入待处理队列
-                        self.method_input_values[method_name.lstrip('-')].append(last_values[j, i])
+                        self.method_input_values[method_name.lstrip('-')].append(values[j, i])
                         continue
                     
                     method_info = self.methods[method_name]
                     
                     if method_info['input_count'] == 1:
                         # 处理单输入的函数，直接调用并存储输出
-                        for k in method_info['function'](last_values[j, i]):
-                            new_last_values[j, new_number] = k
+                        for k in method_info['function'](values[j, i]):
+                            new_values[j, new_number] = k
                             new_number += 1
                     else:
                         # 处理多输入的函数，先存入待处理队列，达到输入要求后再计算
-                        self.method_input_values[method_name].append(last_values[j, i])
+                        self.method_input_values[method_name].append(values[j, i])
                         
                         if len(self.method_input_values[method_name]) == method_info['input_count']:
                             # 当待处理数据量满足要求时，调用函数进行计算
                             for k in method_info['function'](*self.method_input_values[method_name]):
-                                new_last_values[j, new_number] = k
+                                new_values[j, new_number] = k
                                 new_number += 1
                             
                             # 清空已使用的输入值
                             self.method_input_values[method_name] = []
                 
             # 截取有效数据，去除未使用的预分配部分
-            new_last_values = new_last_values[:, :new_number]  
+            new_values = new_values[:, :new_number]  
             
-            return new_last_values
+            return new_values
         
         except Exception as e:
             print("出现错误，返回原数组：", str(e))
@@ -394,7 +394,60 @@ class AdaptoFlux:
             print(self.last_values.shape)
             return self.last_values
 
+    def process_single_value_with_list(self, method_list, value):
+        """
+        根据输入的 method_list 处理单个值（仅一个数据元素）。
+        - 处于待处理队列的值采用暂时不处理方案（跳过计算）。
+        - 另一种方案是将这些值暂存，并在满足输入要求后一起计算。
+
+        参数：
+            method_list (list): 处理方法的列表，部分方法可能以 '-' 开头表示跳过计算。
+            value (单一值): 需要处理的单个数据值。
+
+        返回值：
+            处理后的计算结果。
+        """
+        # 初始化存储计算结果
+        result = []
+
+        for method_name in method_list:
+            if method_name.startswith('-'):
+                # 以 '-' 开头的方法不处理，跳过
+                self.method_input_values[method_name.lstrip('-')].append(value)
+                continue
+
+            method_info = self.methods[method_name]
+
+            if method_info['input_count'] == 1:
+                # 处理单输入的函数，直接调用并存储输出
+                for k in method_info['function'](value):
+                    result.append(k)
+            else:
+                # 处理多输入的函数，将当前值暂存，等待满足输入要求后再计算
+                self.method_input_values[method_name].append(value)
+
+                if len(self.method_input_values[method_name]) == method_info['input_count']:
+                    # 当待处理数据量满足要求时，调用函数进行计算
+                    for k in method_info['function'](*self.method_input_values[method_name]):
+                        result.append(k)
+
+                    # 清空已使用的输入值
+                    self.method_input_values[method_name] = []
+
+        # 返回计算结果
+        return result
+
     def save_model(self, folder="models"):
+        """
+        保存模型的路径数据和相关文件。
+
+        1. 检查并确保目标文件夹存在。如果文件夹不存在，则创建文件夹。
+        2. 将模型的路径信息写入到指定的文件中（默认为 output.txt）。
+        3. 复制指定的 `methods_path` 文件到目标文件夹，确保源文件存在。
+
+        参数:
+            folder (str): 用于保存模型的文件夹路径，默认为 "models"。
+        """
         # 确保文件夹存在，如果不存在则创建
         if not os.path.exists(folder):
             os.makedirs(folder)
@@ -644,8 +697,20 @@ class AdaptoFlux:
 
     # 评估函数
     def evaluate(self, inputs, targets):
-        for i in range(len(self.paths)):
-            inputs = self.process_array_with_list(self.paths[i], inputs)  # 根据随机方法处理数据
+        """
+        评估模型在给定输入和目标上的准确性。
+
+        该函数根据随机方法处理输入数据，计算模型预测值与目标值的匹配情况，并返回准确率。
+
+        参数:
+            inputs (np.ndarray): 输入数据，形状通常为 (样本数, 特征数)。
+            targets (np.ndarray): 真实目标值，与输入数据一一对应。
+
+        返回:
+            float: 模型在给定输入数据上的准确率。
+        """
+        for path in self.paths:
+            inputs = self.process_array_with_list(path, inputs)  # 根据随机方法处理数据
 
         collapse_values = np.apply_along_axis(self.collapse, axis=1, arr=inputs)
         # 计算预测值与真实值匹配的情况
@@ -655,4 +720,24 @@ class AdaptoFlux:
         print(f"准确率：{train_accuracy}")
         return train_accuracy
 
-        
+    def inference(self, inputs):
+        """
+        执行推理过程，将输入数据依次通过多个路径进行处理，最终合并成一个推理结果。
+
+        参数：
+        inputs : 任意类型
+            初始输入数据，将依次通过 `self.paths` 进行处理。
+
+        过程：
+        1. 遍历 `self.paths` 列表中的每个路径，并使用 `process_single_value_with_list` 处理数据。
+        2. 经过所有路径处理后，使用 `collapse` 方法合并最终数据。
+        3. 打印推理结果。
+
+        输出：
+        无直接返回值，但会在控制台打印最终的推理结果。
+        """
+        for path in self.paths:
+            data = self.process_single_value_with_list(path, data)
+        result = self.collapse(data)
+        print(f"推理值：{result}")
+

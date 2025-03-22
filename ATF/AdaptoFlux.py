@@ -331,7 +331,7 @@ class AdaptoFlux:
     # 根据输入的列表更改数组,处于神经待处理队列状态的值采用暂时不处理方案, 还有一种方案是先将这些值置于最后
     # 使用该方法会导致数据收敛到一定数量级时可能出现所有数据都在待处理队列中导致数组全为空的情况发生
     # 这种方法坍缩时不会将待处理数据加入计算
-    def process_array_with_list(self, method_list, max_values_multipie=5):
+    def process_array_with_list(self, method_list, last_values=None, max_values_multipie=5):
         """
         根据输入的 method_list 处理数组 self.last_values。
         - 处于待处理队列的值采用暂时不处理方案（跳过计算）。
@@ -345,11 +345,14 @@ class AdaptoFlux:
         返回值：
             np.ndarray: 处理后的新数组。
         """
+        if last_values is None:
+            last_values = self.last_values  # 使用默认值
+
         try:
             # 预分配一个较大的数组用于存储计算结果，避免动态扩展带来的性能开销
-            new_last_values = np.empty((self.last_values.shape[0], max_values_multipie * len(method_list)))
+            new_last_values = np.empty((last_values.shape[0], max_values_multipie * len(method_list)))
             
-            for j in range(self.last_values.shape[0]):  # 遍历每一行数据
+            for j in range(last_values.shape[0]):  # 遍历每一行数据
                 new_number = 0  # 记录新数组的当前存储位置
                 
                 for i in range(len(method_list)):
@@ -357,19 +360,19 @@ class AdaptoFlux:
                     
                     if method_name.startswith('-'):
                         # 以 '-' 开头的方法不处理，直接存入待处理队列
-                        self.method_input_values[method_name.lstrip('-')].append(self.last_values[j, i])
+                        self.method_input_values[method_name.lstrip('-')].append(last_values[j, i])
                         continue
                     
                     method_info = self.methods[method_name]
                     
                     if method_info['input_count'] == 1:
                         # 处理单输入的函数，直接调用并存储输出
-                        for k in method_info['function'](self.last_values[j, i]):
+                        for k in method_info['function'](last_values[j, i]):
                             new_last_values[j, new_number] = k
                             new_number += 1
                     else:
                         # 处理多输入的函数，先存入待处理队列，达到输入要求后再计算
-                        self.method_input_values[method_name].append(self.last_values[j, i])
+                        self.method_input_values[method_name].append(last_values[j, i])
                         
                         if len(self.method_input_values[method_name]) == method_info['input_count']:
                             # 当待处理数据量满足要求时，调用函数进行计算
@@ -582,8 +585,6 @@ class AdaptoFlux:
                                 return  
                             break
 
-                    
-                    
                     else:
                         # 记录最高准确率未更新但发生回退的次数
                         self.rollback_count += 1
@@ -641,8 +642,17 @@ class AdaptoFlux:
         except Exception as e:
             print(f"读取文件时发生错误: {str(e)}")
 
+    # 评估函数
+    def evaluate(self, inputs, targets):
+        for i in range(len(self.paths)):
+            inputs = self.process_array_with_list(self.paths[i], inputs)  # 根据随机方法处理数据
 
-    def evaluate(self,inputs, targets):
-        return
-        #for i in range(len(self.paths)):
+        collapse_values = np.apply_along_axis(self.collapse, axis=1, arr=inputs)
+        # 计算预测值与真实值匹配的情况
+        prediction_matches = collapse_values == targets  
+        # 计算准确率
+        train_accuracy = np.mean(prediction_matches) 
+        print(f"准确率：{train_accuracy}")
+        return train_accuracy
+
         

@@ -65,6 +65,9 @@ class AdaptoFlux:
             "redundancy_penalty": 0.0,  # 冗余惩罚
         }
 
+        # 记录最高准确率未更新但发生回退的次数
+        self.rollback_count = 0
+
         # 存储文件路径
         self.methods_path = methods_path  # 默认为 "methods.py"
     
@@ -406,32 +409,39 @@ class AdaptoFlux:
             shutil.copy(self.methods_path, folder)  # 复制文件到目标文件夹
 
 
-    def get_path_entropy(self, window_size=None):
+    def get_path_entropy(self, paths):
         """
-        获取当前路径熵
+        计算路径熵
 
-        :param window_size: 计算熵的窗口长度（默认为 None，表示计算所有历史路径）
+        :param paths: 需要计算的二维列表路径数据
         :return: 计算得到的路径熵值
         """
         try:
-            if window_size is None or window_size >= len(self.paths):
-                data = [abs(int(x)) for row in self.paths for x in row]
-            else:
-                data = [abs(int(x)) for row in self.paths[-window_size:] for x in row]
+            if not paths or not isinstance(paths, list) or not all(isinstance(row, list) for row in paths):
+                raise ValueError("输入的 paths 必须是一个二维列表")
+            
+            # 如果 paths 为空，或者所有子列表都为空，直接返回 0
+            if not paths or all(len(row) == 0 for row in paths):
+                return 0
 
-            # 计算整个数据的概率分布
+            # 将所有元素转换为整数并展平为一维列表
+            data = [abs(int(x)) for row in paths for x in row]
+
+            if not data:  # 确保数据不为空
+                return 0
+
+            # 计算概率分布
             counts = Counter(data)
             total = len(data)
             probabilities = [count / total for count in counts.values()]
 
+            # 计算熵
             entropy = -sum(p * np.log2(p) for p in probabilities if p > 0)
             return entropy
         except ValueError:
-            # 捕捉整数转换错误
             print("路径数据中存在无法转换为整数的值")
             return None
         except Exception as e:
-            # 捕捉其他未知错误
             print(f"计算路径熵时发生错误: {e}")
             return None
                 
@@ -461,7 +471,7 @@ class AdaptoFlux:
             dynamicWeightController = DynamicWeightController.DynamicWeightController(epochs)
 
             # 训练循环
-            for i in range(epochs):
+            for i in range(1, epochs + 1):
                 print("epoch:", i)
                 last_method = self.process_random_method()  # 获取当前的随机方法
                 new_last_values = self.process_array_with_list(last_method)  # 根据随机方法处理数据
@@ -472,39 +482,48 @@ class AdaptoFlux:
                 last_vs_train = last_collapse_values == self.labels  # 计算训练集的相等情况
                 new_vs_train = new_collapse_values == self.labels  # 计算新训练集的相等情况
                 
-                # 计算前后方差
-                last_difference_trian = last_collapse_values - self.labels
-                last_variance_trian = np.var(last_difference_trian)
-                new_difference_trian = new_collapse_values - self.labels
-                new_variance_trian = np.var(new_difference_trian)
-
                 # 计算准确率
                 last_accuracy_trian = np.mean(last_vs_train)  # 计算上一轮训练集准确率
                 new_accuracy_trian = np.mean(new_vs_train)  # 计算本轮训练集准确率
 
                 print("上一轮训练集相等概率:" + str(last_accuracy_trian))
                 print("本轮训练集相等概率：" + str(new_accuracy_trian))
-                print("上一轮训练集方差:" + str(last_variance_trian))
-                print("本轮训练集方差：" + str(new_variance_trian))
 
+                # 计算前后路径熵和从动态权重控制器获取权值
+                last_path_entropy = self.get_path_entropy(self.paths)
+                new_path_entropy = self.get_path_entropy(self.paths+ [last_method])
+
+                last_alpha,last_beta,last_gamma = dynamicWeightController.get_weights(i, last_path_entropy)
+                new_alpha,new_beta,new_gamma = dynamicWeightController.get_weights(i, new_path_entropy)
+
+                # 计算指导值（暂未编写冗余部分）
+                last_guiding_value = last_alpha * last_accuracy_trian + last_beta * last_path_entropy
+                new_guiding_value = new_alpha * new_accuracy_trian + new_beta * new_path_entropy
+                
                 # 判断是否要更新网络路径
-                if (last_accuracy_trian < new_accuracy_trian or
-                    (last_accuracy_trian == new_accuracy_trian and new_variance_trian < last_variance_trian)) and \
-                    new_last_values.size != 0:
+                if (last_guiding_value < new_guiding_value) and new_last_values.size != 0:
                     self.paths.append(last_method)
                     self.history_values.append(new_last_values)
                     self.last_values = new_last_values
                     self.history_method_inputs.append(self.method_inputs)
                     self.history_method_input_values.append(self.method_input_values)
+                    self.metrics["accuracy"] = new_accuracy_trian
+                    self.metrics["entropy"] = new_path_entropy
+
+                    if self.metrics["accuracy"] > self.metrics["max_accuracy"]:
+                        self.metrics["max_accuracy"] = self.metrics["accuracy"]
+
+                    self.rollback_count = 0
+
                     if target_accuracy is not None and new_accuracy_trian >= target_accuracy:
                         print(f"训练提前停止，准确率达到 {new_accuracy_trian}，大于等于目标 {target_accuracy}")
                         # 保存模型或处理
                         self.save_model()  # 假设 save_model 方法已经定义
-                        break
+                        return
                 else:
                     # 如果本轮训练不符合要求，重随机重新寻找合适的路径
-                    i = 1
-                    while i <= len(last_method):
+                    j = 1
+                    while j <= len(last_method):
                         print(f"在当层重新寻找适合的路径：当前重随机数{i}")
                         if self.history_method_inputs:  # 检查是否有历史输入
                             self.method_inputs = self.history_method_inputs[-1]
@@ -512,54 +531,76 @@ class AdaptoFlux:
                         if self.history_method_input_values:  # 检查是否有历史输入值
                             self.method_input_values = self.history_method_input_values[-1]
 
-                        last_method = self.replace_random_elements(last_method, i)  # 替换方法中的随机元素
-                        i *= step  # 增加重随机的步长
+                        last_method = self.replace_random_elements(last_method, j)  # 替换方法中的随机元素
+                        j *= step  # 增加重随机的步长
                         
                         new_last_values = self.process_array_with_list(last_method)  # 处理新的数据
 
                         # 计算训练集方差和准确率
                         last_collapse_values = np.apply_along_axis(self.collapse, axis=1, arr=self.last_values)
                         new_collapse_values = np.apply_along_axis(self.collapse, axis=1, arr=new_last_values)
-                        last_vs_train = last_collapse_values == self.labels
-                        new_vs_train = new_collapse_values == self.labels
-
-                        # 计算前后方差
-                        last_difference_trian = last_collapse_values - self.labels
-                        last_variance_trian = np.var(last_difference_trian)
-                        new_difference_trian = new_collapse_values - self.labels
-                        new_variance_trian = np.var(new_difference_trian)
-
+                        last_vs_train = last_collapse_values == self.labels  # 计算训练集的相等情况
+                        new_vs_train = new_collapse_values == self.labels  # 计算新训练集的相等情况
+                        
                         # 计算准确率
-                        last_accuracy_trian = np.mean(last_vs_train)
-                        new_accuracy_trian = np.mean(new_vs_train)
+                        last_accuracy_trian = np.mean(last_vs_train)  # 计算上一轮训练集准确率
+                        new_accuracy_trian = np.mean(new_vs_train)  # 计算本轮训练集准确率
 
                         print("上一轮训练集相等概率:" + str(last_accuracy_trian))
                         print("本轮训练集相等概率：" + str(new_accuracy_trian))
-                        print("上一轮训练集方差:" + str(last_variance_trian))
-                        print("本轮训练集方差：" + str(new_variance_trian))
+
+                        # 计算前后路径熵和从动态权重控制器获取权值
+                        last_path_entropy = self.get_path_entropy(self.paths)
+                        new_path_entropy = self.get_path_entropy(self.paths+ [last_method])
+
+                        last_alpha,last_beta,last_gamma = dynamicWeightController.get_weights(i, last_path_entropy)
+                        new_alpha,new_beta,new_gamma = dynamicWeightController.get_weights(i, new_path_entropy)
+
+                        # 计算指导值（暂未编写冗余部分）
+                        last_guiding_value = last_alpha * last_accuracy_trian + last_beta * last_path_entropy
+                        new_guiding_value = new_alpha * new_accuracy_trian + new_beta * new_path_entropy
 
                         # 判断是否需要更新路径
-                        if (last_accuracy_trian < new_accuracy_trian or
-                            (last_accuracy_trian == new_accuracy_trian and new_variance_trian < last_variance_trian)) and \
-                            new_last_values.size != 0:
+                        if (last_guiding_value < new_guiding_value) and new_last_values.size != 0:
                             self.paths.append(last_method)
                             self.history_values.append(new_last_values)
                             self.last_values = new_last_values
                             self.history_method_inputs.append(self.method_inputs)
                             self.history_method_input_values.append(self.method_input_values)
-                            break
-                    else:
-                        # 如果找不到合适的路径，则清除上一层网络并重新寻找
-                        print('清除上一层网络')
-                        if self.history_method_inputs:  # 检查是否有历史输入
-                            self.history_method_inputs.pop()
-                        if self.history_method_input_values:  # 检查是否有历史输入值
-                            self.history_method_input_values.pop()
+                            self.metrics["accuracy"] = new_accuracy_trian
+                            self.metrics["entropy"] = new_path_entropy
                             
-                        if len(self.history_values) > 1:
-                            self.history_values.pop()
-                            self.paths.pop()
-                        self.last_values = self.history_values[-1]
+                            if self.metrics["accuracy"] > self.metrics["max_accuracy"]:
+                                self.metrics["max_accuracy"] = self.metrics["accuracy"]
+                            
+                            self.rollback_count = 0
+
+                            if target_accuracy is not None and new_accuracy_trian >= target_accuracy:
+                                print(f"训练提前停止，准确率达到 {new_accuracy_trian}，大于等于目标 {target_accuracy}")
+                                # 保存模型或处理
+                                self.save_model()  # 假设 save_model 方法已经定义
+                                return  
+                            break
+
+                    
+                    
+                    else:
+                        # 记录最高准确率未更新但发生回退的次数
+                        self.rollback_count += 1
+                        # 避免过度回退
+                        rollback_count = min(rollback_count, 5)
+                        # 如果找不到合适的路径，则清除上一层网络并重新寻找
+                        print(f'清除上{self.rollback_count}层网络')
+                        for k in range(self.rollback_count):
+                            if self.history_method_inputs:  # 检查是否有历史输入
+                                self.history_method_inputs.pop()
+                            if self.history_method_input_values:  # 检查是否有历史输入值
+                                self.history_method_input_values.pop()
+                                
+                            if len(self.history_values) > 1:
+                                self.history_values.pop()
+                                self.paths.pop()
+                            self.last_values = self.history_values[-1]
 
             # 打开文件并写入路径数据
             self.save_model()

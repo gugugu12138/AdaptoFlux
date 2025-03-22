@@ -17,11 +17,11 @@ class DynamicWeightController:
         self.total_steps = total_steps  # 总训练步数
         self.phase = "exploration"      # 初始阶段标记（exploration/transition/convergence）
     
-    def get_weights(self, current_step, metrics):
+    def get_weights(self, current_step, path_entropy):
         """获取当前步的权重组合
         Args:
             current_step (int): 当前训练步数
-            metrics (dict): 包含监控指标的字典，必须包含键"entropy"(路径熵值)
+            path_entropy (int): 路径熵值
         
         Returns:
             tuple: 归一化后的权重 (α, β, γ)
@@ -56,7 +56,7 @@ class DynamicWeightController:
         # ==================== 反馈调整 ====================
         # 当路径熵低于阈值且未到收敛期时，强制增加探索性
         # 目的：防止在过渡期过早失去多样性
-        if metrics["entropy"] < 0.2 and self.phase != "convergence":
+        if path_entropy < 0.2 and self.phase != "convergence":
             beta += 0.1               # 提升β鼓励探索
             alpha = max(alpha - 0.05, 0.2)  # 降低α但保持最低值0.2
 

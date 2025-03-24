@@ -35,6 +35,7 @@ cd AdaptoFlux
 ```bash
 pip install -r requirements.txt
 ```
+Tips: The required feature set needs additional environment configuration.
 
 # Modifying Functional Sets
 AdaptoFlux's training and inference operate based on functional sets. By modifying the functions in `methods.py`, different selections can be provided for AdaptoFlux to achieve better results.

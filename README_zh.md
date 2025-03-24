@@ -35,6 +35,7 @@ cd AdaptoFlux
 ```bash
 pip install -r requirements.txt
 ```
+注: 使用的功能集需要额外配置环境
 
 # 修改功能集
 AdaptoFlux的训练和推理基于功能集进行运行，通过修改methods.py中的函数，为AdaptoFlux提供不同的选择，达到更好的效果。

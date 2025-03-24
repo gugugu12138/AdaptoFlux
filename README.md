@@ -14,6 +14,31 @@ AdaptoFlux是一种基于功能集的智能算法。不同于传统的深度学�
 - 完善新函数生成机制，以增强算法适用性。
 - 完成并优化 MLP 优化示例代码，使其更具参考价值。
 
+# 如何使用
+1. 创建新的 conda 环境：
+
+```bash
+conda create -n AdaptoFlux python=3.12
+conda activate AdaptoFlux
+```
+
+2. 克隆仓库：
+
+```bash
+git clone https://github.com/gugugu12138/AdaptoFlux.git
+cd AdaptoFlux
+```
+
+3. 安装依赖：
+
+```bash
+pip install -r requirements.txt
+```
+
+# 修改功能集
+AdaptoFlux的训练和推理基于功能集进行运行，通过修改methods.py中的函数，为AdaptoFlux提供不同的选择，达到更好的效果。
+
+
 # 数据处理模型结构说明
 ## 数据流
 从输入数据到输出结果的处理过程。数据沿着动态生成的路径逐层进行特征提取和转换，每一层级执行特定的任务，并最终通过 **坍缩函数** 将中间表示转化为目标形式的过程。

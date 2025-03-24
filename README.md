@@ -106,7 +106,7 @@ $$
 O = \{ o_1, o_2, o_3, \dots, o_k \}
 $$
 
-![Basic Structure](./assets/images/basic_structure_2.0.png)
+![Basic Structure](./assets/images/基础结构图2.0.png)
 
 ## Model Processing Flow
 1. **Input Layer Processing**  

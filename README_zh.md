@@ -1,4 +1,4 @@
-[English](README.md) | 中文 |
+[English](README.md) | 中文 
 # AdaptoFlux
 
 **一种基于功能集（包含多种类型的函数的集合）实现智能的算法**

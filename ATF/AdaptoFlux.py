@@ -473,13 +473,13 @@ class AdaptoFlux:
         :return: 计算得到的路径熵值
         """
         try:
-            if not paths or not isinstance(paths, list) or not all(isinstance(row, list) for row in paths):
-                raise ValueError("输入的 paths 必须是一个二维列表")
-            
             # 如果 paths 为空，或者所有子列表都为空，直接返回 0
             if not paths or all(len(row) == 0 for row in paths):
                 return 0
-
+            
+            if not paths or not isinstance(paths, list) or not all(isinstance(row, list) for row in paths):
+                raise ValueError("输入的 paths 必须是一个二维列表")
+            
             # 将所有元素转换为整数并展平为一维列表
             data = [abs(int(x)) for row in paths for x in row]
 
@@ -493,14 +493,16 @@ class AdaptoFlux:
 
             # 计算熵
             entropy = -sum(p * np.log2(p) for p in probabilities if p > 0)
-            return entropy
-        except ValueError:
-            print("路径数据中存在无法转换为整数的值")
+            return float(entropy)
+        except ValueError as ve:
+            print(f"值错误: {ve}")
+            print("输入的路径数据:", paths)  # 打印输入的数据，帮助调试
             return None
         except Exception as e:
             print(f"计算路径熵时发生错误: {e}")
+            print("路径数据:", paths)  # 打印路径数据以便定位问题
             return None
-                
+                    
     # 训练方法,epochs决定最终训练出来的模型层数,step用于控制重随机时每次增加几个重随机的指数上升速度 # 第一轮训练如果直接失败会出现错误，待解决
     def training(self, epochs=10000, depth_interval=1, depth_reverse=1, step=2, target_accuracy=None):
         """

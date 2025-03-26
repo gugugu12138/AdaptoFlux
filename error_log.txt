@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "e:\ATF\ATF\AdaptoFlux.py", line 554, in training
+    last_alpha,last_beta,last_gamma = dynamicWeightController.get_weights(i, last_path_entropy)
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "e:\ATF\ATF\DynamicWeightController.py", line 59, in get_weights
+    if path_entropy < 0.2 and self.phase != "convergence":
+       ^^^^^^^^^^^^^^^^^^
+TypeError: '<' not supported between instances of 'NoneType' and 'float'

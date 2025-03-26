@@ -557,6 +557,9 @@ class AdaptoFlux:
                 # 计算指导值（暂未编写冗余部分）
                 last_guiding_value = last_alpha * last_accuracy_trian + last_beta * last_path_entropy
                 new_guiding_value = new_alpha * new_accuracy_trian + new_beta * new_path_entropy
+
+                print("上一轮训练集指导值:" + str(last_guiding_value))
+                print("本轮训练集指导值：" + str(new_guiding_value))
                 
                 # 判断是否要更新网络路径
                 if (last_guiding_value < new_guiding_value) and new_last_values.size != 0:
@@ -617,6 +620,9 @@ class AdaptoFlux:
                         # 计算指导值（暂未编写冗余部分）
                         last_guiding_value = last_alpha * last_accuracy_trian + last_beta * last_path_entropy
                         new_guiding_value = new_alpha * new_accuracy_trian + new_beta * new_path_entropy
+
+                        print("上一轮训练集指导值:" + str(last_guiding_value))
+                        print("本轮训练集指导值：" + str(new_guiding_value))
 
                         # 判断是否需要更新路径
                         if (last_guiding_value < new_guiding_value) and new_last_values.size != 0:

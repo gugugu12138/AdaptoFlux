@@ -72,6 +72,7 @@ def halve(x):
     减半该数值
     """
     return [0.5*x]
+
 def ceil_number(number):
     return [math.ceil(number)]  # 向上取整
 

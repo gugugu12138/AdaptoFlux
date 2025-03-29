@@ -573,15 +573,10 @@ class AdaptoFlux:
                 last_alpha,last_beta,last_gamma,last_delta = dynamicWeightController.get_weights(i - 1, last_path_entropy, last_loss_value)
                 new_alpha,new_beta,new_gamma,new_delta = dynamicWeightController.get_weights(i, new_path_entropy, new_loss_value)
 
-                print(last_alpha,last_beta,last_gamma,last_delta)
-                print(new_alpha,new_beta,new_gamma,new_delta)
-
                 # 计算指导值（暂未编写冗余部分）
                 last_guiding_value = last_alpha * last_accuracy_trian + last_beta * last_path_entropy - last_delta * last_loss_value
                 new_guiding_value = new_alpha * new_accuracy_trian + new_beta * new_path_entropy - new_delta * new_loss_value
 
-                print(last_path_entropy, last_loss_value)
-                print(new_path_entropy, new_loss_value)
                 print("上一轮训练集指导值:" + str(last_guiding_value))
                 print("本轮训练集指导值：" + str(new_guiding_value))
                 
@@ -676,7 +671,7 @@ class AdaptoFlux:
                         # 记录最高准确率未更新但发生回退的次数
                         self.rollback_count += 1
                         # 避免过度回退
-                        rollback_count = min(rollback_count, 5)
+                        self.rollback_count = min(self.rollback_count, 5)
                         # 如果找不到合适的路径，则清除上一层网络并重新寻找
                         print(f'清除上{self.rollback_count}层网络')
                         for k in range(self.rollback_count):

@@ -6,7 +6,7 @@ import inspect
 import importlib.util
 import math
 import traceback
-import DynamicWeightController
+from . import DynamicWeightController
 from threading import Thread, Event
 from collections import Counter
 import os

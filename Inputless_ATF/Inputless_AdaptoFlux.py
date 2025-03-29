@@ -473,13 +473,13 @@ class AdaptoFlux:
         :return: 计算得到的路径熵值
         """
         try:
-            if not paths or not isinstance(paths, list) or not all(isinstance(row, list) for row in paths):
-                raise ValueError("输入的 paths 必须是一个二维列表")
-            
             # 如果 paths 为空，或者所有子列表都为空，直接返回 0
             if not paths or all(len(row) == 0 for row in paths):
                 return 0
-
+            
+            if not paths or not isinstance(paths, list) or not all(isinstance(row, list) for row in paths):
+                raise ValueError("输入的 paths 必须是一个二维列表")
+            
             # 将所有元素转换为整数并展平为一维列表
             data = [abs(int(x)) for row in paths for x in row]
 
@@ -493,16 +493,34 @@ class AdaptoFlux:
 
             # 计算熵
             entropy = -sum(p * np.log2(p) for p in probabilities if p > 0)
-            return entropy
-        except ValueError:
-            print("路径数据中存在无法转换为整数的值")
+            return float(entropy)
+        except ValueError as ve:
+            print(f"值错误: {ve}")
+            print("输入的路径数据:", paths)  # 打印输入的数据，帮助调试
             return None
         except Exception as e:
             print(f"计算路径熵时发生错误: {e}")
+            print("路径数据:", paths)  # 打印路径数据以便定位问题
             return None
-                
+        
+    def RMSE(self, y_true, y_pred):
+        """
+        计算均方根误差 (RMSE)
+
+        Args:
+            y_true (array-like): 真实值
+            y_pred (array-like): 预测值
+
+        Returns:
+            float: RMSE 值
+        """
+        y_true = np.array(y_true)
+        y_pred = np.array(y_pred)
+        mse = np.mean((y_true - y_pred) ** 2)  # 计算均方误差 (MSE)
+        return np.sqrt(mse)  # 计算 RMSE
+                    
     # 训练方法,epochs决定最终训练出来的模型层数,step用于控制重随机时每次增加几个重随机的指数上升速度 # 第一轮训练如果直接失败会出现错误，待解决
-    def training(self, epochs=10000, depth_interval=1, depth_reverse=1, step=2, target_accuracy=None):
+    def training(self, epochs=20, depth_interval=1, depth_reverse=1, step=2, target_accuracy=None):
         """
         训练方法，用于训练模型，执行指定的轮次并在每一轮中根据训练集和验证集的表现进行调整。
         
@@ -538,9 +556,11 @@ class AdaptoFlux:
                 last_vs_train = last_collapse_values == self.labels  # 计算训练集的相等情况
                 new_vs_train = new_collapse_values == self.labels  # 计算新训练集的相等情况
                 
-                # 计算准确率
+                # 计算准确率和损失
                 last_accuracy_trian = np.mean(last_vs_train)  # 计算上一轮训练集准确率
                 new_accuracy_trian = np.mean(new_vs_train)  # 计算本轮训练集准确率
+                last_loss_value = self.RMSE(self.labels, last_collapse_values)
+                new_loss_value = self.RMSE(self.labels, last_collapse_values)
 
                 print("上一轮训练集相等概率:" + str(last_accuracy_trian))
                 print("本轮训练集相等概率：" + str(new_accuracy_trian))
@@ -549,12 +569,16 @@ class AdaptoFlux:
                 last_path_entropy = self.get_path_entropy(self.paths)
                 new_path_entropy = self.get_path_entropy(self.paths+ [last_method])
 
-                last_alpha,last_beta,last_gamma = dynamicWeightController.get_weights(i, last_path_entropy)
-                new_alpha,new_beta,new_gamma = dynamicWeightController.get_weights(i, new_path_entropy)
+
+                last_alpha,last_beta,last_gamma,last_delta = dynamicWeightController.get_weights(i, last_path_entropy, last_loss_value)
+                new_alpha,new_beta,new_gamma,new_delta = dynamicWeightController.get_weights(i, new_path_entropy, new_loss_value)
 
                 # 计算指导值（暂未编写冗余部分）
-                last_guiding_value = last_alpha * last_accuracy_trian + last_beta * last_path_entropy
-                new_guiding_value = new_alpha * new_accuracy_trian + new_beta * new_path_entropy
+                last_guiding_value = last_alpha * last_accuracy_trian + last_beta * last_path_entropy - last_delta * last_loss_value
+                new_guiding_value = new_alpha * new_accuracy_trian + new_beta * new_path_entropy - new_delta * new_loss_value
+
+                print("上一轮训练集指导值:" + str(last_guiding_value))
+                print("本轮训练集指导值：" + str(new_guiding_value))
                 
                 # 判断是否要更新网络路径
                 if (last_guiding_value < new_guiding_value) and new_last_values.size != 0:
@@ -598,9 +622,11 @@ class AdaptoFlux:
                         last_vs_train = last_collapse_values == self.labels  # 计算训练集的相等情况
                         new_vs_train = new_collapse_values == self.labels  # 计算新训练集的相等情况
                         
-                        # 计算准确率
+                        # 计算准确率和损失
                         last_accuracy_trian = np.mean(last_vs_train)  # 计算上一轮训练集准确率
                         new_accuracy_trian = np.mean(new_vs_train)  # 计算本轮训练集准确率
+                        last_loss_value = self.RMSE(self.labels, last_collapse_values)
+                        new_loss_value = self.RMSE(self.labels, last_collapse_values)
 
                         print("上一轮训练集相等概率:" + str(last_accuracy_trian))
                         print("本轮训练集相等概率：" + str(new_accuracy_trian))
@@ -609,12 +635,15 @@ class AdaptoFlux:
                         last_path_entropy = self.get_path_entropy(self.paths)
                         new_path_entropy = self.get_path_entropy(self.paths+ [last_method])
 
-                        last_alpha,last_beta,last_gamma = dynamicWeightController.get_weights(i, last_path_entropy)
-                        new_alpha,new_beta,new_gamma = dynamicWeightController.get_weights(i, new_path_entropy)
+                        last_alpha,last_beta,last_gamma,last_delta = dynamicWeightController.get_weights(i, last_path_entropy, last_loss_value)
+                        new_alpha,new_beta,new_gamma,new_delta = dynamicWeightController.get_weights(i, new_path_entropy, new_loss_value)
 
                         # 计算指导值（暂未编写冗余部分）
-                        last_guiding_value = last_alpha * last_accuracy_trian + last_beta * last_path_entropy
-                        new_guiding_value = new_alpha * new_accuracy_trian + new_beta * new_path_entropy
+                        last_guiding_value = last_alpha * last_accuracy_trian + last_beta * last_path_entropy - last_delta * last_loss_value
+                        new_guiding_value = new_alpha * new_accuracy_trian + new_beta * new_path_entropy - new_delta * new_loss_value
+
+                        print("上一轮训练集指导值:" + str(last_guiding_value))
+                        print("本轮训练集指导值：" + str(new_guiding_value))
 
                         # 判断是否需要更新路径
                         if (last_guiding_value < new_guiding_value) and new_last_values.size != 0:

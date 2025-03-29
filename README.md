@@ -1,99 +1,103 @@
-English | [中文](README_zh.md)
+[English](README.md) | 中文 
 # AdaptoFlux
 
-**An Intelligent Algorithm Based on Functional Sets (A Collection of Various Types of Functions)**
+**一种基于功能集（包含多种类型的函数的集合）实现智能的算法**
 
-## Project Overview
-AdaptoFlux is an intelligent algorithm based on functional sets. Unlike traditional deep learning, this algorithm achieves intelligent computation and optimization by generating a path-based operational process. Through operations on functional sets and collapse functions, this algorithm offers high compatibility.
+## 项目概述
+AdaptoFlux是一种基于功能集的智能算法。不同于传统的深度学习，该算法通过生成一个基于路径的操作流程，实现智能计算和优化。通过对功能集和坍缩函数的操作，该算法拥有极强的兼容性。
 
-## Progress Status
-- The **model simplification** and **new function generation** parts are still under development.
-- Currently writing example code to **optimize an MLP model without modifying its structure** using this algorithm and continuously improving it.
+## 进展情况
+- **模型化简**和**新函数生成**部分仍在开发中。
+- 正在编写**基于该算法在不修改MLP模型情况优化 MLP**的示例代码，并持续优化。
 
-## Future Work
-- Further optimize the model simplification process to enhance computational efficiency.
-- Improve the new function generation mechanism to enhance algorithm applicability.
-- Complete and refine the MLP optimization example code to make it more valuable as a reference.
+## 未来工作
+- 进一步优化模型化简过程，提高计算效率。
+- 完善新函数生成机制，以增强算法适用性。
+- 完成并优化 MLP 优化示例代码，使其更具参考价值。
+- 载入模型后在原模型基础上训练
 
-# How to Use
-1. Create a new conda environment:
+# 如何使用
+1. 创建新的 conda 环境：
 
 ```bash
 conda create -n AdaptoFlux python=3.12
 conda activate AdaptoFlux
 ```
 
-2. Clone the repository:
+2. 克隆仓库：
 
 ```bash
 git clone https://github.com/gugugu12138/AdaptoFlux.git
 cd AdaptoFlux
 ```
 
-3. Install dependencies:
+3. 安装依赖：
 
 ```bash
 pip install -r requirements.txt
 ```
-Tips: The required feature set needs additional environment configuration.
+注: 使用的功能集需要额外配置环境
 
-# Modifying Functional Sets
-AdaptoFlux's training and inference operate based on functional sets. By modifying the functions in `methods.py`, different selections can be provided for AdaptoFlux to achieve better results.
+# 修改功能集
+AdaptoFlux的训练和推理基于功能集进行运行，通过修改methods.py中的函数，为AdaptoFlux提供不同的选择，达到更好的效果。
 
-# Data Processing Model Structure Description
-## Data Flow
-The process from input data to output results. Data undergoes feature extraction and transformation layer by layer along a dynamically generated path. Each level performs specific tasks, and finally, the **collapse function** converts the intermediate representation into the target format.
 
-## Collapse Function
-An optional transformation operation used in dynamically generated path-based data flow processing. It extracts data at the end of the path after undergoing layer-by-layer operations and converts it into a specific target format.
+# 数据处理模型结构说明
+## 数据流
+从输入数据到输出结果的处理过程。数据沿着动态生成的路径逐层进行特征提取和转换，每一层级执行特定的任务，并最终通过 **坍缩函数** 将中间表示转化为目标形式的过程。
 
-Specifically, when certain values in the network have a direct relationship with **guidance values**, the collapse function simplifies complex intermediate representations into more concise target formats through aggregation or summarization operations. The input can be a feature vector of a single node or comprehensive data from the end of the path, while the output is customized according to task requirements, such as probability distributions, category labels, or other required formats.
+## 坍缩函数
+可选的转换操作，用于在基于动态生成路径的数据流处理过程中，从路径末端提取经过逐层操作后的数据，并将其转化为具有特定目标格式的输出。  
+具体而言，当网络中的某些值与 **指导值** 存在直接关系时，坍缩函数通过聚合或总结操作，将复杂的中间表示简化为更简洁的目标形式。  
+其输入可以是单个节点的特征向量，也可以是整个路径末端的综合数据，输出则根据任务需求定制，例如概率分布、类别标签或其他所需格式。
 
-## Guidance Values
-Used to guide the growth or degradation of neurons.
+## 指导值
+用于指导神经的生长或退化。
 
-- **Metric Classification and Hierarchical Division:**
+- 指标分类与层级划分：
 
-  | Category     | Example Metrics       | Adjustment Target | Impact Weight |
-  |-------------|----------------------|------------------|--------------|
-  | Core Task   | Accuracy, F1 Score   | Directly optimize task performance | High (\(\alpha\)) |
-  | Path Quality | Path entropy, Path depth | Ensure exploration and architecture health | Medium (\(\beta\)) |
-  | Computational Efficiency | Memory usage, FLOPs | Suppress resource wastage | Low (\(\gamma\)) |
+  | 类别   | 示例指标       | 调整目标      | 影响权重 |
+  | ---- | ---------- | --------- | ---- |
+  | 核心任务 | 准确率、F1分数   | 直接优化任务性能  | 高（α） |
+  | 路径质量 | 路径熵、路径深度   | 保障探索与架构健康 | 中（β） |
+  | 计算效率 | 内存占用、FLOPs | 抑制资源浪费    | 低（γ） |
+  | 损失控制 | MSE、RMSE、交叉熵 | 训练初期调整优化方向，后期减少影响 | 变（δ）
 
-- **Multi-Indicator Fusion Formula:**
-
-  $$
-  Guidance Value = \sum \omega_i \cdot Core Metric_i + \sum \phi_j \cdot Path Metric_j - \sum \psi_k \cdot Efficiency Metric_k
-  $$
-
-- **Example Calculation Formula:**
+- **多指标融合公式**
 
   $$
-  Guidance Value = \alpha \cdot Accuracy + \beta \cdot Path Entropy - \gamma \cdot Redundant Operations Penalty
+  指导值 = \sum \omega_i \cdot 核心指标_i + \sum \phi_j \cdot 路径指标_j - \sum \psi_k \cdot 效率指标_k - \delta \cdot 损失值
   $$
 
-#### Path Entropy Calculation
+- **示例计算公式**：
 
-  $$
-  Path Entropy = -\sum P(Path_i) \cdot \log P(Path_i)
-  $$
+$$
+指导值 = \alpha \cdot 准确率 + \beta \cdot 路径熵 - \gamma \cdot 冗余操作惩罚 - \delta \cdot 损失值
+$$
 
-where \( P(Path_i) \) represents the occurrence frequency of the \( i \)-th category path (proportion within the statistical window).
+#### 路径熵计算
 
-#### Redundant Operations Penalty Calculation
+$$
+路径熵 = -\sum P(路径_i) \cdot \log P(路径_i)
+$$
 
-  $$
-  Redundant Operations Penalty = \sum (Invalid Computation Count)
-  $$
+其中，P(路径_i) 表示第 $i$ 类路径的出现频率（统计窗口内的占比）。
 
-## Functional Set (Q)
-A collection containing various types of functions.
+#### 冗余操作惩罚计算
 
-## Function Set (F)
-A functional set that only contains mapping functions.
+$$
+冗余操作惩罚 = \sum (无效计算次数)
+$$
 
-## Operation Set (O)
-A functional set that only contains action functions.
+## 功能集（Q）
+包含多种类型的函数的集合。
+
+## 函数集（F）
+只包含映射函数的功能集。
+
+## 操作集（O）
+只包含动作函数的功能集。
+
 
 $$
 G = \{ g_1, g_2, g_3, \dots, g_n \}
@@ -107,55 +111,56 @@ $$
 O = \{ o_1, o_2, o_3, \dots, o_k \}
 $$
 
-![Basic Structure](./assets/images/基础结构图2.0.png)
+![基础结构](./assets/images/基础结构图2.0.png)
 
-## Model Processing Flow
-1. **Input Layer Processing**  
-   - Initial data point count: \( n \)  
-   - Random grouping according to functional set rules  
-   - Execute corresponding functions for each group  
+## 模型处理流程
+1. **输入层处理**  
+   - 初始数据点数量：n
+   - 按照功能集规则随机分组
+   - 对每个分组执行对应函数
 
-2. **Iterative Processing**  
-   - Restore and regroup data after processing  
-   - Repeat the process until reaching the path endpoint  
+2. **迭代处理**  
+   - 处理后将数据还原并重新分组
+   - 重复流程直至到达路径末端
 
-3. **Output Generation**  
-   - Apply collapse function to terminal data  
-   - Generate final network output  
+3. **输出生成**  
+   - 对尾部数据应用坍缩函数
+   - 生成最终网络输出
 
 ---
 
-## Data Volume Change Formula
-### Key Parameter Definitions
-- \( I_a \): Input/output data volume ratio for function \( a \)
-- \( H \): Expected data reduction ratio per layer
-- \( k \): Total number of functions in the functional set
-- \( W_a \): Selection probability of function \( a \)
+## 数据量变化公式
+### 关键参数定义
+- `Iₐ`：函数a的输入/输出数据量比
+- `H`：每层数据期望减少比例
+- `k`：功能集函数总数
+- `Wₐ`：函数a的被选概率
 
-**Core Formula**  
+**核心公式**  
 ```math
 H = \sum_{i=1}^{k} W_i I_i
 ```
 
-### Layer-to-Layer Data Volume Relationship
-- \( n_0 \): Initial data volume
-- \( L \): Model layers
-- \( n_L \): Data volume at layer \( L \)
+### 层间数据量关系
+- `n₀`：初始数据量
+- `L`：模型层数
+- `nₗ`：第L层数据量  
 ```math
-n_0 \cdot H^L = n_L
+n₀ \cdot H^L = n_L
 ```
+
 
 ---
 
-## Function Set Characteristics Analysis
-### Classification Definition
-| Type       | Characteristics                   | Reverse Deduction Ability |
-|------------|----------------------------------|--------------------------|
-| Bijection Set | All functions are bijections  | Fully reversible         |
-| Injection Set | All functions are injections  | Reversible (requires extra info) |
-| Surjection Set | All functions are surjections | Multiple inputs correspond to a single output |
+## 函数集特性分析
+### 分类定义
+| 类型       | 特性                          | 反向推导能力        |
+|------------|-------------------------------|---------------------|
+| 双射函数集 | 所有函数为双射                | 完全可逆            |
+| 单射函数集 | 所有函数为单射                | 可逆（需额外信息）  |
+| 满射函数集 | 所有函数为满射                | 多输入对应单输出    |
 
-### Special Function Set Example
+### 特殊函数集示例
 ```math
 F = \begin{cases}
 f_1(a,b) = a \cdot c_1 + b \cdot d_1 \\
@@ -164,30 +169,29 @@ f_2(a,b) = a \cdot c_2 + b \cdot d_2 \\
 f_n(a,b) = a \cdot c_n + b \cdot d_n
 \end{cases}
 ```
-*Condition: Any set of \( (c,d) \) must be coprime*
+*条件：任意一组(c,d)互质*
 
 ---
 
-## Application Characteristics
-### Surjection Function Set Properties
-- **Input Space Growth Formula**
-```math
-T = R^C
-```
-- \( T \): Input space size
-- \( R \): Average function input count
-- \( C \): Total function call count
+## 应用特性
+### 满射函数集特性
+- **输入空间增长公式**  
+  ```math
+  T = R^C
+  ```
+  - `T`：输入空间大小
+  - `R`：函数输入数量均值
+  - `C`：函数调用总次数
 
-### Encryption and Compression Applications
-- Convert to injections by adding random variables
-- Support mapping unique outputs to inputs
+### 加密与压缩应用
+- 通过添加随机变量实现单射转换
+- 支持输出到唯一输入的映射
 
-### When No Direct Input Data Exists
-If no direct input exists, a periodic signal can be used as input while action functions in the operation set extract data (or drive guidance function towards targets), enabling model construction.
+### 对无直接输入数据时
+当没有直接输入时，可以通过使用一个操作集作为功能集，我们可以使用一个周期信号作为输入，通过操作集中的动作函数组合获取数据（或者使得指导函数趋向目标），以此来实现模型的构建。  
 
-**(This theoretical approach is feasible, and diagrams and a full concept explanation will be added later.)**
+**（这部分理论可行，之后会把图和完整概念放上来）**
 
 ---
 
-### Known Issues
-
+### 已知的问题

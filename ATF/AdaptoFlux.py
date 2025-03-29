@@ -456,7 +456,7 @@ class AdaptoFlux:
         file_path = os.path.join(folder, "output.txt")
 
         # 打开文件并写入路径数据
-        with open("output.txt", "w") as f:
+        with open(file_path, "w") as f:
             for item in self.paths:
                 f.write(str(item) + "\n")
 
@@ -502,9 +502,25 @@ class AdaptoFlux:
             print(f"计算路径熵时发生错误: {e}")
             print("路径数据:", paths)  # 打印路径数据以便定位问题
             return None
+        
+    def RMSE(self, y_true, y_pred):
+        """
+        计算均方根误差 (RMSE)
+
+        Args:
+            y_true (array-like): 真实值
+            y_pred (array-like): 预测值
+
+        Returns:
+            float: RMSE 值
+        """
+        y_true = np.array(y_true)
+        y_pred = np.array(y_pred)
+        mse = np.mean((y_true - y_pred) ** 2)  # 计算均方误差 (MSE)
+        return np.sqrt(mse)  # 计算 RMSE
                     
     # 训练方法,epochs决定最终训练出来的模型层数,step用于控制重随机时每次增加几个重随机的指数上升速度 # 第一轮训练如果直接失败会出现错误，待解决
-    def training(self, epochs=10000, depth_interval=1, depth_reverse=1, step=2, target_accuracy=None):
+    def training(self, epochs=20, depth_interval=1, depth_reverse=1, step=2, target_accuracy=None):
         """
         训练方法，用于训练模型，执行指定的轮次并在每一轮中根据训练集和验证集的表现进行调整。
         
@@ -540,9 +556,11 @@ class AdaptoFlux:
                 last_vs_train = last_collapse_values == self.labels  # 计算训练集的相等情况
                 new_vs_train = new_collapse_values == self.labels  # 计算新训练集的相等情况
                 
-                # 计算准确率
+                # 计算准确率和损失
                 last_accuracy_trian = np.mean(last_vs_train)  # 计算上一轮训练集准确率
                 new_accuracy_trian = np.mean(new_vs_train)  # 计算本轮训练集准确率
+                last_loss_value = self.RMSE(self.labels, last_collapse_values)
+                new_loss_value = self.RMSE(self.labels, new_collapse_values)
 
                 print("上一轮训练集相等概率:" + str(last_accuracy_trian))
                 print("本轮训练集相等概率：" + str(new_accuracy_trian))
@@ -551,13 +569,19 @@ class AdaptoFlux:
                 last_path_entropy = self.get_path_entropy(self.paths)
                 new_path_entropy = self.get_path_entropy(self.paths+ [last_method])
 
-                last_alpha,last_beta,last_gamma = dynamicWeightController.get_weights(i, last_path_entropy)
-                new_alpha,new_beta,new_gamma = dynamicWeightController.get_weights(i, new_path_entropy)
+
+                last_alpha,last_beta,last_gamma,last_delta = dynamicWeightController.get_weights(i - 1, last_path_entropy, last_loss_value)
+                new_alpha,new_beta,new_gamma,new_delta = dynamicWeightController.get_weights(i, new_path_entropy, new_loss_value)
+
+                print(last_alpha,last_beta,last_gamma,last_delta)
+                print(new_alpha,new_beta,new_gamma,new_delta)
 
                 # 计算指导值（暂未编写冗余部分）
-                last_guiding_value = last_alpha * last_accuracy_trian + last_beta * last_path_entropy
-                new_guiding_value = new_alpha * new_accuracy_trian + new_beta * new_path_entropy
+                last_guiding_value = last_alpha * last_accuracy_trian + last_beta * last_path_entropy - last_delta * last_loss_value
+                new_guiding_value = new_alpha * new_accuracy_trian + new_beta * new_path_entropy - new_delta * new_loss_value
 
+                print(last_path_entropy, last_loss_value)
+                print(new_path_entropy, new_loss_value)
                 print("上一轮训练集指导值:" + str(last_guiding_value))
                 print("本轮训练集指导值：" + str(new_guiding_value))
                 
@@ -585,7 +609,7 @@ class AdaptoFlux:
                     # 如果本轮训练不符合要求，重随机重新寻找合适的路径
                     j = 1
                     while j <= len(last_method):
-                        print(f"在当层重新寻找适合的路径：当前重随机数{i}")
+                        print(f"在当层重新寻找适合的路径：当前重随机数{j}")
                         if self.history_method_inputs:  # 检查是否有历史输入
                             self.method_inputs = self.history_method_inputs[-1]
 
@@ -603,9 +627,11 @@ class AdaptoFlux:
                         last_vs_train = last_collapse_values == self.labels  # 计算训练集的相等情况
                         new_vs_train = new_collapse_values == self.labels  # 计算新训练集的相等情况
                         
-                        # 计算准确率
+                        # 计算准确率和损失
                         last_accuracy_trian = np.mean(last_vs_train)  # 计算上一轮训练集准确率
                         new_accuracy_trian = np.mean(new_vs_train)  # 计算本轮训练集准确率
+                        last_loss_value = self.RMSE(self.labels, last_collapse_values)
+                        new_loss_value = self.RMSE(self.labels, new_collapse_values)
 
                         print("上一轮训练集相等概率:" + str(last_accuracy_trian))
                         print("本轮训练集相等概率：" + str(new_accuracy_trian))
@@ -614,12 +640,12 @@ class AdaptoFlux:
                         last_path_entropy = self.get_path_entropy(self.paths)
                         new_path_entropy = self.get_path_entropy(self.paths+ [last_method])
 
-                        last_alpha,last_beta,last_gamma = dynamicWeightController.get_weights(i, last_path_entropy)
-                        new_alpha,new_beta,new_gamma = dynamicWeightController.get_weights(i, new_path_entropy)
+                        last_alpha,last_beta,last_gamma,last_delta = dynamicWeightController.get_weights(i - 1, last_path_entropy, last_loss_value)
+                        new_alpha,new_beta,new_gamma,new_delta = dynamicWeightController.get_weights(i, new_path_entropy, new_loss_value)
 
                         # 计算指导值（暂未编写冗余部分）
-                        last_guiding_value = last_alpha * last_accuracy_trian + last_beta * last_path_entropy
-                        new_guiding_value = new_alpha * new_accuracy_trian + new_beta * new_path_entropy
+                        last_guiding_value = last_alpha * last_accuracy_trian + last_beta * last_path_entropy - last_delta * last_loss_value
+                        new_guiding_value = new_alpha * new_accuracy_trian + new_beta * new_path_entropy - new_delta * new_loss_value
 
                         print("上一轮训练集指导值:" + str(last_guiding_value))
                         print("本轮训练集指导值：" + str(new_guiding_value))

@@ -1,5 +1,5 @@
 Traceback (most recent call last):
-  File "e:\ATF\ATF\AdaptoFlux.py", line 562, in training
-    last_loss_value = self.RMSE(self.labels, last_collapse_values)
-                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-TypeError: AdaptoFlux.RMSE() takes 2 positional arguments but 3 were given
+  File "e:\ATF\ATF\AdaptoFlux.py", line 679, in training
+    rollback_count = min(rollback_count, 5)
+                         ^^^^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'rollback_count' where it is not associated with a value

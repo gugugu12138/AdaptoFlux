@@ -749,12 +749,12 @@ class AdaptoFlux:
         print(f"准确率：{train_accuracy}")
         return train_accuracy
 
-    def inference(self, inputs):
+    def inference(self, data):
         """
         执行推理过程，将输入数据依次通过多个路径进行处理，最终合并成一个推理结果。
 
         参数：
-        inputs : 任意类型
+        data : 任意类型
             初始输入数据，将依次通过 `self.paths` 进行处理。
 
         过程：

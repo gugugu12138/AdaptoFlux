@@ -21,7 +21,7 @@ class DynamicWeightController:
         """获取当前步的权重组合
         Args:
             current_step (int): 当前训练步数
-            path_entropy (int): 路径熵值
+            path_entropy (float): 路径熵值
             loss_value (float): 当前损失值
         
         Returns:

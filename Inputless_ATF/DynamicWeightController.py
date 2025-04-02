@@ -1,7 +1,7 @@
 import numpy as np
 
 class DynamicWeightController:
-    """动态权重控制器，用于调整AdaptoFlux算法中的指导值权重（α, β, γ）
+    """动态权重控制器，用于调整AdaptoFlux算法中的指导值权重(α, β, γ, δ）
     
     功能：
     - 分阶段调整权重：探索期 → 过渡期 → 收敛期
@@ -17,14 +17,15 @@ class DynamicWeightController:
         self.total_steps = total_steps  # 总训练步数
         self.phase = "exploration"      # 初始阶段标记（exploration/transition/convergence）
     
-    def get_weights(self, current_step, path_entropy):
+    def get_weights(self, current_step, path_entropy, loss_value):
         """获取当前步的权重组合
         Args:
             current_step (int): 当前训练步数
             path_entropy (int): 路径熵值
+            loss_value (float): 当前损失值
         
         Returns:
-            tuple: 归一化后的权重 (α, β, γ)
+            tuple: 归一化后的权重 (α, β, γ, δ)
         """
         t = current_step / self.total_steps  # 计算归一化进度（范围0~1）
 
@@ -60,7 +61,11 @@ class DynamicWeightController:
             beta += 0.1               # 提升β鼓励探索
             alpha = max(alpha - 0.05, 0.2)  # 降低α但保持最低值0.2
 
+        # ==================== 计算 δ 值 ====================
+        # δ 在训练初期较大，随着损失值减小，影响逐步降低
+        delta = np.tanh(loss_value) * np.exp(-3 * t)
+
         # ==================== 权重归一化 ====================
         # 确保权重总和为1，避免数值尺度问题
         total = alpha + beta + gamma
-        return alpha/total, beta/total, gamma/total
+        return alpha/total, beta/total, gamma/total, delta

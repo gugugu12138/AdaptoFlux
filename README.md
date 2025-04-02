@@ -40,7 +40,7 @@ pip install -r requirements.txt
 
 # 修改功能集
 AdaptoFlux的训练和推理基于功能集进行运行，通过修改methods.py中的函数，为AdaptoFlux提供不同的选择，达到更好的效果。
-
+(你甚至可以往功能集里面塞随机森林和MLP模型)
 
 # 数据处理模型结构说明
 ## 数据流

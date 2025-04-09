@@ -18,9 +18,14 @@ x_test = x_test / 255.0
 
 x_copy_test, y_copy_test = x_test, y_test
 
-MLP_AdaptoFlux = AdaptoFlux(x_copy_test, y_copy_test, methods_path)
+def mlp_predict(x):
+    print(x.shape)
+    x = x.reshape(1, 28, 28)
+    return loaded_model.predict(x)
+
+MLP_AdaptoFlux = AdaptoFlux(x_copy_test.reshape(x_copy_test.shape[0], -1), y_copy_test, methods_path)
 MLP_AdaptoFlux.import_methods_from_file()
-MLP_AdaptoFlux.add_collapse_method(loaded_model.evaluate)
+MLP_AdaptoFlux.add_collapse_method(mlp_predict)
 MLP_AdaptoFlux.training(target_accuracy=0.6)
 MLP_AdaptoFlux.evaluate(x_copy_test,y_copy_test)
 loss, accuracy = loaded_model.evaluate(x_test, y_test)

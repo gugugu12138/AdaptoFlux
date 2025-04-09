@@ -8,15 +8,18 @@ Traceback (most recent call last):
   File "E:\ATF\../ATF\ATF\AdaptoFlux.py", line 147, in collapse
     return self.custom_collapse_function(values)
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "e:\ATF\MLP\ATFMLP.py", line 24, in mlp_predict
+    return loaded_model.predict(x)
+           ^^^^^^^^^^^^^^^^^^^^^^^
   File "C:\Users\15314\anaconda3\Lib\site-packages\keras\src\utils\traceback_utils.py", line 122, in error_handler
     raise e.with_traceback(filtered_tb) from None
   File "C:\Users\15314\anaconda3\Lib\site-packages\keras\src\models\functional.py", line 272, in _adjust_input_rank
     raise ValueError(
 ValueError: Exception encountered when calling Sequential.call().
 
-[1mInvalid input shape for input Tensor("data:0", shape=(None,), dtype=float32). Expected shape (None, 28, 28), but input has incompatible shape (None,)[0m
+[1mInvalid input shape for input Tensor("data:0", shape=(28, 28), dtype=float32). Expected shape (None, 28, 28), but input has incompatible shape (28, 28)[0m
 
 Arguments received by Sequential.call():
-  • inputs=tf.Tensor(shape=(None,), dtype=float32)
+  • inputs=tf.Tensor(shape=(28, 28), dtype=float32)
   • training=False
   • mask=None

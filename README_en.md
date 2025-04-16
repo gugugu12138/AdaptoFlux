@@ -1,4 +1,4 @@
-English | [中文](README_zh.md)
+English | [中文](README.md)
 # AdaptoFlux
 
 **An Intelligent Algorithm Based on Functional Sets (A Collection of Various Types of Functions)**

@@ -257,7 +257,7 @@ class AdaptoFlux:
 
     #     return method_list
 
-    
+
     # 生成单次路径选择
     def process_random_method(self):
         """
@@ -302,77 +302,123 @@ class AdaptoFlux:
         return method_list
 
 
+    # # 待修改
+    # # 接受导向列表，返回有n个元素不同的新列表
+    # def replace_random_elements(self, method_list, n):
+    #     """
+    #     替换列表中的 n 个元素为随机方法，并确保多输入方法的输入索引匹配。
 
-    # 接受导向列表，返回有n个元素不同的新列表
+    #     :param method_list: 需要修改的方法列表
+    #     :param n: 要替换的元素数量
+    #     :return: new_list，包含修改后的方法列表
+    #     :raises ValueError: 如果 n 大于原列表长度，则抛出异常
+    #     """
+    #     if n > len(method_list):
+    #         raise ValueError("n 不能大于原列表的长度")
+        
+    #     # 随机选择 n 个不重复的索引（此处的 n 变量未被正确使用，代码中原先只取了一个随机索引）
+    #     indices_to_replace = random.sample(range(len(method_list)), n)
+        
+    #     # 复制原列表，以免修改原始数据
+    #     new_list = method_list[:]
+        
+    #     # 遍历选中的索引，并用随机方法替换原有元素
+    #     for idx in indices_to_replace:
+    #         method_id = random.choice(list(self.methods.keys()))  # 随机选择一个方法 ID
+    #         method_data = self.methods[method_id]  # 获取该方法对应的数据
+    #         input_count = method_data["input_count"]  # 该方法需要的输入数量
+            
+    #         if input_count == 1:
+    #             # 方法只需要一个输入值，直接记录方法 ID
+    #             new_list[idx] = method_id
+    #         else:
+    #             # 方法需要多个输入值，在方法 ID 前添加 `-` 作为标记
+    #             new_list[idx] = f"-{method_id}"
+        
+    #     # 遍历新列表，确保所有多输入方法（标记为 `-` 的方法）正确格式化
+    #     for index, i in enumerate(new_list):
+    #         if i.startswith('-'):
+    #             continue  # 如果已经是 `-` 开头，则不修改
+            
+    #         input_count = self.methods[i]["input_count"]  # 获取输入数目
+    #         if input_count > 1:
+    #             new_list[index] = f"-{new_list[index]}"  # 标记多输入方法
+        
+    #     # 遍历列表，处理多输入方法的输入索引
+    #     for index, i in enumerate(new_list):
+    #         if i.startswith('-'):
+    #             method_id = i.lstrip('-')  # 移除 `-` 以获取真正的 method_id
+    #             method_data = self.methods[method_id]  # 获取方法数据
+    #             input_count = method_data["input_count"]  # 获取输入数目
+                
+    #             # 在方法输入字典中添加索引
+    #             self.method_inputs[method_id].append(index)
+                
+    #             # 如果该方法的输入已收集完毕（达到 `input_count` 数量）
+    #             if len(self.method_inputs[method_id]) == input_count:
+    #                 for j in range(len(self.method_inputs[method_id])):
+    #                     if self.method_inputs[method_id][j] is None:
+    #                         continue  # 跳过 None 值（原代码此处有误，之前的比较是错误的if self.method_inputs[method_id][j] >= len(new_list):）运行起来可以正常收敛
+                        
+    #                     # 将 `new_list` 中的占位符替换为真正的 method_id
+    #                     new_list[self.method_inputs[method_id][j]] = method_id
+                    
+    #                 # 清空 method_inputs 以便下一轮使用
+    #                 self.method_inputs[method_id] = []
+        
+    #     # 清理 method_inputs 以重置状态
+    #     self.clear_method_inputs()
+        
+    #     return new_list
+
     def replace_random_elements(self, method_list, n):
         """
         替换列表中的 n 个元素为随机方法，并确保多输入方法的输入索引匹配。
-
-        :param method_list: 需要修改的方法列表
+        
+        :param method_list: 原始方法列表
         :param n: 要替换的元素数量
         :return: new_list，包含修改后的方法列表
-        :raises ValueError: 如果 n 大于原列表长度，则抛出异常
+        :raises ValueError: 如果 n 大于原列表长度
         """
         if n > len(method_list):
             raise ValueError("n 不能大于原列表的长度")
-        
-        # 随机选择 n 个不重复的索引（此处的 n 变量未被正确使用，代码中原先只取了一个随机索引）
+
         indices_to_replace = random.sample(range(len(method_list)), n)
-        
-        # 复制原列表，以免修改原始数据
         new_list = method_list[:]
-        
-        # 遍历选中的索引，并用随机方法替换原有元素
+
+        # 随机分配新方法
         for idx in indices_to_replace:
-            method_id = random.choice(list(self.methods.keys()))  # 随机选择一个方法 ID
-            method_data = self.methods[method_id]  # 获取该方法对应的数据
-            input_count = method_data["input_count"]  # 该方法需要的输入数量
-            
-            if input_count == 1:
-                # 方法只需要一个输入值，直接记录方法 ID
+            method_id = random.choice(list(self.methods.keys()))
+            new_list[idx] = method_id  # 先不加负号，统一在后面处理
+
+        # 收集所有多输入方法的位置
+        multi_input_positions = {}
+        for idx, method_id in enumerate(new_list):
+            if method_id.startswith('-'):
+                method_id = method_id[1:]
                 new_list[idx] = method_id
-            else:
-                # 方法需要多个输入值，在方法 ID 前添加 `-` 作为标记
-                new_list[idx] = f"-{method_id}"
-        
-        # 遍历新列表，确保所有多输入方法（标记为 `-` 的方法）正确格式化
-        for index, i in enumerate(new_list):
-            if i.startswith('-'):
-                continue  # 如果已经是 `-` 开头，则不修改
-            
-            input_count = self.methods[i]["input_count"]  # 获取输入数目
+                # new_list[idx] = method_id.lstrip('-')
+            input_count = self.methods[method_id]["input_count"]
             if input_count > 1:
-                new_list[index] = f"-{new_list[index]}"  # 标记多输入方法
-        
-        # 遍历列表，处理多输入方法的输入索引
-        for index, i in enumerate(new_list):
-            if i.startswith('-'):
-                method_id = i.lstrip('-')  # 移除 `-` 以获取真正的 method_id
-                method_data = self.methods[method_id]  # 获取方法数据
-                input_count = method_data["input_count"]  # 获取输入数目
-                
-                # 在方法输入字典中添加索引
-                self.method_inputs[method_id].append(index)
-                
-                # 如果该方法的输入已收集完毕（达到 `input_count` 数量）
-                if len(self.method_inputs[method_id]) == input_count:
-                    for j in range(len(self.method_inputs[method_id])):
-                        if self.method_inputs[method_id][j] is None:
-                            continue  # 跳过 None 值（原代码此处有误，之前的比较是错误的if self.method_inputs[method_id][j] >= len(new_list):）运行起来可以正常收敛
-                        
-                        # 将 `new_list` 中的占位符替换为真正的 method_id
-                        new_list[self.method_inputs[method_id][j]] = method_id
-                    
-                    # 清空 method_inputs 以便下一轮使用
-                    self.method_inputs[method_id] = []
-        
-        # 清理 method_inputs 以重置状态
-        self.clear_method_inputs()
-        
+                multi_input_positions.setdefault(method_id, []).append(idx)
+
+        # 对每种多输入方法，标记多余的为负号占位符（确保只保留 input_count 的倍数）
+        for method_id, indices in multi_input_positions.items():
+            input_count = self.methods[method_id]["input_count"]
+            total = len(indices)
+            excess_count = total % input_count
+
+            if excess_count == 0:
+                continue  # 刚好满足则跳过
+
+            excess_indices = random.sample(indices, excess_count)
+            for idx in excess_indices:
+                new_list[idx] = f"-{method_id}"  # 标记为占位
+
         return new_list
 
 
-    
+    # 待修改
     # 根据输入的列表更改数组,处于神经待处理队列状态的值采用暂时不处理方案, 还有一种方案是先将这些值置于最后
     # 使用该方法会导致数据收敛到一定数量级时可能出现所有数据都在待处理队列中导致数组全为空的情况发生
     # 这种方法坍缩时不会将待处理数据加入计算

@@ -200,6 +200,64 @@ class AdaptoFlux:
             for i in range(len(value_list)):
                 value_list[i] = None
 
+    # # 生成单次路径选择
+    # def process_random_method(self):
+    #     """
+    #     生成一个随机的方法选择路径，并确保多输入方法的输入索引匹配。
+
+    #     :return: method_list，包含为每个元素随机分配的方法（可能是单输入或多输入方法）
+    #     :raises ValueError: 如果方法字典为空或值列表为空，则抛出异常
+    #     """
+    #     if not self.methods:
+    #         raise ValueError("方法字典为空，无法处理！")
+    #     if self.last_values.size == 0:  # 处理 NumPy 数组的情况
+    #         raise ValueError("值列表为空，无法处理！")
+
+    #     # 存储每个元素对应的方法（单输入方法直接存储方法 ID，多输入方法存储占位符 "-method_id"）
+    #     method_list = []
+
+    #     # 获取 values 列数，即每个元素的数量
+    #     num_elements = self.last_values.shape[1]
+
+    #     # 随机选择方法并处理单输入和多输入方法
+    #     for i in range(num_elements):
+    #         method_id = random.choice(list(self.methods.keys()))  # 随机选择一个方法 ID
+    #         method_data = self.methods[method_id]
+    #         input_count = method_data["input_count"]  # 获取该方法需要的输入值数量
+
+    #         if input_count == 1:
+    #             # 如果方法只需要一个输入值，则直接存储方法 ID
+    #             method_list.append(method_id)
+    #         else:
+    #             # 多输入方法使用占位符，以便后续匹配输入索引
+    #             method_list.append(f"-{method_id}")
+
+    #     # 处理多输入方法的输入索引匹配
+    #     for index, i in enumerate(method_list):
+    #         if i.startswith('-'):  # 识别多输入方法
+    #             method_id = i.lstrip('-')  # 去除占位符前缀，获取真正的方法 ID
+    #             method_data = self.methods[method_id]
+    #             input_count = method_data["input_count"]  # 获取该方法所需的输入值数量
+
+    #             # 记录方法所需的输入索引
+    #             self.method_inputs[method_id].append(index)
+
+    #             # 当方法的输入索引数达到所需数量时，进行替换
+    #             if len(self.method_inputs[method_id]) == input_count:
+    #                 for j in range(len(self.method_inputs[method_id])):
+    #                     if self.method_inputs[method_id][j] is None:
+    #                         # 忽略无效索引
+    #                         continue
+    #                     # 替换 method_list 中的占位符 # 这一行出现过报错，但是无法复现，很奇怪定位不了问题在哪
+    #                     method_list[self.method_inputs[method_id][j]] = method_id
+    #                 # 清空已处理的方法输入索引
+    #                 self.method_inputs[method_id] = []
+        
+    #     self.clear_method_inputs()
+
+    #     return method_list
+
+    
     # 生成单次路径选择
     def process_random_method(self):
         """
@@ -213,49 +271,36 @@ class AdaptoFlux:
         if self.last_values.size == 0:  # 处理 NumPy 数组的情况
             raise ValueError("值列表为空，无法处理！")
 
-        # 存储每个元素对应的方法（单输入方法直接存储方法 ID，多输入方法存储占位符 "-method_id"）
         method_list = []
-
-        # 获取 values 列数，即每个元素的数量
         num_elements = self.last_values.shape[1]
 
-        # 随机选择方法并处理单输入和多输入方法
-        for i in range(num_elements):
-            method_id = random.choice(list(self.methods.keys()))  # 随机选择一个方法 ID
-            method_data = self.methods[method_id]
-            input_count = method_data["input_count"]  # 获取该方法需要的输入值数量
+        # 1. 初始为全部正值方法
+        for _ in range(num_elements):
+            method_id = random.choice(list(self.methods.keys()))
+            method_list.append(method_id)
 
-            if input_count == 1:
-                # 如果方法只需要一个输入值，则直接存储方法 ID
-                method_list.append(method_id)
-            else:
-                # 多输入方法使用占位符，以便后续匹配输入索引
-                method_list.append(f"-{method_id}")
-
-        # 处理多输入方法的输入索引匹配
-        for index, i in enumerate(method_list):
-            if i.startswith('-'):  # 识别多输入方法
-                method_id = i.lstrip('-')  # 去除占位符前缀，获取真正的方法 ID
-                method_data = self.methods[method_id]
-                input_count = method_data["input_count"]  # 获取该方法所需的输入值数量
-
-                # 记录方法所需的输入索引
-                self.method_inputs[method_id].append(index)
-
-                # 当方法的输入索引数达到所需数量时，进行替换
-                if len(self.method_inputs[method_id]) == input_count:
-                    for j in range(len(self.method_inputs[method_id])):
-                        if self.method_inputs[method_id][j] is None:
-                            # 忽略无效索引
-                            continue
-                        # 替换 method_list 中的占位符 # 这一行出现过报错，但是无法复现，很奇怪定位不了问题在哪
-                        method_list[self.method_inputs[method_id][j]] = method_id
-                    # 清空已处理的方法输入索引
-                    self.method_inputs[method_id] = []
+        # 2. 收集多输入方法的位置
+        multi_input_positions = {}
+        for idx, method_id in enumerate(method_list):
+            if self.methods[method_id]["input_count"] > 1:
+                multi_input_positions.setdefault(method_id, []).append(idx)
         
-        self.clear_method_inputs()
+        # 3. 随机标记为负号占位
+        for method_id, indices in multi_input_positions.items():
+            input_count = self.methods[method_id]["input_count"]
+            total_count = len(indices)
+            remaining_count = total_count % input_count
+
+            if remaining_count == 0:
+                continue  # 刚好满足则跳过
+
+            # 从索引中随机选出可组成完整组的部分
+            selected_indices = random.sample(indices, remaining_count)
+            for idx in selected_indices:
+                method_list[idx] = f"-{method_id}"  # 替换为负号占位符
 
         return method_list
+
 
 
     # 接受导向列表，返回有n个元素不同的新列表

@@ -11,6 +11,7 @@ from threading import Thread, Event
 from collections import Counter
 import os
 import shutil
+import networkx as nx
 
 # 定义一个枚举表示不同的坍缩方法
 class CollapseMethod(Enum):
@@ -30,7 +31,14 @@ class AdaptoFlux:
         :param collapse_method: 选择的坍缩方法，默认为 SUM
         :param methods_path: 存储方法路径的文件路径，默认为 "methods.py"
         """
+
+        # 检查 values 是二维的
+        assert len(values.shape) == 2, f"values 必须是二维的 (样本数, 特征维度)，但得到 shape={values.shape}"
         
+        # 检查 labels 是一维的，并且样本数一致
+        assert len(labels.shape) == 1, f"labels 必须是一维的 (样本数,)，但得到 shape={labels.shape}"
+        assert values.shape[0] == labels.shape[0], f"values 和 labels 样本数量不一致：{values.shape[0]} vs {labels.shape[0]}"
+
         # 存储输入数据
         self.values = values  # 原始数值列表
         self.labels = labels  # 对应的标签列表
@@ -46,9 +54,19 @@ class AdaptoFlux:
         # 意外发现即使不使用历史记录和清空不可取的网络残余（即被清空的网络依然参与预输入索引和预输入值计算）依然会出现概率上升和方差下降
         
         # 存储路径信息
-        self.paths = []  # 记录每个值对应的路径
-        self.max_probability_path = [] # 记录最高概率对应的路径
-
+        # self.paths = []  # 记录每个值对应的路径
+        # self.max_probability_path = [] # 记录最高概率对应的路径
+        self.graph = nx.DiGraph()
+        self.graph.add_node("root") 
+        self.graph.add_node('collapse')
+        for feature_index in range(self.values.shape[1]):  # 遍历特征维度
+            self.graph.add_edge(
+                "root",
+                "collapse",
+                data_coord=feature_index  # 或者用字符串名代替索引也可以
+            )
+        self.layer = 0
+        
         # 选择的坍缩方法
         self.collapse_method = collapse_method  # 默认使用 SUM 方法
         self.custom_collapse_function = None  # 预定义自定义坍缩方法，默认值为 None
@@ -82,6 +100,28 @@ class AdaptoFlux:
         else:
             raise ValueError("提供的坍缩方法必须是一个可调用函数")
 
+    # # 添加处理方法到字典
+    # def add_method(self, method_name, method, input_count=1):
+    #     """
+    #     添加方法到字典
+    #     :param method_name: 方法名称
+    #     :param method: 方法本身
+    #     :param input_count: 方法所需的输入值数量
+    #     """
+    #     if not hasattr(self, '_method_counter'):
+    #         self._method_counter = 1  # 初始化计数器
+    #     method_id = str(self._method_counter)  # 为方法分配从1开始的整数 ID
+    #     self.methods[method_id] = {
+    #         "name": method_name,
+    #         "function": method,
+    #         "input_count": input_count,
+    #     }
+    #     # 初始化方法的预输入字典，初始值为空列表
+    #     self.method_inputs[method_id] = []
+    #     self.method_input_values[method_id] = []
+    #     # self.method_input_val_values[method_id] = []
+    #     self._method_counter += 1  # 增加计数器
+
     # 添加处理方法到字典
     def add_method(self, method_name, method, input_count=1):
         """
@@ -89,21 +129,14 @@ class AdaptoFlux:
         :param method_name: 方法名称
         :param method: 方法本身
         :param input_count: 方法所需的输入值数量
-        """
-        if not hasattr(self, '_method_counter'):
-            self._method_counter = 1  # 初始化计数器
-        method_id = str(self._method_counter)  # 为方法分配从1开始的整数 ID
-        self.methods[method_id] = {
-            "name": method_name,
-            "function": method,
-            "input_count": input_count,
+        """ 
+        self.methods[method_name] = {
+            "function" : method,
+            "input_count" : input_count,
         }
-        # 初始化方法的预输入字典，初始值为空列表
-        self.method_inputs[method_id] = []
-        self.method_input_values[method_id] = []
-        # self.method_input_val_values[method_id] = []
-        self._method_counter += 1  # 增加计数器
-    
+        self.method_inputs[method_name] = []
+        self.method_input_values[method_name] = [] # 疑似没有必要
+
     def import_methods_from_file(self):
         """
         从指定文件中导入所有方法并添加到方法字典中。
@@ -276,29 +309,54 @@ class AdaptoFlux:
 
         # 1. 初始为全部正值方法
         for _ in range(num_elements):
-            method_id = random.choice(list(self.methods.keys()))
-            method_list.append(method_id)
+            method_name = random.choice(list(self.methods.keys()))
+            method_list.append(method_name)
 
         # 2. 收集多输入方法的位置
         multi_input_positions = {}
-        for idx, method_id in enumerate(method_list):
-            if self.methods[method_id]["input_count"] > 1:
-                multi_input_positions.setdefault(method_id, []).append(idx)
+        for idx, method_name in enumerate(method_list):
+            if self.methods[method_name]["input_count"] > 1:
+                multi_input_positions.setdefault(method_name, []).append(idx)
         
-        # 3. 随机标记为负号占位
-        for method_id, indices in multi_input_positions.items():
-            input_count = self.methods[method_id]["input_count"]
+        # 提前获取所有与 'collapse' 相连的边
+        collapse_edges = list(self.graph.in_edges("collapse", data=True))
+
+        # 用字典存储每个方法的分组位置坐标
+        method_group_positions = {}
+        method_counts = {method_name: 0 for method_name in self.methods}
+
+        for method_name, indices in multi_input_positions.items():
+            input_count = self.methods[method_name]["input_count"]
             total_count = len(indices)
-            remaining_count = total_count % input_count
 
-            if remaining_count == 0:
-                continue  # 刚好满足则跳过
+            # 随机打乱索引列表
+            random.shuffle(indices)
+            groups = [indices[i:i + input_count] for i in range(0, total_count, input_count) if len(indices[i:i + input_count]) == input_count]
 
-            # 从索引中随机选出可组成完整组的部分
-            selected_indices = random.sample(indices, remaining_count)
-            for idx in selected_indices:
-                method_list[idx] = f"-{method_id}"  # 替换为负号占位符
+            # 存储分组位置
+            method_group_positions[method_name] = groups
 
+        new_index_edge = 0
+        # 遍历每个方法的分组
+        for method_name, groups in method_group_positions.items():
+            for group in groups:
+                # 创建新节点并添加属性
+                new_target_node = f"{self.layer}_{method_counts[method_name]}_method_name"
+                self.graph.add_node(new_target_node, method_name=method_name)
+
+                # 遍历 collapse 相关的边，避免重复获取
+                for u, v, data in collapse_edges:
+                    if data.get('data_coord') in group:
+                        # 删除原有的边
+                        self.graph.remove_edge(u, v)
+                        # 添加新的边，目标节点改为新的目标节点
+                        self.graph.add_edge(u, new_target_node, **data)
+                        # 添加从新节点到 v 的边
+                        for i in range(self.methods[method_name]["input_count"]):
+                            self.graph.add_edge(new_target_node, v, data_coord=new_index_edge)
+                            new_index_edge += 1
+                method_counts[method_name] += 1
+                
         return method_list
 
 
@@ -398,6 +456,7 @@ class AdaptoFlux:
                 method_id = method_id[1:]
                 new_list[idx] = method_id
                 # new_list[idx] = method_id.lstrip('-')
+                
             input_count = self.methods[method_id]["input_count"]
             if input_count > 1:
                 multi_input_positions.setdefault(method_id, []).append(idx)

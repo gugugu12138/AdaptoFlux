@@ -304,6 +304,8 @@ class AdaptoFlux:
         if self.last_values.size == 0:  # 处理 NumPy 数组的情况
             raise ValueError("值列表为空，无法处理！")
 
+        self.layer += 1
+
         method_list = []
         num_elements = self.last_values.shape[1]
 

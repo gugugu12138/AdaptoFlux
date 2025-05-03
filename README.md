@@ -229,18 +229,18 @@ f_n(a,b) = a \cdot c_n + b \cdot d_n
 ### 功能集求解效率与完备性关系
 
 #### 定义
-- **功能集完备性（C）**: 功能集Q能够覆盖问题空间的程度，定义为：
+- **功能集完备性（C）**: 表示功能集Q与最小必要函数集 $F_{\text{完备}}$ 的接近程度，定义为：
 
 $$
 C(Q) = \frac{|F_{\text{完备}}|}{|Q|}
 $$
 
-其中，F_完备 是解决目标问题所需的最小完备函数集，|Q| 是功能集Q的大小。
+其中， $F_{\text{完备}}$ 是解决目标问题所需的最小完备函数集，|Q| 是功能集Q的大小。
 
 - **有效完备性**
 
 ```math
-C_{\text{eff}}(Q) = \frac{|F_{\text{完备}}|}{|Q|} \times \frac{\sum_{f_i \in F_{\text{完备}}} \text{dim}(\mathcal{M}_i)}{\sum_{f_j \in Q} \text{dim}(\mathcal{M}_j)}
+C_{\text{eff}}(Q) = \frac{\sum_{f_i \in F_{\text{完备}}} \text{dim}(\mathcal{M}_i)}{\sum_{f_j \in Q} \text{dim}(\mathcal{M}_j)} \times \left(1 - \frac{|Q| - |F_{\text{完备}}|}{|Q|}\right)
 ```
 
 - **第一项**：原始完备性比率
@@ -271,12 +271,12 @@ E(Q) = \frac{\beta(Q)}{\text{dim}(\mathcal{S}_Q)^{1/\gamma}} \times \frac{1}{C_{
 - $\gamma$ 为维度衰减系数
 
 #### 解释
-- **完备性越低（C越小）**：
+- **完备性越高（C越大）**：
   - ✅ 路径搜索空间更集中
   - ✅ 无效组合更少
   - ❌ 可能遗漏最优解
 
-- **完备性越高（C越大）**：
+- **完备性越低（C越小）**：
   - ✅ 解空间更完整
   - ❌ 需要更多探索时间
   - ❌ 冗余计算增加
@@ -349,7 +349,7 @@ P = 1 \cdot \left(1 - \left(1 - \frac{1}{100}\right)^5\right) \approx 0.05
 
 ### 抗过拟合能力
 
-完备性较高的功能集具有更强的泛化能力，对应的泛化误差为：
+完备性较低的功能集具有更强的泛化能力，对应的过拟合风险为：
 
 公式一：
 
@@ -357,10 +357,9 @@ P = 1 \cdot \left(1 - \left(1 - \frac{1}{100}\right)^5\right) \approx 0.05
 \mathcal{L}_{\text{generalize}} = \eta \left[ \frac{1}{\sqrt{C_{\text{eff}}(Q)}} + \lambda \cdot \text{dim}(\mathcal{S}_Q) \right]
 ```
 - $\lambda$ 为平衡系数
-- 同时惩罚低完备性和高维度
-- $\mathcal{L}_{\text{generalize}}$：泛化误差  
+- $\mathcal{L}_{\text{generalize}}$：过拟合风险
 - $\eta$：常数项，表示任务复杂度或样本扰动影响  
-- **含义**：完备性越高（覆盖越全面），模型越不容易过拟合特定样本，具备更好的泛化能力。
+- **含义**：完备性越低（覆盖越全面），模型越不容易过拟合特定样本，具备更好的泛化能力。
 
 公式二：
 
@@ -373,9 +372,9 @@ P = 1 \cdot \left(1 - \left(1 - \frac{1}{100}\right)^5\right) \approx 0.05
 ```
 **物理意义**：
 - 当 $C_{\text{eff}} \to 1$（高完备性）：
-  - 泛化误差最小，但可能过滤掉非常规解（ $\xi$  项趋近0）
+  - 过拟合风险最小，但可能过滤掉非常规解（ $\xi$  项趋近0）
 - 当 $C_{\text{eff}} \to 0$（低完备性）：
-  - 泛化误差增大，但保留发现特殊解的可能性（ $\xi$  项放大）
+  - 过拟合风险最大，但保留发现特殊解的可能性（ $\xi$  项放大）
 
 ---
 
@@ -405,7 +404,7 @@ P = 1 \cdot \left(1 - \left(1 - \frac{1}{100}\right)^5\right) \approx 0.05
 ```math  
 E(Q) = \frac{\beta}{\text{dim}(\mathcal{S}_Q)^{1/\gamma}} \cdot \frac{1}{C_{\text{eff}}(Q)^\alpha + \eta}
 ```  
-   - *物理意义*：效率随完备性提升而增加，随解空间维度降低。  
+   - *物理意义*：效率随完备性提升而降低，随解空间维度增加而降低。  
 
 2. **全局最优概率**（分阶段计算）：  
 ```math
@@ -467,7 +466,7 @@ $$
 ---
 
 #### 泛化性与完备性的关系
-1. **完备性越高**：  
+1. **完备性越低**：  
    - 功能集覆盖的解空间更接近真实数据分布，减少过拟合风险。  
    - 公式二中， $C_{\text{eff}} \to 1$ 时， $\mathcal{L}_{\text{generalize}} \approx \eta_0$ （理论下限）。  
 

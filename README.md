@@ -192,7 +192,7 @@ f_n(a,b) = a \cdot c_n + b \cdot d_n
 #### 精确维度公式
 
 ```math
-\text{dim}(\mathcal{S}_Q) = \sum_{k=1}^{d} \left( \prod_{f_i \in Q} R_{\text{in}}(i) \times R_{\text{out}}(i) \right)^k'
+\text{dim}(\mathcal{S}_Q) = \sum_{k=1}^{d} \left( \prod_{f_i \in Q} R_{\text{in}}(i) \times R_{\text{out}}(i) \right)^k
 ```
 ![精确维度公式](./assets/images/精确维度公式_白.png)
 
@@ -238,15 +238,19 @@ $$
 
 - **有效完备性**
 
-$$
+```math
 C_{\text{eff}}(Q) = \frac{|F_{\text{完备}}|}{|Q|} \times \frac{\sum_{f_i \in F_{\text{完备}}} \text{dim}(\mathcal{M}_i)}{\sum_{f_j \in Q} \text{dim}(\mathcal{M}_j)}
-$$
+```
+![有效完备性公式](./assets/images/有效完备性公式.jpg)
 
 - **第一项**：原始完备性比率
 - **第二项**：关键函数维度权重
-- **性质**：$C_{\text{eff}} \in (0,1]$，冗余低维函数会显著降低该值
 
+$$ 
+C_{\text{eff}} \in (0,1] 
+$$
 
+- **性质**：，冗余低维函数会显著降低该值
 
 - **求解效率（E）**: 在功能集Q中找到能解决目标问题的有效路径的平均速度，与以下因素相关：
   - 路径搜索的收敛速度

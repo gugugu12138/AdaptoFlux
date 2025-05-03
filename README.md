@@ -191,8 +191,8 @@ f_n(a,b) = a \cdot c_n + b \cdot d_n
 - **功能集完备性（C）**: 功能集Q能够覆盖问题空间的程度，定义为：
 
 $$
-C(Q) = \frac{|F_{\text{完备}}|}{|Q|}
-$$
+C_{\text{加权}}(Q) = \frac{\sum_{f_i \in F_{\text{完备}}} \text{dim}(\mathcal{M}_i)}{\sum_{f_j \in Q} \text{dim}(\mathcal{M}_j)}
+$$  
 
 其中，F_完备 是解决目标问题所需的最小完备函数集，|Q| 是功能集Q的大小。
 
@@ -205,8 +205,8 @@ $$
 当功能集Q能够解决目标问题时，其求解效率（E）与完备性（C）的关系可以表示为：
 
 $$
-E(Q) \propto \frac{1}{C(Q)^\alpha + \eta}
-$$
+E(Q) \propto \frac{\text{dim}(\mathcal{S}_Q)^{-1}}{C(Q)^\alpha + \eta}
+$$  
 
 其中：
 - `α > 0` 是完备性影响系数
@@ -266,7 +266,7 @@ $$
 当功能集 $Q$ 包含的函数越多，其包含全局最优解组合的可能性也越高。公式如下：
 
 $$
-P(\text{找到全局最优解}) \propto \frac{|Q|}{|F_{\text{完备}}|}
+P \propto \frac{\text{dim}(\mathcal{S}_Q)}{\text{dim}(\mathcal{S}_{F_{\text{完备}}})}
 $$
 
 - $|Q|$：当前功能集大小  
@@ -280,7 +280,7 @@ $$
 完备性较高的功能集具有更强的泛化能力，对应的泛化误差为：
 
 $$
-\mathcal{L}_{\text{generalize}} = \frac{\eta}{\sqrt{C(Q)}}
+\mathcal{L}_{\text{generalize}} = \frac{\eta}{\sqrt{C_{\text{加权}}(Q)}}
 $$
 
 - $\mathcal{L}_{\text{generalize}}$：泛化误差  

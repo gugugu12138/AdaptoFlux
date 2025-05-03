@@ -212,7 +212,7 @@ f_n(a,b) = a \cdot c_n + b \cdot d_n
 
 **通用公式（综合维度与类型）**
 ```math
-\text{dim}(\mathcal{S}_Q) = \sum_{L=1}^{d} \left( \sum_{f_i \in Q} \text{dim}_{\text{out}}(f_i) \cdot \mathbb{I}\left[\text{type}_{\text{out}}(f_i^{(L-1)}) = \text{type}_{\text{in}}(f_i)\right] \right)
+\text{dim}(\mathcal{S}_Q) = \sum_{L=1}^{d} \left( \prod_{k=1}^{L} \sum_{f_i \in Q} \text{dim}_{\text{out}}(f_i) \cdot \mathbb{I}\left[\text{type}_{\text{out}}(f_i^{(k-1)}) = \text{type}_{\text{in}}(f_i)\right] \right)
 ```
 
 ```math

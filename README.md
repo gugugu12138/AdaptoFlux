@@ -296,14 +296,12 @@ $$
 
 #### 精确维度公式
 
-\[
-\text{dim}(\mathcal{S}_Q) = \sum_{k=1}^{d} \left( \prod_{f_i \in Q} \text{dim}(\mathcal{M}_i) \right)^k
-\]
+![精确维度公式](.\assets\images\精确维度公式_白.png)
 
+![映射空间维度公式](./assets/images/映射空间维度公式_白.png)
 
 其中：
 - $\mathcal{M}_i$ 表示函数 $f_i$ 的映射空间
-- $\text{dim}(\mathcal{M}_i) = R_{\text{in}}(i) \times R_{\text{out}}(i)$
 - $\mathcal{S}_Q$ 表示功能集 $Q$ 能覆盖的解空间；
 - $d$ 为最大组合深度（即函数组合的最大层数）；
 - $Q_k$ 表示第 $k$ 层中使用的函数子集；

@@ -318,7 +318,7 @@ P(\text{全局最优}) = P_{\text{cover}} \cdot P_{\text{hit}}
 - **路径生成策略**（如随机搜索、启发式规则）。  
 - **资源限制**（搜索次数 $N$、最大路径深度 $d$）。  
 
-**修正公式**：
+**公式**：
 ```math
 P_{\text{hit}} = 1 - \left(1 - \frac{1}{M}\right)^N
 ```
@@ -332,17 +332,17 @@ P_{\text{hit}} = 1 - \left(1 - \frac{1}{M}\right)^N
 #### 情况1： $Q = F_{\text{完备}}$（最小完备集）
 - $P_{\text{cover}} = 1$。  
 - 假设深度 $d=3$ 时，可能的路径数 $M=10$，搜索 $N=5$ 次：  
-  ```math
-  P = 1 \cdot \left(1 - \left(1 - \frac{1}{10}\right)^5\right) \approx 0.41
-  ```
+```math
+P = 1 \cdot \left(1 - \left(1 - \frac{1}{10}\right)^5\right) \approx 0.41
+```
   **并非 100%**，因为有限的 $N$ 和 $M$。
 
 #### 情况2： $Q \supset F_{\text{完备}}$（含冗余）
 - $P_{\text{cover}} = 1$。  
 - 冗余使 $M=100$，相同 $N=5$：  
-  ```math
-  P = 1 \cdot \left(1 - \left(1 - \frac{1}{100}\right)^5\right) \approx 0.05
-  ```
+```math
+P = 1 \cdot \left(1 - \left(1 - \frac{1}{100}\right)^5\right) \approx 0.05
+```
   **概率显著降低**，因冗余扩大了搜索空间。
 
 ---

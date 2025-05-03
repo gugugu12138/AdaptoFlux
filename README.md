@@ -191,6 +191,15 @@ f_n(a,b) = a \cdot c_n + b \cdot d_n
 
 #### 精确维度公式
 
+**动态维度传播公式**
+```math
+\text{dim}(\mathcal{S}_Q^{(L)}) = \sum_{f_i \in Q} \text{dim}_{\text{out}}(f_i) \cdot \mathbb{I}\left[\text{dim}_{\text{in}}(f_i) = \text{dim}(\mathcal{S}_Q^{(L-1)})\right]
+```
+其中：
+- `L` 为当前层数，`dim(S_Q^(0))` 为初始输入维度。
+- `dim_in(f_i)` 和 `dim_out(f_i)` 分别表示函数 `f_i` 的输入/输出维度。
+- `𝕀[⋅]` 为指示函数，确保维度匹配。
+
 ```math
 \text{dim}(\mathcal{S}_Q) = \sum_{k=1}^{d} \left( \prod_{f_i \in Q} \text{dim}(\mathcal{M}_i) \right)^k
 ```

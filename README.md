@@ -295,9 +295,11 @@ $$
 当功能集中的函数允许多层组合时，解空间维度由以下关键因素决定：
 
 #### 精确维度公式
-$$
+
+\[
 \text{dim}(\mathcal{S}_Q) = \sum_{k=1}^{d} \left( \prod_{f_i \in Q} \text{dim}(\mathcal{M}_i) \right)^k
-$$
+\]
+
 
 其中：
 - $\mathcal{M}_i$ 表示函数 $f_i$ 的映射空间

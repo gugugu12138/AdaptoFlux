@@ -380,14 +380,15 @@ P = 1 \cdot \left(1 - \left(1 - \frac{1}{100}\right)^5\right) \approx 0.05
 ---
 
 ### **示例（综合对比）**
+该部分数据计算主要由ai完成，不保真
 #### 假设条件
 - **最小完备集**：  
   $$F_{\text{完备}} = \{f_1, f_2\}, \quad \text{dim}(\mathcal{M}_1)=4, \text{dim}(\mathcal{M}_2)=9$$  
-- **其他函数**：$\text{dim}(\mathcal{M}_i)=1$（低维冗余），$\text{dim}(\mathcal{M}_6)=5$（高维冗余）  
+- **其他函数**： $\text{dim}(\mathcal{M}_i)=1$（低维冗余），$\text{dim}(\mathcal{M}_6)=5$（高维冗余）  
 - **参数**：  
-  - 搜索参数：$d=2, N=10$  
-  - 效率参数：$\alpha=\gamma=2, \eta=0.1, \beta=0.8$  
-  - 泛化参数：$\lambda=0.01, \xi=0.5, \eta_0=0.1$  
+  - 搜索参数： $d=2, N=10$  
+  - 效率参数： $\alpha=\gamma=2, \eta=0.1, \beta=0.8$  
+  - 泛化参数： $\lambda=0.01, \xi=0.5, \eta_0=0.1$  
 
 #### 对比功能集
 | 指标                  | Q₁ = {f₁,f₂,f₃}               | Q₂ = {f₁,f₂,f₃,f₄,f₅}         | Q₃ = {f₁,f₂,f₆}               |
@@ -400,38 +401,47 @@ P = 1 \cdot \left(1 - \left(1 - \frac{1}{100}\right)^5\right) \approx 0.05
 | **泛化误差 $\mathcal{L}_2$**（公式二） | 0.14                          | 0.25                          | 0.15                          |
 
 #### 计算公式与注释
-1. **求解效率**（保留原公式）：  
-   $$E(Q) = \frac{\beta}{\text{dim}(\mathcal{S}_Q)^{1/\gamma}} \cdot \frac{1}{C_{\text{eff}}(Q)^\alpha + \eta}$$  
+1. **求解效率**（保留原公式）：
+```math  
+E(Q) = \frac{\beta}{\text{dim}(\mathcal{S}_Q)^{1/\gamma}} \cdot \frac{1}{C_{\text{eff}}(Q)^\alpha + \eta}
+```  
    - *物理意义*：效率随完备性提升而增加，随解空间维度降低。  
 
 2. **全局最优概率**（分阶段计算）：  
-   $$P = P_{\text{cover}} \cdot \left(1 - \left(1 - \frac{1}{M}\right)^N \right)$$  
-   - *参数*：$M=10$（Q₁/Q₃）、$M=50$（Q₂），$P_{\text{cover}}=1$（因$F_{\text{完备}} \subseteq Q$）。  
+```math
+P = P_{\text{cover}} \cdot \left(1 - \left(1 - \frac{1}{M}\right)^N \right)
+```
+   - *参数*： $M=10$（Q₁/Q₃）、$M=50$（Q₂） , $P_{\text{cover}}=1$（因 $F_{\text{完备}} \subseteq Q$ ）。  
 
 3. **泛化误差公式一**（惩罚低完备性+高维度）：  
-   $$\mathcal{L}_1 = \eta \left[ \frac{1}{\sqrt{C_{\text{eff}}(Q)}} + \lambda \cdot \text{dim}(\mathcal{S}_Q) \right]$$  
-   - *特点*：受解空间维度主导，Q₁/Q₂/Q₃差异较小（因$\text{dim}(\mathcal{S}_Q)$相同）。  
+```math
+\mathcal{L}_1 = \eta \left[ \frac{1}{\sqrt{C_{\text{eff}}(Q)}} + \lambda \cdot \text{dim}(\mathcal{S}_Q) \right]
+``` 
+   - *特点*：受解空间维度主导，Q₁/Q₂/Q₃差异较小（因 $\text{dim}(\mathcal{S}_Q)$ 相同）。  
 
 4. **泛化误差公式二**（仅依赖完备性）：  
-   $$\mathcal{L}_2 = \frac{\eta_0 \cdot (1 + \xi \cdot (1 - C_{\text{eff}}(Q)))}{\sqrt{C_{\text{eff}}(Q)}}$$  
-   - *特点*：对$C_{\text{eff}}$变化更敏感，Q₂误差比Q₁高78%。  
+```math
+\mathcal{L}_2 = \frac{\eta_0 \cdot (1 + \xi \cdot (1 - C_{\text{eff}}(Q)))}{\sqrt{C_{\text{eff}}(Q)}}
+```
+
+   - *特点*：对 $C_{\text{eff}}$ 变化更敏感，Q₂误差比Q₁高78%。  
 
 ---
 
 ### **关键结论**
 1. **冗余数量的负面影响**（对比Q₁与Q₂）：  
    - **Q₂**（5函数含3低维冗余）：  
-     - 有效完备性最低（$C_{\text{eff}}=0.33$），导致效率（$E=0.02$）、最优概率（$P=0.18$）、泛化性（$\mathcal{L}_2=0.25$）全面劣化。  
+     - 有效完备性最低（ $C_{\text{eff}}=0.33$ ），导致效率（$E=0.02$ ）、最优概率（ $P=0.18$ ）、泛化性（ $\mathcal{L}_2=0.25$ ）全面劣化。  
    - **Q₁**（3函数含1低维冗余）：  
      - 各项指标均优于Q₂，尤其是泛化误差降低44%。  
 
 2. **冗余维度的差异化影响**（对比Q₁与Q₃）：  
-   - **Q₃**（高维冗余$f_6$）：  
-     - 因$\text{dim}(\mathcal{M}_6)=5$，$C_{\text{eff}}$略低于Q₁（0.58 vs 0.62），但效率和泛化性接近。  
+   - **Q₃**（高维冗余 $f_6$ ）：  
+     - 因 $\text{dim}(\mathcal{M}_6)=5$ ， $C_{\text{eff}}$ 略低于Q₁（0.58 vs 0.62），但效率和泛化性接近。  
      - 说明**高维冗余对性能的损害小于低维冗余**。  
 
 3. **公式选择建议**：  
-   - 若关注**理论解空间**：使用公式一（含$\text{dim}(\mathcal{S}_Q)$项）。  
+   - 若关注**理论解空间**：使用公式一（含 $\text{dim}(\mathcal{S}_Q)$ 项）。  
    - 若关注**实际泛化能力**：使用公式二（纯完备性驱动）。  
 
 ---
@@ -457,15 +467,15 @@ $$
 #### 泛化性与完备性的关系
 1. **完备性越高**：  
    - 功能集覆盖的解空间更接近真实数据分布，减少过拟合风险。  
-   - 公式二中，$C_{\text{eff}} \to 1$时，$\mathcal{L}_{\text{generalize}} \approx \eta_0$（理论下限）。  
+   - 公式二中， $C_{\text{eff}} \to 1$ 时， $\mathcal{L}_{\text{generalize}} \approx \eta_0$ （理论下限）。  
 
 2. **冗余函数的双重影响**：  
-   - **负面**：降低$C_{\text{eff}}$，增加泛化误差。  
+   - **负面**：降低 $C_{\text{eff}}$ ，增加泛化误差。  
    - **正面**：可能提供非常规解路径，适合探索性任务。  
 
 3. **实践平衡**：  
-   - 分类任务：追求高$C_{\text{eff}}$（如Q₁）。  
-   - 生成任务：可容忍低$C_{\text{eff}}$（如Q₃），保留创新性路径。  
+   - 分类任务：追求高 $C_{\text{eff}}$ （如Q₁）。  
+   - 生成任务：可容忍低 $C_{\text{eff}}$ （如Q₃），保留创新性路径。  
 
 ---
 

@@ -18,7 +18,9 @@ if __name__ == "__main__":
         test_size=0.1,      # 10% 的数据作为验证集
         random_state=42     # 保证结果的可重复性
     )
+
     print(x_train.reshape(x_train.shape[0], -1).shape)
+    
     # 3. 载入模型和标签
     # model = Figure_Link_Network(x_train.reshape(x_train.shape[0], -1),
     #                             y_train,

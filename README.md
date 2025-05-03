@@ -329,6 +329,9 @@ P(\text{全局最优}) = 1 - \left(1 - \frac{\text{dim}(\mathcal{S}_{F_{\text{�
 
 ```math
 \mathcal{L}_{\text{generalize}} = \frac{\eta}{\sqrt{C_{\text{eff}}(Q)}}
+```
+
+```math
 \eta = \eta_0 \cdot (1 + \xi \cdot (1 - C_{\text{eff}}(Q)))
 ```
 **物理意义**：
@@ -341,8 +344,13 @@ P(\text{全局最优}) = 1 - \left(1 - \frac{\text{dim}(\mathcal{S}_{F_{\text{�
 
 ### 示例
 #### 假设条件
-- $F_{\text{完备}} = \{f_1, f_2\}$，$\text{dim}(\mathcal{M}_1)=4$，$\text{dim}(\mathcal{M}_2)=9$
-- 其他函数 $\text{dim}(\mathcal{M}_i)=1$，$d=2$，$\alpha=\gamma=2$，$\eta=0.1$
+```math
+F_{\text{完备}} = \{f_1, f_2\}，\text{dim}(\mathcal{M}_1)=4，\text{dim}(\mathcal{M}_2)=9
+```
+
+```math
+其他函数 \text{dim}(\mathcal{M}_i)=1，d=2，\alpha=\gamma=2，\eta=0.1
+```
 
 | 指标               | Q₁ = {f₁,f₂,f₃}               | Q₂ = {f₁,f₂,f₃,f₄,f₅}         |
 |--------------------|-------------------------------|-------------------------------|

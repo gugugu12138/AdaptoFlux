@@ -192,12 +192,12 @@ f_n(a,b) = a \cdot c_n + b \cdot d_n
 #### 精确维度公式
 
 ```math
-\text{dim}(\mathcal{S}_Q) = \sum_{k=1}^{d} \left( \prod_{f_i \in Q} R_{\text{in}}(i) \times R_{\text{out}}(i) \right)^k
+\text{dim}(\mathcal{S}_Q) = \sum_{k=1}^{d} \left( \prod_{f_i \in Q} \text{dim}(\mathcal{M}_i) \right)^k
 ```
 
 **约束**：
 ```math
-当 F_{\text{完备}} \not\subseteq Q$ 时，$\text{dim}(\mathcal{S}_Q) = 0 （无法覆盖解空间）
+当 F_{\text{完备}} \not\subseteq Q 时，\text{dim}(\mathcal{S}_Q) = 0 （无法覆盖解空间）
 ```
 
 ```math

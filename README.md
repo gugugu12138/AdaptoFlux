@@ -195,13 +195,13 @@ f_n(a,b) = a \cdot c_n + b \cdot d_n
 \text{dim}(\mathcal{S}_Q) = \sum_{k=1}^{d} \left( \prod_{f_i \in Q} \text{dim}(\mathcal{M}_i) \right)^k
 ```
 
+```math
+\text{dim}(\mathcal{M}_i) = R_{\text{in}}(i) \times R_{\text{out}}(i)
+```
+
 **约束**：
 ```math
 当 F_{\text{完备}} \not\subseteq Q 时，\text{dim}(\mathcal{S}_Q) = 0 （无法覆盖解空间）
-```
-
-```math
-\text{dim}(\mathcal{M}_i) = R_{\text{in}}(i) \times R_{\text{out}}(i)
 ```
 
 其中：
@@ -260,13 +260,15 @@ $$
 #### 关系公式
 当功能集Q能够解决目标问题时，其求解效率（E）与完备性（C）的关系可以表示为：
 
-$$
-E(Q) \propto \frac{1}{C(Q)^\alpha + \eta}
-$$
+```math
+E(Q) = \frac{\beta(Q)}{\text{dim}(\mathcal{S}_Q)^{1/\gamma}} \times \frac{1}{C_{\text{eff}}(Q)^\alpha + \eta}
+```
 
 其中：
 - `α > 0` 是完备性影响系数
 - `η` 是路径探索效率常数（与功能集结构相关）
+- $\beta(Q) = \frac{\text{平均路径质量}}{\text{最大路径质量}}$（衡量函数组合有效性）
+- $\gamma$ 为维度衰减系数
 
 #### 解释
 - **完备性越低（C越小）**：

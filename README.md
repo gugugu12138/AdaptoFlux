@@ -373,9 +373,9 @@ P = 1 \cdot \left(1 - \left(1 - \frac{1}{100}\right)^5\right) \approx 0.05
 ```
 **物理意义**：
 - 当 $C_{\text{eff}} \to 1$（高完备性）：
-  - 泛化误差最小，但可能过滤掉非常规解（$\xi$ 项趋近0）
+  - 泛化误差最小，但可能过滤掉非常规解（ $\xi$  项趋近0）
 - 当 $C_{\text{eff}} \to 0$（低完备性）：
-  - 泛化误差增大，但保留发现特殊解的可能性（$\xi$ 项放大）
+  - 泛化误差增大，但保留发现特殊解的可能性（ $\xi$  项放大）
 
 ---
 
@@ -384,7 +384,7 @@ P = 1 \cdot \left(1 - \left(1 - \frac{1}{100}\right)^5\right) \approx 0.05
 #### 假设条件
 - **最小完备集**：  
   $$F_{\text{完备}} = \{f_1, f_2\}, \quad \text{dim}(\mathcal{M}_1)=4, \text{dim}(\mathcal{M}_2)=9$$  
-- **其他函数**： $\text{dim}(\mathcal{M}_i)=1$（低维冗余），$\text{dim}(\mathcal{M}_6)=5$（高维冗余）  
+- **其他函数**： $\text{dim}(\mathcal{M}_i)=1$（低维冗余）， $\text{dim}(\mathcal{M}_6)=5$ （高维冗余）  
 - **参数**：  
   - 搜索参数： $d=2, N=10$  
   - 效率参数： $\alpha=\gamma=2, \eta=0.1, \beta=0.8$  
@@ -437,7 +437,7 @@ P = P_{\text{cover}} \cdot \left(1 - \left(1 - \frac{1}{M}\right)^N \right)
 
 2. **冗余维度的差异化影响**（对比Q₁与Q₃）：  
    - **Q₃**（高维冗余 $f_6$ ）：  
-     - 因  $\text{dim}(\mathcal{M}_6)=5$  ， $C_{\text{eff}}$  略低于Q₁（0.58 vs 0.62），但效率和泛化性接近。  
+     - 因 $\text{dim}(\mathcal{M}_6)=5$ ， $C_{\text{eff}}$ 略低于Q₁（0.58 vs 0.62），但效率和泛化性接近。  
      - 说明**高维冗余对性能的损害小于低维冗余**。  
 
 3. **公式选择建议**：  

@@ -195,7 +195,10 @@ f_n(a,b) = a \cdot c_n + b \cdot d_n
 \text{dim}(\mathcal{S}_Q) = \sum_{k=1}^{d} \left( \prod_{f_i \in Q} R_{\text{in}}(i) \times R_{\text{out}}(i) \right)^k
 ```
 
-**约束**：当 $F_{\text{完备}} \not\subseteq Q$ 时，$\text{dim}(\mathcal{S}_Q) = 0$（无法覆盖解空间）
+**约束**：
+```math
+当 F_{\text{完备}} \not\subseteq Q$ 时，$\text{dim}(\mathcal{S}_Q) = 0 （无法覆盖解空间）
+```
 
 ```math
 \text{dim}(\mathcal{M}_i) = R_{\text{in}}(i) \times R_{\text{out}}(i)

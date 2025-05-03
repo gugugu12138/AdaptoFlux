@@ -290,13 +290,11 @@ $$
 
 ---
 
-### 解空间维度与深度的关系
+### 解空间维度
 
 当允许函数复合（即功能集中的函数可以组合使用，形成多层结构）时，解空间的维度不仅取决于每个函数的输入输出维度，还与组合深度有关。我们可以更精确地表示为：
 
-$$
-\text{dim}(\mathcal{S}_Q) \propto \sum_{k=1}^{d} \prod_{f_i \in Q_k} \left( R_{\text{in}}(i) \cdot R_{\text{out}}(i) \right)
-$$
+$\text{dim}(\mathcal{S}_Q) \propto \sum_{k=1}^{d} \prod_{f_i \in Q_k} \left( R_{\text{in}}(i) \cdot R_{\text{out}}(i) \right)$
 
 其中：
 

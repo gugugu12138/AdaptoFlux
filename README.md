@@ -204,6 +204,16 @@ f_n(a,b) = a \cdot c_n + b \cdot d_n
 \text{dim}(\mathcal{S}_Q) = \sum_{L=1}^{d} \text{dim}(\mathcal{S}_Q^{(L)})
 ```
 
+**类型系统扩展**
+引入类型约束：
+- 为每个函数定义输入/输出类型签名（如 `f_i: T₁ → T₂`）。
+- 仅当类型匹配时，函数可被组合。例如：
+  - 若 `f1` 输出类型为 `Matrix`，而 `f2` 输入类型为 `Vector`，则二者不可直接组合。
+
+**通用公式（综合维度与类型）**
+```math
+\text{dim}(\mathcal{S}_Q) = \sum_{L=1}^{d} \left( \sum_{f_i \in Q} \text{dim}_{\text{out}}(f_i) \cdot \mathbb{I}\left[\text{type}_{\text{out}}(f_i^{(L-1)}) = \text{type}_{\text{in}}(f_i)\right] \right)
+```
 
 ```math
 \text{dim}(\mathcal{S}_Q) = \sum_{k=1}^{d} \left( \prod_{f_i \in Q} \text{dim}(\mathcal{M}_i) \right)^k

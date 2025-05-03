@@ -437,7 +437,9 @@ P = P_{\text{cover}} \cdot \left(1 - \left(1 - \frac{1}{M}\right)^N \right)
 
 2. **冗余维度的差异化影响**（对比Q₁与Q₃）：  
    - **Q₃**（高维冗余 $f_6$ ）：  
-     - 因 $\text{dim}(\mathcal{M}_6)=5$ , $C_{\text{eff}}$ 略低于Q₁（0.58 vs 0.62）,但效率和泛化性接近。  
+```math
+     - 因 \text{dim}(\mathcal{M}_6)=5 , C_{\text{eff}} 略低于Q₁（0.58 vs 0.62）,但效率和泛化性接近。  
+```
      - 说明**高维冗余对性能的损害小于低维冗余**。  
 
 3. **公式选择建议**：  

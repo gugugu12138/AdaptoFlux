@@ -104,17 +104,17 @@ $$
 只包含动作函数的功能集。
 
 
-$$
-G = \{ g_1, g_2, g_3, \dots, g_n \}
-$$
+```math
+G = \left\{ g_1, g_2, g_3, \dots, g_n \right\}
+```
 
-$$
-F = \{ f_1, f_2, f_3, \dots, f_m \}
-$$
+```math
+F = \left\{ f_1, f_2, f_3, \dots, f_m \right\}
+```
 
-$$
-O = \{ o_1, o_2, o_3, \dots, o_k \}
-$$
+```math
+O = \left\{ o_1, o_2, o_3, \dots, o_k \right\}
+```
 
 ![基础结构](./assets/images/基础结构图2.0.png)
 
@@ -391,9 +391,9 @@ $$
 
 那么实际的**非等效输出集合**为：
 
-$$
-\mathcal{O} = \{o_1, o_2, o_3\}
-$$
+```math
+\mathcal{O} = \left\{o_1, o_2, o_3 \right\}
+```
 
 因此，解空间的大小为：
 

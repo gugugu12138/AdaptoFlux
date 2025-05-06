@@ -406,7 +406,7 @@ $$
 **解空间定义公式**  
 
 $$
-\mathcal{S} = { f(p) \mid p \in \mathcal{P} }
+\mathcal{S} = \left\{ f(p) \mid p \in \mathcal{P} \right\}
 $$
 
 **解空间大小公式**  

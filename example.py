@@ -1,4 +1,4 @@
-import AdaptoFlux
+import ATF
 from tensorflow.keras.datasets import mnist
 from sklearn.model_selection import train_test_split
 
@@ -28,7 +28,7 @@ if __name__ == "__main__":
     #                             y_val)
 
     file_path = "methods.py"
-    model = AdaptoFlux.AdaptoFlux(x_train.reshape(x_train.shape[0], -1),
+    model = ATF.AdaptoFlux(x_train.reshape(x_train.shape[0], -1),
                             y_train, file_path)
 
     

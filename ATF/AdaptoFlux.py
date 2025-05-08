@@ -100,30 +100,8 @@ class AdaptoFlux:
         else:
             raise ValueError("提供的坍缩方法必须是一个可调用函数")
 
-    # # 添加处理方法到字典
-    # def add_method(self, method_name, method, input_count=1):
-    #     """
-    #     添加方法到字典
-    #     :param method_name: 方法名称
-    #     :param method: 方法本身
-    #     :param input_count: 方法所需的输入值数量
-    #     """
-    #     if not hasattr(self, '_method_counter'):
-    #         self._method_counter = 1  # 初始化计数器
-    #     method_id = str(self._method_counter)  # 为方法分配从1开始的整数 ID
-    #     self.methods[method_id] = {
-    #         "name": method_name,
-    #         "function": method,
-    #         "input_count": input_count,
-    #     }
-    #     # 初始化方法的预输入字典，初始值为空列表
-    #     self.method_inputs[method_id] = []
-    #     self.method_input_values[method_id] = []
-    #     # self.method_input_val_values[method_id] = []
-    #     self._method_counter += 1  # 增加计数器
-
     # 添加处理方法到字典
-    def add_method(self, method_name, method, input_count=1):
+    def add_method(self, method_name, method, input_count, output_count):
         """
         添加方法到字典
         :param method_name: 方法名称
@@ -133,6 +111,7 @@ class AdaptoFlux:
         self.methods[method_name] = {
             "function" : method,
             "input_count" : input_count,
+            "output_count" : output_count,
         }
         self.method_inputs[method_name] = []
         self.method_input_values[method_name] = [] # 疑似没有必要
@@ -152,7 +131,8 @@ class AdaptoFlux:
             if inspect.isfunction(obj):  # 检查是否为函数
                 # 获取函数所需的参数数量
                 input_count = len(inspect.signature(obj).parameters)
-                self.add_method(name, obj, input_count)
+                output_count = getattr(obj, "output_count", 1)
+                self.add_method(name, obj, input_count, output_count)
         # 记录初始状态
         self.history_method_inputs.append(self.method_inputs)
         self.history_method_input_values.append(self.method_input_values)
@@ -220,82 +200,28 @@ class AdaptoFlux:
         :return: values 的乘积
         """
         return np.prod(values)
-
-    def clear_method_inputs(self):
-        """
-        清空 self.method_inputs 字典中的旧索引数据，以确保后续计算的正确性。
-        
-        - 该方法不会改变字典的键（方法 ID），也不会修改列表的长度。
-        - 仅将每个方法的输入索引列表中的元素置为 None，以避免上一轮计算的残留数据索引影响下一轮计算。
-        - 确保在后续匹配输入索引时，方法能够正确获取新的输入数据，而不会因为旧数据干扰导致错误匹配。
-        """
-        for key, value_list in self.method_inputs.items():
-            for i in range(len(value_list)):
-                value_list[i] = None
-
-    # # 生成单次路径选择
-    # def process_random_method(self):
-    #     """
-    #     生成一个随机的方法选择路径，并确保多输入方法的输入索引匹配。
-
-    #     :return: method_list，包含为每个元素随机分配的方法（可能是单输入或多输入方法）
-    #     :raises ValueError: 如果方法字典为空或值列表为空，则抛出异常
-    #     """
-    #     if not self.methods:
-    #         raise ValueError("方法字典为空，无法处理！")
-    #     if self.last_values.size == 0:  # 处理 NumPy 数组的情况
-    #         raise ValueError("值列表为空，无法处理！")
-
-    #     # 存储每个元素对应的方法（单输入方法直接存储方法 ID，多输入方法存储占位符 "-method_id"）
-    #     method_list = []
-
-    #     # 获取 values 列数，即每个元素的数量
-    #     num_elements = self.last_values.shape[1]
-
-    #     # 随机选择方法并处理单输入和多输入方法
-    #     for i in range(num_elements):
-    #         method_id = random.choice(list(self.methods.keys()))  # 随机选择一个方法 ID
-    #         method_data = self.methods[method_id]
-    #         input_count = method_data["input_count"]  # 获取该方法需要的输入值数量
-
-    #         if input_count == 1:
-    #             # 如果方法只需要一个输入值，则直接存储方法 ID
-    #             method_list.append(method_id)
-    #         else:
-    #             # 多输入方法使用占位符，以便后续匹配输入索引
-    #             method_list.append(f"-{method_id}")
-
-    #     # 处理多输入方法的输入索引匹配
-    #     for index, i in enumerate(method_list):
-    #         if i.startswith('-'):  # 识别多输入方法
-    #             method_id = i.lstrip('-')  # 去除占位符前缀，获取真正的方法 ID
-    #             method_data = self.methods[method_id]
-    #             input_count = method_data["input_count"]  # 获取该方法所需的输入值数量
-
-    #             # 记录方法所需的输入索引
-    #             self.method_inputs[method_id].append(index)
-
-    #             # 当方法的输入索引数达到所需数量时，进行替换
-    #             if len(self.method_inputs[method_id]) == input_count:
-    #                 for j in range(len(self.method_inputs[method_id])):
-    #                     if self.method_inputs[method_id][j] is None:
-    #                         # 忽略无效索引
-    #                         continue
-    #                     # 替换 method_list 中的占位符 # 这一行出现过报错，但是无法复现，很奇怪定位不了问题在哪
-    #                     method_list[self.method_inputs[method_id][j]] = method_id
-    #                 # 清空已处理的方法输入索引
-    #                 self.method_inputs[method_id] = []
-        
-    #     self.clear_method_inputs()
-
-    #     return method_list
-
+    
+    def group_indices_by_input_count(self, indices, input_count, shuffle=False):
+        if shuffle:
+            random.shuffle(indices)
+        groups = []
+        unmatched = []
+        i = 0
+        while i < len(indices):
+            group = indices[i:i + input_count]
+            if len(group) == input_count:
+                groups.append(group)
+            else:
+                unmatched.extend([[idx] for idx in group])
+            i += input_count
+        return groups, unmatched
 
     # 生成单次路径选择
-    def process_random_method(self):
+    def process_random_method(self, shuffle_indices=True):
         """
         生成一个随机的方法选择路径，并确保多输入方法的输入索引匹配。
 
+        :param shuffle_indices: 是否打乱多输入方法的索引，默认为 True
         :return: method_list，包含为每个元素随机分配的方法（可能是单输入或多输入方法）
         :raises ValueError: 如果方法字典为空或值列表为空，则抛出异常
         """
@@ -304,46 +230,162 @@ class AdaptoFlux:
         if self.last_values.size == 0:  # 处理 NumPy 数组的情况
             raise ValueError("值列表为空，无法处理！")
 
-        self.layer += 1
-
         method_list = []
-        num_elements = self.last_values.shape[1]
+        collapse_edges = list(self.graph.in_edges("collapse", data=True))
+        num_elements = len(collapse_edges)
 
         # 1. 初始为全部正值方法
         for _ in range(num_elements):
             method_name = random.choice(list(self.methods.keys()))
             method_list.append(method_name)
 
-        # 2. 收集多输入方法的位置
+        # 2. 收集方法的位置
         multi_input_positions = {}
         for idx, method_name in enumerate(method_list):
-            if self.methods[method_name]["input_count"] > 1:
-                multi_input_positions.setdefault(method_name, []).append(idx)
+            input_count = self.methods[method_name]["input_count"]
+            if input_count <= 0:
+                raise ValueError(f"方法 '{method_name}' 的 input_count 必须大于 0，当前值为 {input_count}")
+            multi_input_positions.setdefault(method_name, []).append(idx)
         
-        # 提前获取所有与 'collapse' 相连的边
-        collapse_edges = list(self.graph.in_edges("collapse", data=True))
-
-        # 用字典存储每个方法的分组位置坐标
-        method_group_positions = {}
-        method_counts = {method_name: 0 for method_name in self.methods}
+        index_map = {}
+        valid_groups = {}
+        unmatched = []
 
         for method_name, indices in multi_input_positions.items():
             input_count = self.methods[method_name]["input_count"]
-            total_count = len(indices)
+            groups, unmatch = self.group_indices_by_input_count(indices, input_count, shuffle_indices)
 
-            # 随机打乱索引列表
-            random.shuffle(indices)
-            groups = [indices[i:i + input_count] for i in range(0, total_count, input_count) if len(indices[i:i + input_count]) == input_count]
+            valid_groups[method_name] = groups
+            for group in groups:
+                for idx in group:
+                    index_map[idx] = {"method": method_name, "group": tuple(group)}
+            # 未分组的数据每一个单独视为一个组
+            unmatched.extend(idx for idx in unmatch)
 
-            # 存储分组位置
-            method_group_positions[method_name] = groups
+        # 新增：将 unmatched 中的索引也加入 index_map
+        for sublist in unmatched:
+            for idx in sublist:
+                print(idx)
+                index_map[idx] = {
+                    "method": "unmatched",
+                    "group": tuple([idx])  # 每个 idx 自己成为一个 group
+                }
 
+        return {
+            "index_map": index_map,
+            "valid_groups": valid_groups,
+            "unmatched": unmatched
+        }
+    
+    def replace_random_elements(self, result, n, shuffle_indices=True):
+        """
+        替换部分索引对应的方法，并重新分组以符合 input_count 要求。
+        
+        :param result: 来自 process_random_method 的输出结构
+        :param n: 要随机替换的索引数量
+        :param shuffle_indices: 是否打乱新方法分配时的索引顺序
+        :return: 新的 result 结构，包含更新后的 index_map、valid_groups 和 unmatched
+        """
+        from copy import deepcopy
+
+        # 提取原始信息
+        index_map = deepcopy(result["index_map"])
+        valid_groups = deepcopy(result["valid_groups"])
+        unmatched = deepcopy(result.get("unmatched", []))
+
+        # 收集所有可替换的索引条目 (method_name, group, idx)
+        all_index_entries = []
+        for method_name, groups in valid_groups.items():
+            for group in groups:
+                for idx in group:
+                    all_index_entries.append((method_name, group, idx))
+
+        total_indices = len(all_index_entries)
+        if n > total_indices:
+            raise ValueError(f"无法替换 {n} 个索引，总数只有 {total_indices}")
+
+        # 随机选取 n 个要替换的索引
+        indices_to_replace = random.sample(all_index_entries, n)
+
+        # 删除这些索引所属的 group
+        new_valid_groups = deepcopy(valid_groups)
+        for method_name, old_group, idx in indices_to_replace:
+            if method_name in new_valid_groups and old_group in new_valid_groups[method_name]:
+                new_valid_groups[method_name].remove(old_group)
+
+        # 收集被替换的索引
+        indices_to_be_assigned = [idx for _, _, idx in indices_to_replace]
+
+        # 分配新方法给这些索引
+        new_assignments = {}
+        for idx in indices_to_be_assigned:
+            method_name = random.choice(list(self.methods.keys()))
+            new_assignments.setdefault(method_name, []).append(idx)
+
+        # 按照 input_count 分组
+        assignments_method_group_positions = {"unmatched": []}
+        for method_name, indices in new_assignments.items():
+            input_count = self.methods[method_name]["input_count"]
+            if shuffle_indices:
+                random.shuffle(indices)
+            groups, unmatch = self.group_indices_by_input_count(indices, input_count, shuffle_indices)
+            assignments_method_group_positions[method_name] = groups
+            assignments_method_group_positions["unmatched"].extend([[idx] for idx in unmatch])
+
+        # 合并老的和新的 valid_groups
+        updated_valid_groups = deepcopy(new_valid_groups)
+        for method_name, groups in assignments_method_group_positions.items():
+            if not groups or method_name == "unmatched":
+                continue
+            if method_name in updated_valid_groups:
+                updated_valid_groups[method_name].extend(groups)
+            else:
+                updated_valid_groups[method_name] = groups
+
+        # 构建新的 index_map
+        new_index_map = {}
+        for method_name, groups in updated_valid_groups.items():
+            for group in groups:
+                for idx in group:
+                    new_index_map[idx] = {
+                        "method": method_name,
+                        "group": tuple(group)  # 保持 hashable
+                    }
+
+        # 处理未匹配项（unmatched）
+        new_unmatched = assignments_method_group_positions["unmatched"]
+
+        return {
+            "index_map": new_index_map,
+            "valid_groups": updated_valid_groups,
+            "unmatched": new_unmatched
+        }
+
+    def append_nx_layer(self, method_group_positions, discard_unmatched='to_discard', discard_node_method_name="null"):
+        """
+        :param method_group_positions: 由 process_random_method 返回的方法分组信息
+        :param discard_unmatched: 如何处理未匹配的节点。可选值：
+                                'ignore' - 忽略不处理；
+                                'to_discard' - 将其链接到指定的节点。
+        :param discard_node_name: 当 discard_unmatched == 'to_discard' 时，使用的节点函数名
+        """
+        self.layer += 1
         new_index_edge = 0
+        method_counts = {method_name: 0 for method_name in self.methods}
+        method_counts["unmatched"] = 0
+
+        # 提前获取所有与 'collapse' 相连的边
+        collapse_edges = list(self.graph.in_edges("collapse", data=True))
+
         # 遍历每个方法的分组
         for method_name, groups in method_group_positions.items():
+
+            if method_name == "unmatched":
+                continue  # 跳过废弃组，在后面统一处理
+
             for group in groups:
                 # 创建新节点并添加属性
-                new_target_node = f"{self.layer}_{method_counts[method_name]}_method_name"
+                new_target_node = f"{self.layer}_{method_counts[method_name]}_{method_name}"
                 self.graph.add_node(new_target_node, method_name=method_name)
 
                 # 遍历 collapse 相关的边，避免重复获取
@@ -353,130 +395,52 @@ class AdaptoFlux:
                         self.graph.remove_edge(u, v)
                         # 添加新的边，目标节点改为新的目标节点
                         self.graph.add_edge(u, new_target_node, **data)
+
                         # 添加从新节点到 v 的边
-                        for i in range(self.methods[method_name]["input_count"]):
+                        for i in range(self.methods[method_name]["output_count"]):
                             self.graph.add_edge(new_target_node, v, data_coord=new_index_edge)
                             new_index_edge += 1
+
                 method_counts[method_name] += 1
-                
-        return method_list
+
+        # 处理 unmatched 组（如果存在）
+        unmatched_indices = method_group_positions.get("unmatched", [])
+        if unmatched_indices:
+            if discard_unmatched == 'to_discard':
+                # 为每个废弃索引创建独立节点，统一使用 unmatched_method_name
+                for groups in unmatched_indices:
+                    for group in groups:
+                        node_name = f"{self.layer}_{method_counts["unmatched"]}_unmatched"
+                        self.graph.add_node(node_name, method_name=discard_node_method_name)
+
+                        # 遍历 collapse 边，将 data_coord 匹配的边连接到这个新节点
+                        for u, v, data in collapse_edges:
+                            if data.get('data_coord') in group:
+                                self.graph.remove_edge(u, v)
+                                self.graph.add_edge(u, node_name, **data)
+
+                                # 从这个节点再连接回 collapse（可以控制输出数量）
+                                for _ in range(1):  # 默认输出1条边
+                                    self.graph.add_edge(node_name, v, data_coord=new_index_edge)
+                                    new_index_edge += 1
+
+                    method_counts["unmatched"] += 1
+
+            elif discard_unmatched == 'ignore':
+                # 不做任何处理，直接跳过
+                pass
+
+            else:
+                raise ValueError(f"未知的 discard_unmatched 值：{discard_unmatched}。支持的选项为 'ignore' 或 'to_discard'")
 
 
-    # # 待修改
-    # # 接受导向列表，返回有n个元素不同的新列表
-    # def replace_random_elements(self, method_list, n):
-    #     """
-    #     替换列表中的 n 个元素为随机方法，并确保多输入方法的输入索引匹配。
 
-    #     :param method_list: 需要修改的方法列表
-    #     :param n: 要替换的元素数量
-    #     :return: new_list，包含修改后的方法列表
-    #     :raises ValueError: 如果 n 大于原列表长度，则抛出异常
-    #     """
-    #     if n > len(method_list):
-    #         raise ValueError("n 不能大于原列表的长度")
         
-    #     # 随机选择 n 个不重复的索引（此处的 n 变量未被正确使用，代码中原先只取了一个随机索引）
-    #     indices_to_replace = random.sample(range(len(method_list)), n)
+
+
         
-    #     # 复制原列表，以免修改原始数据
-    #     new_list = method_list[:]
-        
-    #     # 遍历选中的索引，并用随机方法替换原有元素
-    #     for idx in indices_to_replace:
-    #         method_id = random.choice(list(self.methods.keys()))  # 随机选择一个方法 ID
-    #         method_data = self.methods[method_id]  # 获取该方法对应的数据
-    #         input_count = method_data["input_count"]  # 该方法需要的输入数量
-            
-    #         if input_count == 1:
-    #             # 方法只需要一个输入值，直接记录方法 ID
-    #             new_list[idx] = method_id
-    #         else:
-    #             # 方法需要多个输入值，在方法 ID 前添加 `-` 作为标记
-    #             new_list[idx] = f"-{method_id}"
-        
-    #     # 遍历新列表，确保所有多输入方法（标记为 `-` 的方法）正确格式化
-    #     for index, i in enumerate(new_list):
-    #         if i.startswith('-'):
-    #             continue  # 如果已经是 `-` 开头，则不修改
-            
-    #         input_count = self.methods[i]["input_count"]  # 获取输入数目
-    #         if input_count > 1:
-    #             new_list[index] = f"-{new_list[index]}"  # 标记多输入方法
-        
-    #     # 遍历列表，处理多输入方法的输入索引
-    #     for index, i in enumerate(new_list):
-    #         if i.startswith('-'):
-    #             method_id = i.lstrip('-')  # 移除 `-` 以获取真正的 method_id
-    #             method_data = self.methods[method_id]  # 获取方法数据
-    #             input_count = method_data["input_count"]  # 获取输入数目
-                
-    #             # 在方法输入字典中添加索引
-    #             self.method_inputs[method_id].append(index)
-                
-    #             # 如果该方法的输入已收集完毕（达到 `input_count` 数量）
-    #             if len(self.method_inputs[method_id]) == input_count:
-    #                 for j in range(len(self.method_inputs[method_id])):
-    #                     if self.method_inputs[method_id][j] is None:
-    #                         continue  # 跳过 None 值（原代码此处有误，之前的比较是错误的if self.method_inputs[method_id][j] >= len(new_list):）运行起来可以正常收敛
-                        
-    #                     # 将 `new_list` 中的占位符替换为真正的 method_id
-    #                     new_list[self.method_inputs[method_id][j]] = method_id
-                    
-    #                 # 清空 method_inputs 以便下一轮使用
-    #                 self.method_inputs[method_id] = []
-        
-    #     # 清理 method_inputs 以重置状态
-    #     self.clear_method_inputs()
-        
-    #     return new_list
 
-    def replace_random_elements(self, method_list, n):
-        """
-        替换列表中的 n 个元素为随机方法，并确保多输入方法的输入索引匹配。
-        
-        :param method_list: 原始方法列表
-        :param n: 要替换的元素数量
-        :return: new_list，包含修改后的方法列表
-        :raises ValueError: 如果 n 大于原列表长度
-        """
-        if n > len(method_list):
-            raise ValueError("n 不能大于原列表的长度")
 
-        indices_to_replace = random.sample(range(len(method_list)), n)
-        new_list = method_list[:]
-
-        # 随机分配新方法
-        for idx in indices_to_replace:
-            method_id = random.choice(list(self.methods.keys()))
-            new_list[idx] = method_id  # 先不加负号，统一在后面处理
-
-        # 收集所有多输入方法的位置
-        multi_input_positions = {}
-        for idx, method_id in enumerate(new_list):
-            if method_id.startswith('-'):
-                method_id = method_id[1:]
-                new_list[idx] = method_id
-                # new_list[idx] = method_id.lstrip('-')
-                
-            input_count = self.methods[method_id]["input_count"]
-            if input_count > 1:
-                multi_input_positions.setdefault(method_id, []).append(idx)
-
-        # 对每种多输入方法，标记多余的为负号占位符（确保只保留 input_count 的倍数）
-        for method_id, indices in multi_input_positions.items():
-            input_count = self.methods[method_id]["input_count"]
-            total = len(indices)
-            excess_count = total % input_count
-
-            if excess_count == 0:
-                continue  # 刚好满足则跳过
-
-            excess_indices = random.sample(indices, excess_count)
-            for idx in excess_indices:
-                new_list[idx] = f"-{method_id}"  # 标记为占位
-
-        return new_list
 
 
     # 待修改

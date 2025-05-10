@@ -1,2 +1,7 @@
 __pycache__/
+*.pyc
+*.pyo
+*.pyd
 idea.txt
+*.egg-info/
+error_log.txt

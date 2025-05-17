@@ -63,7 +63,8 @@ class AdaptoFlux:
             self.graph.add_edge(
                 "root",
                 "collapse",
-                data_coord=feature_index  # 或者用字符串名代替索引也可以
+                output_index=feature_index, # 函数局部索引
+                data_coord=feature_index  # 当前层全局索引
             )
         self.layer = 0
         
@@ -379,7 +380,7 @@ class AdaptoFlux:
         # 增加层数计数器
         self.layer += 1
         
-        # 记录当前新增边的 data_coord 编号，保证唯一性
+        # 记录当前新增边的 data_coord 编号，保证唯一性(模型总索引不会重复)
         new_index_edge = 0
 
         # 初始化每个方法使用次数的计数器（用于生成唯一的节点名）
@@ -411,8 +412,8 @@ class AdaptoFlux:
                         self.graph.add_edge(u, new_target_node, **data)
 
                 # 新增从新节点到 collapse 的输出边，数量由方法定义决定（output_count）
-                for _ in range(self.methods[method_name]["output_count"]):
-                    self.graph.add_edge(new_target_node, v, data_coord=new_index_edge)
+                for local_output_index in range(self.methods[method_name]["output_count"]):
+                    self.graph.add_edge(new_target_node, v, output_index = local_output_index, data_coord=new_index_edge)
                     new_index_edge += 1
 
                 # 更新该方法使用的计数
@@ -434,8 +435,8 @@ class AdaptoFlux:
                         self.graph.add_edge(u, node_name, **data)
 
                 # 从丢弃节点再连一条边回到 collapse（默认输出一条）
-                for _ in range(1):
-                    self.graph.add_edge(node_name, v, data_coord=new_index_edge)
+                for local_output_index in range(1):
+                    self.graph.add_edge(node_name, v, output_index = local_output_index, data_coord=new_index_edge)
                     new_index_edge += 1
 
                 method_counts["unmatched"] += 1
@@ -483,6 +484,205 @@ class AdaptoFlux:
 
         # 层数减一
         self.layer -= 1
+
+    def infer_with_graph(self, values):
+        """
+        使用图结构对输入 values 进行推理计算，支持多输入/多输出操作。
+        
+        参数:
+            values (np.ndarray): 输入数据，形状为 [样本数, 特征维度]
+        
+        返回:
+            np.ndarray: 经过图结构处理后的结果（通过 collapse 输出）
+        """
+        # 存储每个节点的输出结果，格式为 {节点名: 输出数组}
+        node_outputs = {}
+        
+        # 存储多输入方法的待处理缓存，格式为 {节点名: 输入数据列表}
+        input_buffers = {}
+
+        # 获取所有非 root/collapse 的节点并按拓扑排序
+        # 确保节点按依赖顺序处理（前驱节点先于后继节点）
+        nodes_in_order = list(nx.topological_sort(self.graph))
+        nodes_in_order.remove("collapse")  # 移除特殊节点
+        if "root" in nodes_in_order:
+            nodes_in_order.remove("root")  # 移除特殊节点
+
+        # 初始化 root 节点的输出（输入数据直接作为 root 的输出）
+        root_output = values.copy()
+        node_outputs["root"] = root_output
+
+        # 遍历图中的所有节点（按拓扑顺序）
+        for node in nodes_in_order:
+            # 获取当前节点的属性和方法名
+            node_data = self.graph.nodes[node]
+            method_name = node_data.get("method_name", None)
+
+            # 处理特殊 "null" 方法节点（数据透传）
+            if method_name == "null":
+                # 获取当前节点的所有前驱节点
+                predecessors = list(self.graph.predecessors(node))
+                
+                # 校验：null 方法节点只能有一个前驱节点
+                if len(predecessors) > 1:
+                    raise ValueError(
+                        f"节点 {node} 使用了 'null' 方法，但有多个前驱节点 {predecessors}。"
+                        f"'null' 方法不支持多输入，请检查图结构，确保该节点只有一个前驱节点，"
+                        f"或者自定义方法来处理多输入逻辑（如拼接、加权等）。"
+                    )
+                
+                # 如果有前驱节点，直接透传其输出
+                if predecessors:
+                    node_outputs[node] = node_outputs.get(predecessors[0], np.array([]))
+                
+                continue  # 跳过后续处理
+
+            # ========== 普通方法节点处理 ==========
+            
+            # 1. 获取方法信息
+            if method_name not in self.methods:
+                raise ValueError(f"未知方法名 {method_name}，请确保已正确加载方法")
+            
+            # 从预定义方法中获取函数对象和输入输出参数配置
+            method_info = self.methods[method_name]
+            func = method_info["function"]         # 实际调用的函数
+            input_count = method_info["input_count"]  # 方法需要的输入数量
+            output_count = method_info["output_count"]  # 方法产生的输出数量
+
+            # 2. 收集前驱节点的输出作为输入
+            # 收集当前节点的所有入边
+            in_edges = list(self.graph.in_edges(node, data=True))
+
+            if not in_edges:
+                raise ValueError(f"节点 {node} 没有入边")
+
+            inputs = []
+            for src, dst, edge_data in in_edges:
+                if src not in node_outputs:
+                    raise ValueError(f"前驱节点 {src} 没有输出")
+
+                output_index = edge_data.get("output_index")  # 获取边上指定的节点局部索引
+                if output_index is not None:
+                    # 取出前驱输出中的指定索引值
+                    samples = node_outputs[src]
+
+                    try:
+                        # 提取每个样本中指定列的数据，并包装成二维列表
+                        selected_column = [[sample[output_index]] for sample in samples]
+
+                    except IndexError:
+                        raise ValueError(f"前驱节点 {src} 的输出长度不足，无法获取 output_index={output_index}")
+                    
+                    inputs.append(selected_column)
+                else:
+                    # 如果没有指定 output_index，则将前驱输出全部展开作为输入
+                    inputs.extend(node_outputs[src])
+
+            # ====== 新增：合并所有列 ======
+            if not inputs:
+                raise ValueError("没有可合并的输入列")
+
+            # 检查所有列样本数量一致
+            num_samples = len(inputs[0])
+            for col in inputs:
+                if len(col) != num_samples:
+                    raise ValueError("所有输入列的样本数必须一致")
+
+            # 合并列
+            final_inputs = []
+            for i in range(num_samples):
+                merged = []
+                for col in inputs:
+                    merged.extend(col[i])
+                final_inputs.append(merged)
+
+            # 最终返回的就是每个样本一行的标准结构
+            inputs = final_inputs
+
+            # 3. 合并前驱节点的输出为一个二维数组
+            # 形状为 (样本数, 总特征数)，所有输入按列拼接
+            flat_inputs = np.array(inputs)
+            num_samples = flat_inputs.shape[0]  # 获取样本数量
+
+            # 4. 处理输入数据（分单输入和多输入两种情况）
+            if input_count > 1:
+                # 多输入方法：需要缓冲积累足够数量的输入
+                if node not in input_buffers:
+                    input_buffers[node] = []  # 初始化该节点的输入缓冲区
+                
+                # 将当前输入数据添加到缓冲区（转换为列表形式）
+                input_buffers[node].extend(flat_inputs.tolist())
+                
+                # 如果缓冲区数据不足，跳过本次处理（等待更多输入）
+                if len(input_buffers[node]) < input_count:
+                    continue  
+                
+                # 从缓冲区取出一组完整输入（数量=input_count）
+                group = input_buffers[node][:input_count]
+                input_buffers[node] = input_buffers[node][input_count:]  # 移除已取出的数据
+            else:
+                # 单输入方法：直接处理每一行数据
+                group = [[row[i] for i in range(flat_inputs.shape[1])] for row in flat_inputs]
+
+            # 5. 执行方法函数
+            results = []
+            for row in group:
+                result = func(*row)  # 解包参数并调用函数
+                
+                # 统一返回值格式（标量->列表，数组->列表）
+                if isinstance(result, (int, float)):
+                    result = [result]
+                elif isinstance(result, np.ndarray):
+                    result = result.tolist()
+                results.append(result)
+
+            # 6. 构造输出数组
+            # 形状为 (样本数, 输出数量*结果数)
+            new_output = np.zeros((num_samples, output_count))
+            
+            # 将结果填充到输出数组中
+            for i, res in enumerate(results):
+                for j, val in enumerate(res):
+                    new_output[i, j] = val  # 按行填充
+            
+            # 存储当前节点的输出
+            node_outputs[node] = new_output
+
+        # ========== 最终结果收集 ==========
+
+        # 收集 (global_coord, column_data) 对
+        temp_result = []
+
+        for u, v, data in self.graph.in_edges("collapse", data=True):
+            if v == "collapse":
+                local_index = data.get('output_index')
+                global_coord = data.get('data_coord')
+
+                if local_index is None or global_coord is None:
+                    raise ValueError("缺少 output_index 或 data_coord 属性")
+
+                output_array = node_outputs[u]
+
+                try:
+                    column_data = output_array[:, local_index]
+                    temp_result.append((global_coord, column_data))
+                except IndexError:
+                    raise ValueError(f"节点 {u} 输出维度不足，无法提取 output_index={local_index}")
+
+        # 按照 data_coord 排序，保证输出顺序一致
+        temp_result.sort(key=lambda x: x[0])
+
+        # 只保留数据部分
+        collapse_result = [col for _, col in temp_result]
+
+        # 将所有输出列拼接为一个二维数组
+        raw_output = np.column_stack(collapse_result)
+
+        # 应用 collapse 方法，按行进行聚合（例如每行变成一个值）
+        collapsed_output = np.apply_along_axis(self.collapse, axis=1, arr=raw_output)
+        
+        # 将所有输出列拼接为最终结果
+        return collapsed_output
 
     # 待修改
     # 根据输入的列表更改数组,处于神经待处理队列状态的值采用暂时不处理方案, 还有一种方案是先将这些值置于最后

@@ -11,7 +11,7 @@ class LayerGraph:
         self.graph.add_node("root", method_name="input_root")
         self.graph.add_node("collapse")
         for feature_index in range(feature_dim):
-            self.graph.add_edge("root", "collapse", data_coord=feature_index)
+            self.graph.add_edge("root", "collapse", output_index=feature_index, data_coord=feature_index)
 
     def process_random_method(self, shuffle_indices=True):
         if not self.methods:
@@ -60,44 +60,86 @@ class LayerGraph:
         return full_groups, remainder
 
     def append_nx_layer(self, result, discard_unmatched='to_discard', discard_node_method_name="null"):
+        """
+        将给定的结果转换为图中的一层新节点。
+        
+        参数:
+            result: 一个字典，包含以下键：
+                - 'valid_groups': 按照方法名分组的有效数据索引列表
+                - 'unmatched': 无法匹配成完整输入的剩余索引
+            discard_unmatched: 如何处理未匹配项。可选值：
+                'to_discard' - 创建单独节点并连接回 collapse
+                'ignore' - 忽略这些未匹配项
+            discard_node_method_name: 如果 discard_unmatched == 'to_discard'，则用该名称作为丢弃节点的 method_name
+        """
+
+        # 增加层数计数器
         self.layer += 1
+        
+        # 记录当前新增边的 data_coord 编号，保证唯一性(模型总索引不会重复)
         new_index_edge = 0
+
+        # 初始化每个方法使用次数的计数器（用于生成唯一的节点名）
         method_counts = {method_name: 0 for method_name in self.methods}
-        method_counts["unmatched"] = 0
+        method_counts["unmatched"] = 0  # 单独记录 unmatched 的数量
+
+        # 获取所有指向 "collapse" 的入边（即上一层输出的边）
         collapse_edges = list(self.graph.in_edges("collapse", data=True))
 
+        # 设置目标节点为 collapse（统一变量名方便后续操作）
         v = "collapse"
 
+        # 遍历所有有效的方法及其对应的分组
         for method_name, groups in result['valid_groups'].items():
             if method_name == "unmatched":
-                continue
+                continue  # 跳过无效的 unmatched 分组，在后面单独处理
+
             for group in groups:
+                # 构造新的目标节点名：如 "1_0_add"
                 new_target_node = f"{self.layer}_{method_counts[method_name]}_{method_name}"
+                # 添加新节点到图中，并设置 method_name 属性
                 self.graph.add_node(new_target_node, method_name=method_name)
+
+                # 遍历之前所有的 collapse 入边
                 for u, _, data in collapse_edges:
                     if data.get('data_coord') in group:
+                        # 如果这条边的数据坐标属于当前分组，则删除原边，并将它连接到新节点
                         self.graph.remove_edge(u, v)
                         self.graph.add_edge(u, new_target_node, **data)
-                for _ in range(self.methods[method_name]["output_count"]):
-                    self.graph.add_edge(new_target_node, v, data_coord=new_index_edge)
+
+                # 新增从新节点到 collapse 的输出边，数量由方法定义决定（output_count）
+                for local_output_index in range(self.methods[method_name]["output_count"]):
+                    self.graph.add_edge(new_target_node, v, output_index = local_output_index, data_coord=new_index_edge)
                     new_index_edge += 1
+
+                # 更新该方法使用的计数
                 method_counts[method_name] += 1
 
+        # 处理未匹配项（如果存在）
         unmatched_groups = result.get('unmatched', [])
         if unmatched_groups and discard_unmatched == 'to_discard':
             for group in unmatched_groups:
+                # 构造丢弃节点名，如 "1_2_unmatched"
                 node_name = f"{self.layer}_{method_counts['unmatched']}_unmatched"
+                # 添加节点并指定 method_name 为传入的 discard_node_method_name
                 self.graph.add_node(node_name, method_name=discard_node_method_name)
+
+                # 同样地，把对应 data_coord 的边从 collapse 移动到这个丢弃节点
                 for u, _, data in collapse_edges:
                     if data.get('data_coord') in group:
                         self.graph.remove_edge(u, v)
                         self.graph.add_edge(u, node_name, **data)
-                for _ in range(1):
-                    self.graph.add_edge(node_name, v, data_coord=new_index_edge)
+
+                # 从丢弃节点再连一条边回到 collapse（默认输出一条）
+                for local_output_index in range(1):
+                    self.graph.add_edge(node_name, v, output_index = local_output_index, data_coord=new_index_edge)
                     new_index_edge += 1
+
                 method_counts["unmatched"] += 1
+
         elif unmatched_groups and discard_unmatched != 'ignore':
-            raise ValueError(f"未知的 discard_unmatched 值：{discard_unmatched}")
+            # 如果有未匹配项且不是 ignore 或 to_discard，则报错
+            raise ValueError(f"未知的 discard_unmatched 值：{discard_unmatched}。支持的选项为 'ignore' 或 'to_discard'")
 
     def remove_last_nx_layer(self):
         collapse_node = "collapse"

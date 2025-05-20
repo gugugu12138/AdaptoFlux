@@ -46,3 +46,14 @@ result = model.infer_with_graph(values)
 
 print("推理结果：")
 print(result)
+
+# ========================
+# 7. 测试单样本推理
+# ========================
+
+sample1 = [1, 2]
+sample2 = [3, 4]
+
+print("\n单样本推理结果：")
+print(f"Sample {sample1}: {model.infer_with_graph_single(sample1)}")
+print(f"Sample {sample2}: {model.infer_with_graph_single(sample2)}")

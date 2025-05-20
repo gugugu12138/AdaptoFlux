@@ -604,29 +604,9 @@ class AdaptoFlux:
             flat_inputs = np.array(inputs)
             num_samples = flat_inputs.shape[0]  # 获取样本数量
 
-            # 4. 处理输入数据（分单输入和多输入两种情况）
-            if input_count > 1:
-                # 多输入方法：需要缓冲积累足够数量的输入
-                if node not in input_buffers:
-                    input_buffers[node] = []  # 初始化该节点的输入缓冲区
-                
-                # 将当前输入数据添加到缓冲区（转换为列表形式）
-                input_buffers[node].extend(flat_inputs.tolist())
-                
-                # 如果缓冲区数据不足，跳过本次处理（等待更多输入）
-                if len(input_buffers[node]) < input_count:
-                    continue  
-                
-                # 从缓冲区取出一组完整输入（数量=input_count）
-                group = input_buffers[node][:input_count]
-                input_buffers[node] = input_buffers[node][input_count:]  # 移除已取出的数据
-            else:
-                # 单输入方法：直接处理每一行数据
-                group = [[row[i] for i in range(flat_inputs.shape[1])] for row in flat_inputs]
-
-            # 5. 执行方法函数
+            # 4. 执行方法函数
             results = []
-            for row in group:
+            for row in flat_inputs:
                 result = func(*row)  # 解包参数并调用函数
                 
                 # 统一返回值格式（标量->列表，数组->列表）
@@ -636,7 +616,7 @@ class AdaptoFlux:
                     result = result.tolist()
                 results.append(result)
 
-            # 6. 构造输出数组
+            # 5. 构造输出数组
             # 形状为 (样本数, 输出数量*结果数)
             new_output = np.zeros((num_samples, output_count))
             
@@ -661,7 +641,9 @@ class AdaptoFlux:
                 if local_index is None or global_coord is None:
                     raise ValueError("缺少 output_index 或 data_coord 属性")
 
+                print("Nodes in topological order:", nodes_in_order)
                 output_array = node_outputs[u]
+
 
                 try:
                     column_data = output_array[:, local_index]
@@ -684,115 +666,28 @@ class AdaptoFlux:
         # 将所有输出列拼接为最终结果
         return collapsed_output
 
-    # 待修改
-    # 根据输入的列表更改数组,处于神经待处理队列状态的值采用暂时不处理方案, 还有一种方案是先将这些值置于最后
-    # 使用该方法会导致数据收敛到一定数量级时可能出现所有数据都在待处理队列中导致数组全为空的情况发生
-    # 这种方法坍缩时不会将待处理数据加入计算
-    def process_array_with_list(self, method_list, values=None, max_values_multipie=5):
+    def infer_with_graph_single(self, sample):
         """
-        根据输入的 method_list 处理数组 values。
-        - 处于待处理队列的值采用暂时不处理方案（跳过计算）。
-        - 另一种方案是将这些值暂存，并在满足输入要求后一起计算。
-        - 该方法可能导致数据收敛到一定数量级时所有数据都在待处理队列中，导致数组全为空。
+        使用图结构对单个样本进行推理计算。
         
-        参数：
-            method_list (list): 处理方法的列表，部分方法可能以 '-' 开头表示跳过计算。
-            max_values_multipie (int): 预估最大扩展倍数，用于预分配存储空间。
+        参数:
+            sample (np.ndarray or list): 单个样本，形状为 [特征维度]
         
-        返回值：
-            np.ndarray: 处理后的新数组。
+        返回:
+            float or np.ndarray: 经过图结构处理后的结果（通过 collapse 输出）
         """
-        if values is None:
-            values = self.last_values  # 使用默认值
+        # 确保输入是一维数组
+        sample = np.array(sample)
+        assert len(sample.shape) == 1, "输入必须是一维数组"
 
-        try:
-            # 预分配一个较大的数组用于存储计算结果，避免动态扩展带来的性能开销
-            new_values = np.empty((values.shape[0], max_values_multipie * len(method_list)))
-            
-            for j in range(values.shape[0]):  # 遍历每一行数据
-                new_number = 0  # 记录新数组的当前存储位置
-                
-                for i in range(len(method_list)):
-                    method_name = method_list[i]
-                    
-                    if method_name.startswith('-'):
-                        # 以 '-' 开头的方法不处理，直接存入待处理队列
-                        self.method_input_values[method_name.lstrip('-')].append(values[j, i])
-                        continue
-                    
-                    method_info = self.methods[method_name]
-                    
-                    if method_info['input_count'] == 1:
-                        # 处理单输入的函数，直接调用并存储输出
-                        for k in method_info['function'](values[j, i]):
-                            new_values[j, new_number] = k
-                            new_number += 1
-                    else:
-                        # 处理多输入的函数，先存入待处理队列，达到输入要求后再计算
-                        self.method_input_values[method_name].append(values[j, i])
-                        
-                        if len(self.method_input_values[method_name]) == method_info['input_count']:
-                            # 当待处理数据量满足要求时，调用函数进行计算
-                            for k in method_info['function'](*self.method_input_values[method_name]):
-                                new_values[j, new_number] = k
-                                new_number += 1
-                            
-                            # 清空已使用的输入值
-                            self.method_input_values[method_name] = []
-                
-            # 截取有效数据，去除未使用的预分配部分
-            new_values = new_values[:, :new_number]  
-            
-            return new_values
-        
-        except Exception as e:
-            print("出现错误，返回原数组：", str(e))
-            traceback.print_exc()
-            print(self.last_values.shape)
-            return self.last_values
+        # 扩展为二维 (1, 特征维度)
+        values = sample.reshape(1, -1)
 
-    def process_single_value_with_list(self, method_list, value):
-        """
-        根据输入的 method_list 处理单个值（仅一个数据元素）。
-        - 处于待处理队列的值采用暂时不处理方案（跳过计算）。
-        - 另一种方案是将这些值暂存，并在满足输入要求后一起计算。
+        # 调用批量推理方法
+        result = self.infer_with_graph(values)
 
-        参数：
-            method_list (list): 处理方法的列表，部分方法可能以 '-' 开头表示跳过计算。
-            value (单一值): 需要处理的单个数据值。
-
-        返回值：
-            处理后的计算结果。
-        """
-        # 初始化存储计算结果
-        result = []
-
-        for method_name in method_list:
-            if method_name.startswith('-'):
-                # 以 '-' 开头的方法不处理，跳过
-                self.method_input_values[method_name.lstrip('-')].append(value)
-                continue
-
-            method_info = self.methods[method_name]
-
-            if method_info['input_count'] == 1:
-                # 处理单输入的函数，直接调用并存储输出
-                for k in method_info['function'](value):
-                    result.append(k)
-            else:
-                # 处理多输入的函数，将当前值暂存，等待满足输入要求后再计算
-                self.method_input_values[method_name].append(value)
-
-                if len(self.method_input_values[method_name]) == method_info['input_count']:
-                    # 当待处理数据量满足要求时，调用函数进行计算
-                    for k in method_info['function'](*self.method_input_values[method_name]):
-                        result.append(k)
-
-                    # 清空已使用的输入值
-                    self.method_input_values[method_name] = []
-
-        # 返回计算结果
-        return result
+        # 返回单个样本的结果
+        return result[0]
 
     def save_model(self, folder="models"):
         """

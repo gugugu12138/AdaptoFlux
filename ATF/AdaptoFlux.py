@@ -13,6 +13,7 @@ import os
 import shutil
 import networkx as nx
 
+
 # 定义一个枚举表示不同的坍缩方法
 class CollapseMethod(Enum):
     SUM = 1       # 求和
@@ -691,35 +692,34 @@ class AdaptoFlux:
 
     def save_model(self, folder="models"):
         """
-        保存模型的路径数据、图结构（.gexf + .gpickle）和相关文件。
+        保存模型的路径数据、图结构（.gexf）和相关文件。
         
         1. 确保目标文件夹存在，如果不存在则创建。
         2. 将模型的路径信息写入到 output.txt。
-        3. 将图结构分别保存为 graph.gexf（可读性强）和 graph.gpickle（效率高）。
+        3. 将图结构保存为 graph.gexf（可读性强）。
         4. 复制指定的 methods_path 文件到目标文件夹。
         
         参数:
             folder (str): 用于保存模型的文件夹路径，默认为 "models"。
         """
+        import json
+        from networkx.readwrite import json_graph
+
         # 确保文件夹存在，如果不存在则创建
         if not os.path.exists(folder):
             os.makedirs(folder)
-
-        # 构建文件路径
-        file_path = os.path.join(folder, "output.txt")
-        
-        # 写入路径数据（假设 self.paths 存在）
-        with open(file_path, "w") as f:
-            for item in self.paths:
-                f.write(str(item) + "\n")
 
         # 保存图结构到 graph.gexf（可读性强）
         gexf_file_path = os.path.join(folder, "graph.gexf")
         nx.write_gexf(self.graph, gexf_file_path)
 
-        # 保存图结构到 graph.gpickle（效率高）
-        gpickle_file_path = os.path.join(folder, "graph.gpickle")
-        nx.write_gpickle(self.graph, gpickle_file_path)
+        json_file_path = os.path.join(folder, "graph.json")
+        try:
+            data = json_graph.node_link_data(self.graph)  # 转换为可序列化的字典
+            with open(json_file_path, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=2)
+        except Exception as e:
+            print(f"保存 JSON 文件时出错: {e}")
 
         # 复制 methods_path 文件到保存的文件夹
         if os.path.exists(self.methods_path):  # 确保源文件存在

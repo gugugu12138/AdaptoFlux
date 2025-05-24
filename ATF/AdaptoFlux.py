@@ -727,41 +727,82 @@ class AdaptoFlux:
 
     def get_path_entropy(self, paths):
         """
+        该方法已废弃
         计算路径熵
 
         :param paths: 需要计算的二维列表路径数据
         :return: 计算得到的路径熵值
         """
         try:
-            # 如果 paths 为空，或者所有子列表都为空，直接返回 0
-            if not paths or all(len(row) == 0 for row in paths):
-                return 0
-            
-            if not paths or not isinstance(paths, list) or not all(isinstance(row, list) for row in paths):
-                raise ValueError("输入的 paths 必须是一个二维列表")
-            
-            # 将所有元素转换为整数并展平为一维列表
-            data = [abs(int(x)) for row in paths for x in row]
+            method_counter = Counter()
 
-            if not data:  # 确保数据不为空
-                return 0
+            # 统计每种方法的出现次数
+            for node in self.graph.nodes:
+                data = self.graph.nodes[node]
+                method_name = data.get("method_name")
+                if method_name and method_name != "null":  # 忽略 null 节点
+                    method_counter[method_name] += 1
+
+            if not method_counter:
+                return 0.0
 
             # 计算概率分布
-            counts = Counter(data)
-            total = len(data)
-            probabilities = [count / total for count in counts.values()]
+            total = sum(method_counter.values())
+            probabilities = [count / total for count in method_counter.values()]
 
-            # 计算熵
-            entropy = -sum(p * np.log2(p) for p in probabilities if p > 0)
-            return float(entropy)
+            # 计算香农熵
+            entropy = -sum(p * math.log2(p) for p in probabilities if p > 0)
+
+            return entropy
         except ValueError as ve:
             print(f"值错误: {ve}")
-            print("输入的路径数据:", paths)  # 打印输入的数据，帮助调试
             return None
         except Exception as e:
             print(f"计算路径熵时发生错误: {e}")
             print("路径数据:", paths)  # 打印路径数据以便定位问题
             return None
+        
+    def get_graph_entropy(self):
+        """
+        计算图结构的熵值，基于节点和方法类型的分布。
+        示例计算方法，可根据实际需求替换。
+        :return: 计算得到的图结构熵值
+        """
+        method_counter = Counter()
+
+        # 统计每种方法的出现次数
+        for node in self.graph.nodes:
+            data = self.graph.nodes[node]
+            method_name = data.get("method_name")
+            if method_name and method_name != "null":  # 忽略 null 节点
+                method_counter[method_name] += 1
+
+        if not method_counter:
+            return 0.0
+
+        # 计算概率分布
+        total = sum(method_counter.values())
+        probabilities = [count / total for count in method_counter.values()]
+
+        # 计算香农熵
+        entropy = -sum(p * math.log2(p) for p in probabilities if p > 0)
+
+        return entropy
+    
+    def get_method_counter(self):
+        """
+        统计图中各 method_name 的出现次数
+        """
+        from collections import Counter
+        method_counter = Counter()
+
+        for node in self.graph.nodes:
+            data = self.graph.nodes[node]
+            method_name = data.get("method_name")
+            if method_name and method_name != "null":  # 忽略 null 节点
+                method_counter[method_name] += 1
+
+        return method_counter
         
     def RMSE(self, y_true, y_pred):
         """

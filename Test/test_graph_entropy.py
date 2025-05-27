@@ -3,7 +3,7 @@ import numpy as np
 from collections import Counter
 import math
 
-from ATF import AdaptoFlux, CollapseMethod
+from ATF import AdaptoFlux
 
 class TestGraphEntropy(unittest.TestCase):
 

@@ -1,7 +1,7 @@
 # methods.py
 import math
 import numpy as np
-from methods.decorators import output_count
+from ATF.methods.decorators import output_count
 
 @output_count(1)
 def add(a):

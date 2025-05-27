@@ -1,5 +1,5 @@
 import numpy as np
-from ATF import AdaptoFlux, CollapseMethod
+from ATF import AdaptoFlux
 
 # 加载自定义方法
 methods_path = "Test/test_decision_graph/logic_functions.py"

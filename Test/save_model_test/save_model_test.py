@@ -54,7 +54,7 @@ if os.path.exists(json_file_path):
         data = json.load(f)
     
     # 使用 node_link_graph 将 JSON 数据还原为图
-    graph_json = json_graph.node_link_graph(data)
+    graph_json = json_graph.node_link_graph(data, edges="edges")
 
     print("📊 从 .json 加载的图节点数:", len(graph_json.nodes))
     print("📊 从 .json 加载的图边数:", len(graph_json.edges))

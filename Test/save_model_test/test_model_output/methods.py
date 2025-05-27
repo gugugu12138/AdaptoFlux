@@ -1,7 +1,7 @@
 # operations.py
 
 import math
-from methods.decorators import output_count
+from ATF.methods.decorators import output_count
 
 @output_count(1)
 def return_value(x):

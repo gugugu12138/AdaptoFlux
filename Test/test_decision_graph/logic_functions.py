@@ -1,5 +1,5 @@
 # logic_functions.py
-from methods.decorators import output_count
+from ATF.methods.decorators import output_count
 
 @output_count(3)
 def classify_number(x):

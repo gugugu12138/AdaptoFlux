@@ -77,7 +77,7 @@ class CollapseFunctionManager:
         return self.custom_function(values)
     
     def _area(self, values):
-        """计算波形面积分割概率（返回概率列表或主峰索引）"""
+        """计算波形面积分割概率（返回概率列表）"""
         n = len(values)
         if n < 2 or self.num_bins == 0:
             print('使用area方法至少需要两个数据，且分段数大于0')

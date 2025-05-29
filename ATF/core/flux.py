@@ -11,11 +11,13 @@ from collections import Counter
 import os
 import shutil
 import networkx as nx
-from ..collapse.collapse_functions import CollapseFunctionManager, CollapseMethod
-from ..graph.graph_processor import GraphProcessor
+from ..CollapseManager.collapse_functions import CollapseFunctionManager, CollapseMethod
+from ..GraphManager.graph_processor import GraphProcessor
+from ..PathGenerator.path_generator import PathGenerator
+
 
 class AdaptoFlux:
-    def __init__(self, values, labels, methods_path, collapse_method=CollapseMethod.SUM):
+    def __init__(self, values = None, labels = None, methods_path = None, collapse_method=CollapseMethod.SUM):
         """
         初始化 AdaptoFlux 类的实例
         
@@ -24,13 +26,13 @@ class AdaptoFlux:
         :param collapse_method: 选择的坍缩方法，默认为 SUM
         :param methods_path: 存储方法路径的文件路径，默认为 "methods.py"
         """
-
-        # 检查 values 是二维的
-        assert len(values.shape) == 2, f"values 必须是二维的 (样本数, 特征维度)，但得到 shape={values.shape}"
-        
-        # 检查 labels 是一维的，并且样本数一致
-        assert len(labels.shape) == 1, f"labels 必须是一维的 (样本数,)，但得到 shape={labels.shape}"
-        assert values.shape[0] == labels.shape[0], f"values 和 labels 样本数量不一致：{values.shape[0]} vs {labels.shape[0]}"
+        if values is not None and labels is not None:
+            # 检查 values 是二维的
+            assert len(values.shape) == 2, f"values 必须是二维的 (样本数, 特征维度)，但得到 shape={values.shape}"
+            
+            # 检查 labels 是一维的，并且样本数一致
+            assert len(labels.shape) == 1, f"labels 必须是一维的 (样本数,)，但得到 shape={labels.shape}"
+            assert values.shape[0] == labels.shape[0], f"values 和 labels 样本数量不一致：{values.shape[0]} vs {labels.shape[0]}"
 
         # 存储输入数据
         self.values = values  # 原始数值列表
@@ -52,14 +54,15 @@ class AdaptoFlux:
         self.graph = nx.MultiDiGraph()
         self.graph.add_node("root") 
         self.graph.add_node('collapse')
-        for feature_index in range(self.values.shape[1]):  # 遍历特征维度
-            self.graph.add_edge(
-                "root",
-                "collapse",
-                output_index=feature_index, # 函数局部索引
-                data_coord=feature_index  # 当前层全局索引
-            )
-        self.layer = 0
+        if self.values is not None:
+            for feature_index in range(self.values.shape[1]):  # 遍历特征维度
+                self.graph.add_edge(
+                    "root",
+                    "collapse",
+                    output_index=feature_index, # 函数局部索引
+                    data_coord=feature_index  # 当前层全局索引
+                )
+            self.layer = 0
         
         # 选择的坍缩方法
         self.collapse_method = collapse_method  # 默认使用 SUM 方法
@@ -89,6 +92,7 @@ class AdaptoFlux:
             methods=self.methods,
             collapse_method=collapse_method
         )
+
     
     def add_collapse_method(self, collapse_function):
         """
@@ -147,37 +151,6 @@ class AdaptoFlux:
         """
         return self.collapse_manager.collapse(values)
 
-    
-    def group_indices_by_input_count(self, indices, input_count, shuffle=False):
-        """
-        将输入的索引列表按照指定的 input_count 分组，每组包含 input_count 个索引。
-        如果最后一组元素数量不足，则将其作为未匹配项返回。
-
-        参数:
-            indices (list): 待分组的索引列表，例如 [0, 1, 2, 3, 4]
-            input_count (int): 每组所需的索引数量（对应某个方法需要的输入参数个数）
-            shuffle (bool): 是否在分组前打乱索引顺序，默认为 False
-
-        返回:
-            tuple: 包含两个元素：
-                - groups (list of lists): 完整分组后的结果，每个子列表长度等于 input_count
-                - unmatched (list of lists): 剩余无法组成完整组的索引，每个索引单独作为一个小组
-        """
-        if shuffle:
-            random.shuffle(indices)
-        groups = []
-        unmatched = []
-        i = 0
-        while i < len(indices):
-            group = indices[i:i + input_count]
-            if len(group) == input_count:
-                groups.append(group)
-            else:
-                unmatched.extend([[idx] for idx in group])
-            i += input_count
-
-        return groups, unmatched
-
     # 生成单次路径选择
     def process_random_method(self, shuffle_indices=True):
         """
@@ -187,57 +160,12 @@ class AdaptoFlux:
         :return: method_list，包含为每个元素随机分配的方法（可能是单输入或多输入方法）
         :raises ValueError: 如果方法字典为空或值列表为空，则抛出异常
         """
-        if not self.methods:
-            raise ValueError("方法字典为空，无法处理！")
-        if self.last_values.size == 0:  # 处理 NumPy 数组的情况
-            raise ValueError("值列表为空，无法处理！")
+        self.path_generator = PathGenerator(
+            graph=self.graph,
+            methods=self.methods,
+        )
+        return self.path_generator.process_random_method(shuffle_indices=shuffle_indices)
 
-        method_list = []
-        collapse_edges = list(self.graph.in_edges("collapse", data=True))
-        num_elements = len(collapse_edges)
-
-        # 1. 初始为全部正值方法
-        for _ in range(num_elements):
-            method_name = random.choice(list(self.methods.keys()))
-            method_list.append(method_name)
-
-        # 2. 收集方法的位置
-        multi_input_positions = {}
-        for idx, method_name in enumerate(method_list):
-            input_count = self.methods[method_name]["input_count"]
-            if input_count <= 0:
-                raise ValueError(f"方法 '{method_name}' 的 input_count 必须大于 0，当前值为 {input_count}")
-            multi_input_positions.setdefault(method_name, []).append(idx)
-        
-        index_map = {}
-        valid_groups = {}
-        unmatched = []
-
-        for method_name, indices in multi_input_positions.items():
-            input_count = self.methods[method_name]["input_count"]
-            groups, unmatch = self.group_indices_by_input_count(indices, input_count, shuffle_indices)
-
-            valid_groups[method_name] = groups
-            for group in groups:
-                for idx in group:
-                    index_map[idx] = {"method": method_name, "group": tuple(group)}
-            # 未分组的数据每一个单独视为一个组
-            unmatched.extend(idx for idx in unmatch)
-
-        # 新增：将 unmatched 中的索引也加入 index_map
-        for sublist in unmatched:
-            for idx in sublist:
-                print(idx)
-                index_map[idx] = {
-                    "method": "unmatched",
-                    "group": tuple([idx])  # 每个 idx 自己成为一个 group
-                }
-
-        return {
-            "index_map": index_map,
-            "valid_groups": valid_groups,
-            "unmatched": unmatched
-        }
     
     def replace_random_elements(self, result, n, shuffle_indices=True):
         """
@@ -248,80 +176,11 @@ class AdaptoFlux:
         :param shuffle_indices: 是否打乱新方法分配时的索引顺序
         :return: 新的 result 结构，包含更新后的 index_map、valid_groups 和 unmatched
         """
-        from copy import deepcopy
-
-        # 提取原始信息
-        index_map = deepcopy(result["index_map"])
-        valid_groups = deepcopy(result["valid_groups"])
-        unmatched = deepcopy(result.get("unmatched", []))
-
-        # 收集所有可替换的索引条目 (method_name, group, idx)
-        all_index_entries = []
-        for method_name, groups in valid_groups.items():
-            for group in groups:
-                for idx in group:
-                    all_index_entries.append((method_name, group, idx))
-
-        total_indices = len(all_index_entries)
-        if n > total_indices:
-            raise ValueError(f"无法替换 {n} 个索引，总数只有 {total_indices}")
-
-        # 随机选取 n 个要替换的索引
-        indices_to_replace = random.sample(all_index_entries, n)
-
-        # 删除这些索引所属的 group
-        new_valid_groups = deepcopy(valid_groups)
-        for method_name, old_group, idx in indices_to_replace:
-            if method_name in new_valid_groups and old_group in new_valid_groups[method_name]:
-                new_valid_groups[method_name].remove(old_group)
-
-        # 收集被替换的索引
-        indices_to_be_assigned = [idx for _, _, idx in indices_to_replace]
-
-        # 分配新方法给这些索引
-        new_assignments = {}
-        for idx in indices_to_be_assigned:
-            method_name = random.choice(list(self.methods.keys()))
-            new_assignments.setdefault(method_name, []).append(idx)
-
-        # 按照 input_count 分组
-        assignments_method_group_positions = {"unmatched": []}
-        for method_name, indices in new_assignments.items():
-            input_count = self.methods[method_name]["input_count"]
-            if shuffle_indices:
-                random.shuffle(indices)
-            groups, unmatch = self.group_indices_by_input_count(indices, input_count, shuffle_indices)
-            assignments_method_group_positions[method_name] = groups
-            assignments_method_group_positions["unmatched"].extend([[idx] for idx in unmatch])
-
-        # 合并老的和新的 valid_groups
-        updated_valid_groups = deepcopy(new_valid_groups)
-        for method_name, groups in assignments_method_group_positions.items():
-            if not groups or method_name == "unmatched":
-                continue
-            if method_name in updated_valid_groups:
-                updated_valid_groups[method_name].extend(groups)
-            else:
-                updated_valid_groups[method_name] = groups
-
-        # 构建新的 index_map
-        new_index_map = {}
-        for method_name, groups in updated_valid_groups.items():
-            for group in groups:
-                for idx in group:
-                    new_index_map[idx] = {
-                        "method": method_name,
-                        "group": tuple(group)  # 保持 hashable
-                    }
-
-        # 处理未匹配项（unmatched）
-        new_unmatched = assignments_method_group_positions["unmatched"]
-
-        return {
-            "index_map": new_index_map,
-            "valid_groups": updated_valid_groups,
-            "unmatched": new_unmatched
-        }
+        self.path_generator = PathGenerator(
+            graph=self.graph,
+            methods=self.methods,
+        )
+        return self.path_generator.replace_random_elements(result, n, shuffle_indices=shuffle_indices)
 
     def append_nx_layer(self, result, discard_unmatched='to_discard', discard_node_method_name="null"):
         """
@@ -804,4 +663,30 @@ class AdaptoFlux:
             data = self.process_single_value_with_list(path, data)
         result = self.collapse(data)
         print(f"推理值：{result}")
+
+    def _create_graph_processor(self, graph):
+        """
+        工厂方法：创建一个图处理器（GraphProcessor）实例。
+
+        该方法根据传入的图结构和当前 AdaptoFlux 的配置（如可用方法池、聚合方式），
+        返回一个已初始化的 GraphProcessor 对象，用于后续图结构的扩展和推理操作。
+
+        Parameters:
+        -----------
+        graph : nx.MultiDiGraph
+            初始图结构，通常是一个包含 "root" 和 "collapse" 节点的基础图
+
+        Returns:
+        --------
+        GraphProcessor
+            一个已经配置好的图处理器对象，可用于：
+            - 向图中添加新节点/层（append_nx_layer）
+            - 使用图结构进行推理（infer_with_graph）
+            - 图结构的优化与分析等操作
+        """
+        return GraphProcessor(
+            graph=graph,
+            methods=self.methods,              # 可用的方法集合（如加法、乘法、激活函数等）
+            collapse_method=self.collapse_method  # 输出聚合方式（如 sum、mean 等）
+        )
 

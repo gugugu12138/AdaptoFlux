@@ -2,7 +2,7 @@ import networkx as nx
 import numpy as np
 from collections import Counter
 import math
-from ..collapse.collapse_functions import CollapseFunctionManager, CollapseMethod
+from ..CollapseManager.collapse_functions import CollapseFunctionManager, CollapseMethod
 
 class GraphProcessor:
     def __init__(self, graph: nx.MultiDiGraph, methods: dict, collapse_method=CollapseMethod.SUM):

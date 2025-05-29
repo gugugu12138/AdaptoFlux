@@ -27,36 +27,56 @@ P_j = \frac{A_j}{A_{\text{total}}}
 
 ## 3. 算法实现
 ```python
-def _area(self, values):
-    n = len(values)
-    if n < 2 or self.num_bins == 0:
-        return np.zeros(self.num_bins) if self.num_bins > 1 else 0.0
+    def _volume(self, values):
+        """
+        计算任意维度数据的体积/面积/长度分割概率（返回概率列表）
+        
+        参数:
+            values (array-like): 任意维度的数组，shape = (N, ...)，其中 N >= 1
+        
+        返回:
+            probabilities (np.ndarray): 每个分段的体积占比，形状为 (self.num_bins,)
+        """
+        values = np.asarray(values)
+        n = values.shape[0]  # 第一维长度
 
-    # 计算绝对面积（梯形法）
-    y = np.array(values)
-    total_area = np.sum(np.abs(y[:-1] + y[1:]) * 0.5)
+        if n < 2 or self.num_bins <= 0:
+            print('使用_volume方法至少需要两个数据点，且分段数大于0')
+            return np.zeros(self.num_bins) if self.num_bins > 1 else 0.0
 
-    # 分段计算面积
-    segment_length = n / self.num_bins
-    probabilities = []
-    for k in range(self.num_bins):
-        start = int(k * segment_length)
-        end = min(int((k + 1) * segment_length), n - 1)
-        if start >= end:
-            probabilities.append(0.0)
-            continue
-        segment_y = y[start:end+1]
-        segment_area = np.sum(np.abs(segment_y[:-1] + segment_y[1:]) * 0.5)
-        probabilities.append(segment_area / total_area if total_area > 0 else 0.0)
+        def compute_volume(arr):
+            """递归计算多维数组的总体积（使用梯形法则）"""
+            if arr.ndim == 1:
+                return np.abs(np.trapz(arr))
+            else:
+                return np.abs(np.trapz([compute_volume(sub) for sub in arr]))
 
-    # 归一化处理
-    probabilities = np.array(probabilities)
-    probabilities /= probabilities.sum() if probabilities.sum() > 0 else 1.0
-    return probabilities
+        # 计算总体积
+        total_volume = compute_volume(values)
+
+        # 分段计算体积
+        segment_length = n / self.num_bins
+        probabilities = []
+
+        for k in range(self.num_bins):
+            start = int(k * segment_length)
+            end = min(int((k + 1) * segment_length), n)
+            if start >= end:
+                probabilities.append(0.0)
+                continue
+
+            segment = values[start:end]
+            segment_vol = compute_volume(segment)
+            probabilities.append(segment_vol / total_volume if total_volume > 0 else 0.0)
+
+        probabilities = np.array(probabilities)
+        total_prob = probabilities.sum()
+        if total_prob > 0:
+            probabilities /= total_prob
+        return probabilities
 ```
 
 ## 4. 扩展方向
 1. **加权面积计算**：支持对特定时间段赋予更高权重（可训练的参数）
 2. **自适应分段**：根据波形特征动态调整分段边界（可训练的参数）
-3. **多维度扩展**：处理多通道波形数据（如3轴加速度计）
 

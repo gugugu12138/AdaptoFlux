@@ -27,7 +27,7 @@ P_j = \frac{A_j}{A_{\text{total}}}
 
 ## 3. 算法实现
 ```python
-def _volume(self, values):
+def _energy(self, values):
     """
     计算任意维度数据的体积/面积/长度分割概率（返回概率列表）
     
@@ -44,14 +44,14 @@ def _volume(self, values):
         print('使用_volume方法至少需要两个数据点，且分段数大于0')
         return np.zeros(self.num_bins) if self.num_bins > 1 else 0.0
 
-    def compute_volume(arr):
+    def compute_energy(arr):
         result = arr.copy()
         while result.ndim > 1:
             result = trapz(result, axis=-1)
         return np.abs(result).sum()
 
     # 计算总体积
-    total_volume = compute_volume(values)
+    total_volume = compute_energy(values)
 
     # 分段计算体积
     segment_length = n / self.num_bins

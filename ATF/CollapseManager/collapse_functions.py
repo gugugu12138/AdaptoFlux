@@ -8,7 +8,7 @@ class CollapseMethod(Enum):
     VARIANCE = 3  # 方差
     PRODUCT = 4   # 相乘
     CUSTOM = 5    # 自定义方法
-    Volume = 6
+    Energy = 6
 
 class CollapseFunctionManager:
     def __init__(self, method=CollapseMethod.SUM):
@@ -54,8 +54,8 @@ class CollapseFunctionManager:
             return self._product(values)
         elif self.collapse_method == CollapseMethod.CUSTOM and self.custom_function:
             return self._custom(values)
-        elif self.collapse_method == CollapseMethod.Volume:
-            return self._volume(values)
+        elif self.collapse_method == CollapseMethod.Energy:
+            return self._energy(values)
         else:
             raise ValueError("未知或未设置的坍缩方法")
 
@@ -76,33 +76,31 @@ class CollapseFunctionManager:
             raise ValueError("自定义坍缩函数未设置或不是一个可调用函数")
         return self.custom_function(values)
     
-    def _volume(self, values):
+    def _energy(self, values):
         """
-        计算任意维度数据的体积/面积/长度分割概率（返回概率列表）
+        计算任意维度数据分割概率（返回概率列表）
         
         参数:
             values (array-like): 任意维度的数组，shape = (N, ...)，其中 N >= 1
         
         返回:
-            probabilities (np.ndarray): 每个分段的体积占比，形状为 (self.num_bins,)
+            probabilities (np.ndarray): 每个分段的占比，形状为 (self.num_bins,)
         """
         values = np.asarray(values)
         n = values.shape[0]  # 第一维长度
 
         if n < 2 or self.num_bins <= 0:
-            print('使用_volume方法至少需要两个数据点，且分段数大于0')
+            print('使用_energy方法至少需要两个数据点，且分段数大于0')
             return np.zeros(self.num_bins) if self.num_bins > 1 else 0.0
 
-        def compute_volume(arr):
+        def compute_energy(arr):
             result = arr.copy()
             while result.ndim > 1:
                 result = trapz(result, axis=-1)
             return np.abs(result).sum()
 
-        # 计算总体积
-        total_volume = compute_volume(values)
+        total_energy = compute_energy(values)
 
-        # 分段计算体积
         segment_length = n / self.num_bins
         probabilities = []
 
@@ -114,8 +112,8 @@ class CollapseFunctionManager:
                 continue
 
             segment = values[start:end]
-            segment_vol = compute_volume(segment)
-            probabilities.append(segment_vol / total_volume if total_volume > 0 else 0.0)
+            segment_ene = compute_energy(segment)
+            probabilities.append(segment_ene / total_energy if total_energy > 0 else 0.0)
 
         probabilities = np.array(probabilities)
         total_prob = probabilities.sum()

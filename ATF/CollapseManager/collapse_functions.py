@@ -1,6 +1,6 @@
 import numpy as np
 from enum import Enum
-
+from scipy.integrate import trapz
 
 class CollapseMethod(Enum):
     SUM = 1       # 求和
@@ -94,11 +94,10 @@ class CollapseFunctionManager:
             return np.zeros(self.num_bins) if self.num_bins > 1 else 0.0
 
         def compute_volume(arr):
-            """递归计算多维数组的总体积（使用梯形法则）"""
-            if arr.ndim == 1:
-                return np.abs(np.trapz(arr))
-            else:
-                return np.abs(np.trapz([compute_volume(sub) for sub in arr]))
+            result = arr.copy()
+            while result.ndim > 1:
+                result = trapz(result, axis=-1)
+            return np.abs(result).sum()
 
         # 计算总体积
         total_volume = compute_volume(values)

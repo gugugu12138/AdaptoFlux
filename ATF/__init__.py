@@ -5,3 +5,4 @@ from .CollapseManager.collapse_functions import CollapseFunctionManager, Collaps
 from .methods.decorators import output_count
 from .ModelTrainer.model_trainer import ModelTrainer
 from .PathGenerator.path_generator import PathGenerator
+from .ModelGenerator.model_generator import ModelGenerator

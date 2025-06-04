@@ -3,6 +3,7 @@ import numpy as np
 from collections import Counter
 from ..GraphManager.graph_processor import GraphProcessor
 import networkx as nx
+from ..ModelGenerator.model_generator import ModelGenerator
 
 class ModelTrainer:
     def __init__(self, adaptoflux_instance):
@@ -11,6 +12,7 @@ class ModelTrainer:
         :param adaptoflux_instance: 已初始化的 AdaptoFlux 对象
         """
         self.adaptoflux = adaptoflux_instance
+        self.model_generator = ModelGenerator(adaptoflux_instance)
 
     # -----------------------------
     # 模型生成相关函数
@@ -19,37 +21,12 @@ class ModelTrainer:
         """
         生成多个初始模型，并评估其准确率
         """
-        model_candidates = []
-        for _ in range(num_models):
-            # 1. 创建一个全新的空图结构
-            temp_graph = nx.MultiDiGraph()
-            temp_graph.add_node("root")
-            temp_graph.add_node("collapse")
+        
+        print("使用 ModelGenerator 生成初始模型...")
+        initial_models = self.model_generator.generate_initial_models(num_models, max_layers)
+        print(f"共生成 {len(initial_models)} 个初始模型")
 
-            # 添加初始边：root -> collapse
-            for feature_index in range(self.adaptoflux.values.shape[1]):
-                temp_graph.add_edge(
-                    "root",
-                    "collapse",
-                    output_index=0,
-                    data_coord=feature_index
-                )
-            
-            # 2. 初始化 GraphProcessor 用于构建图
-            graph_processor = GraphProcessor(
-                graph=temp_graph,
-                methods=self.adaptoflux.methods,
-                collapse_method=self.adaptoflux.collapse_method
-            )
-
-            # 3. 逐层构建图结构
-            current_layer = 0
-            while current_layer < max_layers:
-                result = self.adaptoflux.process_random_method()
-                graph_processor.append_nx_layer(result)
-                current_layer += 1
-
-        return model_candidates
+        return initial_models 
 
     def select_best_model(self, models):
         best_model = max(models, key=lambda x: x["accuracy"])

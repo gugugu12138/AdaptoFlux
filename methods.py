@@ -31,29 +31,13 @@ def multiply_values(x, y):
     return [x * y]
 
 
-def return_two_values(x):
-    """
-    返回两个原数值
-    :param x: 输入数值
-    :return: 原数值
-    """
-    return [x,x]
-
-def return_three_values(x):
+def return_values(x):
     """
     返回三个原数值
     :param x: 输入数值
     :return: 原数值
     """
     return [x,x,x]
-
-def return_four_values(x):
-    """
-    返回四个原数值
-    :param x: 输入数值
-    :return: 原数值
-    """
-    return [x,x,x,x]
 
 def ignore(x):
     """

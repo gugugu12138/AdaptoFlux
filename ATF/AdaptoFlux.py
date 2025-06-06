@@ -11,6 +11,8 @@ from threading import Thread, Event
 from collections import Counter
 import os
 import shutil
+from tqdm import tqdm
+import json
 
 # 定义一个枚举表示不同的坍缩方法
 class CollapseMethod(Enum):
@@ -816,29 +818,58 @@ class AdaptoFlux:
             print(f"读取文件时发生错误: {str(e)}")
 
     # 评估函数
-    def evaluate(self, inputs, targets):
+    def evaluate(self, inputs, targets, save_errors_to="errors.json"):
         """
-        评估模型在给定输入和目标上的准确性。
-
-        该函数根据随机方法处理输入数据，计算模型预测值与目标值的匹配情况，并返回准确率。
+        评估模型在给定输入和目标上的准确性，并返回准确率和方差损失。
+        同时可选地将预测错误的样本保存到 JSON 文件中。
 
         参数:
-            inputs (np.ndarray): 输入数据，形状通常为 (样本数, 特征数)。
-            targets (np.ndarray): 真实目标值，与输入数据一一对应。
+            inputs (np.ndarray): 输入数据，形状为 (样本数, 特征数)。
+            targets (np.ndarray): 真实目标值。
+            save_errors_to (str): 如果不为 None，则将预测错误的样本保存到该文件路径。
 
         返回:
-            float: 模型在给定输入数据上的准确率。
+            accuracy (float): 模型在给定输入数据上的准确率。
+            loss (float): 预测值与目标值之间的方差（Variance），即损失。
         """
-        for path in self.paths:
-            inputs = self.process_array_with_list(path, inputs)  # 根据随机方法处理数据
+        # 处理路径
+        for path in tqdm(self.paths, desc="Processing Paths", leave=False):
+            inputs = self.process_array_with_list(path, inputs)
 
-        collapse_values = np.apply_along_axis(self.collapse, axis=1, arr=inputs)
-        # 计算预测值与真实值匹配的情况
-        prediction_matches = collapse_values == targets  
+        # 对每一行应用 collapse 函数
+        collapse_values = []
+        for row in tqdm(inputs, desc="Collapsing Rows", total=inputs.shape[0]):
+            collapse_values.append(self.collapse(row))
+        collapse_values = np.array(collapse_values)
+
         # 计算准确率
-        train_accuracy = np.mean(prediction_matches) 
-        print(f"准确率：{train_accuracy}")
-        return train_accuracy
+        prediction_matches = collapse_values == targets
+        accuracy = np.mean(prediction_matches)
+
+        # 计算损失：使用预测值与目标值之间的方差
+        loss = np.var(collapse_values - targets)
+
+        print(f"准确率：{accuracy}")
+        print(f"损失（方差）：{loss}")
+
+        # 保存预测错误的数据（如果指定了路径）
+        if save_errors_to is not None:
+            errors = []
+            for i in range(len(inputs)):
+                if prediction_matches[i]:
+                    continue  # 跳过预测正确的样本
+
+                errors.append({
+                    "input": inputs[i].tolist(),          # 转成 list 方便 JSON 序列化
+                    "prediction": int(collapse_values[i]),  # 确保是 Python 原生类型
+                    "target": int(targets[i])
+                })
+
+            with open(save_errors_to, 'w', encoding='utf-8') as f:
+                json.dump(errors, f, indent=2, ensure_ascii=False)
+            print(f"预测错误的样本已保存至: {save_errors_to}")
+
+        return accuracy, loss
 
     def inference(self, data):
         """

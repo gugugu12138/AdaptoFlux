@@ -116,40 +116,48 @@ def tanh(x):
     return [math.tanh(x)]
 
 # =====================================================================
-# 🟠 统计类函数（增强特征抽象能力）
+# 🟠 统计类函数（增强特征抽象能力）没做适配捏
 # =====================================================================
 
-def mean_value(values):
+def mean_value(a, b, c):
     """
-    返回输入数组的均值
-    :param values: 输入数组
-    :return: 均值
+    返回三个输入值的均值
+    :param a: 第一个数值
+    :param b: 第二个数值
+    :param c: 第三个数值
+    :return: 均值（作为单元素列表）
     """
-    return [np.mean(values)]
+    return [np.mean([a, b, c])]
 
-def max_value(values):
+def max_value(a, b, c):
     """
-    返回输入数组的最大值
-    :param values: 输入数组
-    :return: 最大值
+    返回三个输入值的最大值
+    :param a: 第一个数值
+    :param b: 第二个数值
+    :param c: 第三个数值
+    :return: 最大值（作为单元素列表）
     """
-    return [max(values)]
+    return [max([a, b, c])]
 
-def min_value(values):
+def min_value(a, b, c):
     """
-    返回输入数组的最小值
-    :param values: 输入数组
-    :return: 最小值
+    返回三个输入值的最小值
+    :param a: 第一个数值
+    :param b: 第二个数值
+    :param c: 第三个数值
+    :return: 最小值（作为单元素列表）
     """
-    return [min(values)]
+    return [min([a, b, c])]
 
-def std_deviation(values):
+def std_deviation(a, b, c):
     """
-    返回输入数组的标准差
-    :param values: 输入数组
-    :return: 标准差
+    返回三个输入值的标准差
+    :param a: 第一个数值
+    :param b: 第二个数值
+    :param c: 第三个数值
+    :return: 标准差（作为单元素列表）
     """
-    return [np.std(values)]
+    return [np.std([a, b, c])]
 
 # =====================================================================
 # 🟤 分类友好型函数（关键：输出 10 维向量）
@@ -166,11 +174,12 @@ def project_to_10_dim(x):
     base[index] += abs(x) % 1
     return base
 
-def normalize_to_softmax(values):
+def normalize_to_softmax(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9):
     """
     归一化为 softmax-like 输出（概率分布）
-    :param values: 输入数组（长度应为 10）
-    :return: 概率分布
+    :param x0~x9: 十个输入数值
+    :return: 概率分布（长度为 10 的 list）
     """
-    exp_values = np.exp(values - np.max(values))
-    return (exp_values / exp_values.sum()).tolist() 
+    values = np.array([x0, x1, x2, x3, x4, x5, x6, x7, x8, x9])
+    exp_values = np.exp(values - np.max(values))  # 防止数值溢出
+    return (exp_values / exp_values.sum()).tolist()

@@ -635,7 +635,7 @@ class AdaptoFlux:
             # 清空路径列表
             self.paths = []
             # 创建动态权重控制器
-            dynamicWeightController = DynamicWeightController.DynamicWeightController(epochs)
+            # dynamicWeightController = DynamicWeightController.DynamicWeightController(epochs)
 
             # 训练循环
             for i in range(1, epochs + 1):
@@ -663,18 +663,20 @@ class AdaptoFlux:
                 new_path_entropy = self.get_path_entropy(self.paths+ [last_method])
 
 
-                last_alpha,last_beta,last_gamma,last_delta = dynamicWeightController.get_weights(i - 1, last_path_entropy, last_loss_value)
-                new_alpha,new_beta,new_gamma,new_delta = dynamicWeightController.get_weights(i, new_path_entropy, new_loss_value)
+                # last_alpha,last_beta,last_gamma,last_delta = dynamicWeightController.get_weights(i - 1, last_path_entropy, last_loss_value)
+                # new_alpha,new_beta,new_gamma,new_delta = dynamicWeightController.get_weights(i, new_path_entropy, new_loss_value)
 
-                # 计算指导值（暂未编写冗余部分）
-                last_guiding_value = last_alpha * last_accuracy_trian + last_beta * last_path_entropy - last_delta * last_loss_value
-                new_guiding_value = new_alpha * new_accuracy_trian + new_beta * new_path_entropy - new_delta * new_loss_value
+                # # 计算指导值（暂未编写冗余部分）
+                # last_guiding_value = last_alpha * last_accuracy_trian + last_beta * last_path_entropy - last_delta * last_loss_value
+                # new_guiding_value = new_alpha * new_accuracy_trian + new_beta * new_path_entropy - new_delta * new_loss_value
+                last_guiding_value = last_loss_value
+                new_guiding_value = new_loss_value
 
                 print("上一轮训练集指导值:" + str(last_guiding_value))
                 print("本轮训练集指导值：" + str(new_guiding_value))
                 
                 # 判断是否要更新网络路径
-                if (last_guiding_value < new_guiding_value) and new_last_values.size != 0:
+                if (last_guiding_value > new_guiding_value) and new_last_values.size != 0:
                     self.paths.append(last_method)
                     self.history_values.append(new_last_values)
                     self.last_values = new_last_values
@@ -725,21 +727,23 @@ class AdaptoFlux:
                         print("本轮训练集相等概率：" + str(new_accuracy_trian))
 
                         # 计算前后路径熵和从动态权重控制器获取权值
-                        last_path_entropy = self.get_path_entropy(self.paths)
-                        new_path_entropy = self.get_path_entropy(self.paths+ [last_method])
+                        # last_path_entropy = self.get_path_entropy(self.paths)
+                        # new_path_entropy = self.get_path_entropy(self.paths+ [last_method])
 
-                        last_alpha,last_beta,last_gamma,last_delta = dynamicWeightController.get_weights(i - 1, last_path_entropy, last_loss_value)
-                        new_alpha,new_beta,new_gamma,new_delta = dynamicWeightController.get_weights(i, new_path_entropy, new_loss_value)
+                        # last_alpha,last_beta,last_gamma,last_delta = dynamicWeightController.get_weights(i - 1, last_path_entropy, last_loss_value)
+                        # new_alpha,new_beta,new_gamma,new_delta = dynamicWeightController.get_weights(i, new_path_entropy, new_loss_value)
 
                         # 计算指导值（暂未编写冗余部分）
-                        last_guiding_value = last_alpha * last_accuracy_trian + last_beta * last_path_entropy - last_delta * last_loss_value
-                        new_guiding_value = new_alpha * new_accuracy_trian + new_beta * new_path_entropy - new_delta * new_loss_value
+                        # last_guiding_value = last_alpha * last_accuracy_trian + last_beta * last_path_entropy - last_delta * last_loss_value
+                        # new_guiding_value = new_alpha * new_accuracy_trian + new_beta * new_path_entropy - new_delta * new_loss_value
+                        last_guiding_value = last_loss_value
+                        new_guiding_value = new_loss_value
 
                         print("上一轮训练集指导值:" + str(last_guiding_value))
                         print("本轮训练集指导值：" + str(new_guiding_value))
 
                         # 判断是否需要更新路径
-                        if (last_guiding_value < new_guiding_value) and new_last_values.size != 0:
+                        if (last_guiding_value > new_guiding_value) and new_last_values.size != 0:
                             self.paths.append(last_method)
                             self.history_values.append(new_last_values)
                             self.last_values = new_last_values

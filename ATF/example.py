@@ -25,7 +25,7 @@ if __name__ == "__main__":
     #                             x_val.reshape(x_val.shape[0], -1),
     #                             y_val)
 
-    file_path = "methods.py"
+    file_path = "methods-1.py"
     model = AdaptoFlux.AdaptoFlux(x_train.reshape(x_train.shape[0], -1),
                             y_train, file_path)
 

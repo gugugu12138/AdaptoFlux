@@ -1,1 +1,1 @@
-from .decorators import output_count
+from .decorators import method_profile

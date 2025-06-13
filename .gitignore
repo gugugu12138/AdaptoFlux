@@ -5,3 +5,4 @@ __pycache__/
 idea.txt
 *.egg-info/
 error_log.txt
+paper/

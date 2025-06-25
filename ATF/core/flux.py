@@ -11,6 +11,7 @@ from collections import Counter
 import os
 import shutil
 import networkx as nx
+import pandas as pd
 from ..CollapseManager.collapse_functions import CollapseFunctionManager, CollapseMethod
 from ..GraphManager.graph_processor import GraphProcessor
 from ..PathGenerator.path_generator import PathGenerator
@@ -54,13 +55,24 @@ class AdaptoFlux:
         self.graph = nx.MultiDiGraph()
         self.graph.add_node("root") 
         self.graph.add_node('collapse')
+
+        # 获取每个特征维度的数据类型
+        if isinstance(self.values, pd.DataFrame):
+            self.feature_types = [str(dtype) for dtype in self.values.dtypes]
+        elif self.values.dtype.names is not None:  # structured array
+            self.feature_types = [self.values.dtype.fields[name][0].name for name in self.values.dtype.names]
+        else:
+            self.feature_types = [str(self.values.dtype)] * self.values.shape[1]
+
         if self.values is not None:
-            for feature_index in range(self.values.shape[1]):  # 遍历特征维度
+            # 添加 root -> collapse 边
+            for feature_index, feature_type in enumerate(self.feature_types):
                 self.graph.add_edge(
                     "root",
                     "collapse",
-                    output_index=feature_index, # 函数局部索引
-                    data_coord=feature_index  # 当前层全局索引
+                    output_index=feature_index,
+                    data_coord=feature_index,
+                    data_type=feature_type
                 )
             self.layer = 0
         
@@ -102,7 +114,7 @@ class AdaptoFlux:
         self.graph_processor.collapse_manager.set_custom_collapse(collapse_function)
 
     # 添加处理方法到字典
-    def add_method(self, method_name, method, input_count, output_count):
+    def add_method(self, method_name, method, input_count, output_count, input_types, output_types, group, weight, vectorized):
         """
         添加方法到字典
         :param method_name: 方法名称
@@ -113,6 +125,11 @@ class AdaptoFlux:
             "function" : method,
             "input_count" : input_count,
             "output_count" : output_count,
+            "input_types" : input_types,
+            "output_types" : output_types,
+            "group" : group,
+            "weight" : weight,
+            "vectorized": vectorized
         }
         self.method_inputs[method_name] = []
         self.method_input_values[method_name] = [] # 疑似没有必要

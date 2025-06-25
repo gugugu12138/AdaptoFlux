@@ -45,11 +45,14 @@ class GraphProcessor:
                         self.graph.add_edge(u, new_target_node, **data)
 
                 for local_output_index in range(self.methods[method_name]["output_count"]):
-                    self.graph.add_edge(new_target_node, v, output_index=local_output_index, data_coord=new_index_edge)
+                    self.graph.add_edge(new_target_node, v, output_index=local_output_index, data_coord=new_index_edge, data_type=self.methods[method_name]["output_types"][local_output_index])
                     new_index_edge += 1
 
                 method_counts[method_name] += 1
 
+        # 收集所有输入边的 data_type
+        input_data_types = []
+        
         # 处理 unmatched
         unmatched_groups = result.get('unmatched', [])
         if unmatched_groups and discard_unmatched == 'to_discard':
@@ -57,13 +60,22 @@ class GraphProcessor:
                 node_name = f"{self.layer}_{method_counts['unmatched']}_unmatched"
                 self.graph.add_node(node_name, method_name=discard_node_method_name)
 
+                # 收集所有输入边的 data_type，并重定向边
+                input_data_types = []
                 for u, _, data in collapse_edges:
                     if data.get('data_coord') in group:
+                        input_data_types.append(data.get('data_type'))  # 提取原始边的数据类型
                         self.graph.remove_edge(u, v)
                         self.graph.add_edge(u, node_name, **data)
 
-                for local_output_index in range(1):
-                    self.graph.add_edge(node_name, v, output_index=local_output_index, data_coord=new_index_edge)
+                # 按顺序为每条输入边创建一条输出边，继承其 data_type
+                for local_output_index, used_data_type in enumerate(input_data_types):
+                    self.graph.add_edge(
+                        node_name, v,
+                        output_index=local_output_index,
+                        data_coord=new_index_edge,
+                        data_type=used_data_type  # ← 使用对应输入边的类型
+                    )
                     new_index_edge += 1
 
                 method_counts["unmatched"] += 1

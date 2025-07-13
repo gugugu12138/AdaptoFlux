@@ -1,6 +1,7 @@
 import numpy as np
 import networkx as nx
 from ..model_trainer import ModelTrainer
+from itertools import product
 
 class ExhaustiveSearchEngine(ModelTrainer):
     def __init__(self, model_trainer):
@@ -70,27 +71,71 @@ class ExhaustiveSearchEngine(ModelTrainer):
         print(f"最终准确率：{best_accuracy:.4f}")
         return best_accuracy
 
-    def _calculate_total_combinations(self, num_layers, F_size, n_prev, output_sizes):
-        total_combinations = 1
-        for l in range(num_layers):
-            # 计算当前层函数选择组合数
-            function_choice_count = F_size ** n_prev
+    def _calculate_total_combinations(self, num_layers, output_sizes):
+        """
+        基于你的公式 N_paths^l = sum_{prev_combo ∈ Layer l-1} (prod_{i=1}^{n_l} |F_i^l|)
+        动态计算每一层的组合数，并更新下一层的输入结构。
+        
+        :param num_layers: 层数
+        :param output_sizes: 初始输入数据量列表（逐步扩展）
+        :return: 总组合数, output_sizes 更新后的列表
+        """
 
-            # 假设平均每个函数输出维度为 avg_dim_out
-            # 或者根据具体函数动态计算（推荐）
-            avg_dim_out = 1  # 修改为实际值或动态计算
+        # 初始化第一层输入结构（假设初始输入为 'numerical' 类型）
+        prev_layer_structures = [ self.adaptoflux.feature_types ] 
 
-            # 当前层总的分支扩展因子
-            branch_factor = function_choice_count * (avg_dim_out ** n_prev)
+        total_combinations = 1  # 第一层开始累计组合数
+        self.function_pool_by_input_type = self.adaptoflux.build_function_pool_by_input_type(self)
 
-            total_combinations *= branch_factor
-            print(f"第 {l + 1} 层组合数：{function_choice_count} (|F|^{n_prev}), 分支扩展因子：{branch_factor}")
+        for layer_idx in range(num_layers):
+            print(f"\n--- 第 {layer_idx + 1} 层计算开始 ---")
 
-            # 更新下一层输入数据量
-            n_current = n_prev * avg_dim_out
-            output_sizes.append(n_current)
-            n_prev = n_current
+            current_layer_combinations = 0  # 当前层组合数
+            next_layer_structures = []      # 下一层输入结构列表（用于下一轮）
+
+            # 遍历上一层的所有输入结构组合
+            for structure in prev_layer_structures:
+                # 获取每个输入点的可用函数池
+                input_function_pools = [
+                    self.function_pool_by_input_type.get(input_type, [])
+                    for input_type in structure
+                ]
+
+                # 每个节点至少有一个函数选择（空函数）
+                input_function_pools = [
+                    pool if len(pool) > 0 else [('__empty__', {'output_types': ["None"]})]
+                    for pool in input_function_pools
+                ]
+
+                # 生成该结构下的所有函数组合（笛卡尔积）
+                all_function_combinations = list(product(*input_function_pools))
+
+                # 累加该结构下的组合数
+                function_choices_for_structure = len(all_function_combinations)
+                current_layer_combinations += function_choices_for_structure
+
+                # 遍历所有函数组合，生成对应的输出结构
+                for combo in all_function_combinations:
+                    input_types_for_next_layer = []
+                    for _, method_info in combo:
+                        output_types = method_info.get('output_types', ["None"])
+                        input_types_for_next_layer.extend(output_types)
+
+                    next_layer_structures.append(input_types_for_next_layer)
+
+            # 更新总组合数
+            total_combinations = current_layer_combinations
+
+            # 输出日志
+            print(f"第 {layer_idx + 1} 层组合数：{current_layer_combinations}")
+            print(f"下一层输入结构（示例）：{next_layer_structures} 共{len(next_layer_structures)} 种")
+
+            # 更新下一层输入结构与数量
+            output_sizes.append(len(next_layer_structures)) if next_layer_structures else output_sizes.append(0)
+            prev_layer_structures = next_layer_structures
+
         return total_combinations, output_sizes
+    
     def _generate_layer_function_choices(self, num_layers, output_sizes, function_pool):
         from itertools import product
         all_function_choices = []

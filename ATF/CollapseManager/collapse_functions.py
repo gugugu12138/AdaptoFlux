@@ -1,6 +1,6 @@
 import numpy as np
 from enum import Enum
-from scipy.integrate import trapz
+from scipy.integrate import trapezoid
 
 class CollapseMethod(Enum):
     SUM = 1       # 求和
@@ -96,7 +96,7 @@ class CollapseFunctionManager:
         def compute_energy(arr):
             result = arr.copy()
             while result.ndim > 1:
-                result = trapz(result, axis=-1)
+                result = trapezoid(result, axis=-1)
             return np.abs(result).sum()
 
         total_energy = compute_energy(values)

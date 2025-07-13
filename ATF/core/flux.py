@@ -170,6 +170,29 @@ class AdaptoFlux:
         # self.history_method_input_val_values.append(self.method_input_val_values)
         print(self.methods)
 
+    def build_function_pool_by_input_type(self):
+        """
+        根据 self.methods 中各方法的 input_types 字段，
+        构建一个字典：输入类型 -> 可用方法列表（包含完整方法信息）
+        """
+        function_pool_map = {}
+
+        for method_name, method_info in self.methods.items():
+            input_types = method_info.get("input_types", [])
+
+            # 如果没有指定 input_types，默认不归类（或可设为通用类型）
+            if not input_types:
+                continue
+
+            for input_type in input_types:
+                if input_type not in function_pool_map:
+                    function_pool_map[input_type] = []
+
+                # 将该方法加入对应输入类型的函数池中
+                function_pool_map[input_type].append((method_name,method_info))
+
+        return function_pool_map
+
     # 根据当前选择的坍缩方法，对输入值进行计算
     def collapse(self, values):
         """

@@ -4,9 +4,8 @@ from ..model_trainer import ModelTrainer
 from itertools import product
 
 class ExhaustiveSearchEngine(ModelTrainer):
-    def __init__(self, model_trainer):
-        super().__init__(model_trainer.adaptoflux)
-        self.model_trainer = model_trainer
+    def __init__(self, adaptoflux_instance):
+        super().__init__(adaptoflux_instance)
 
     def train(self, num_layers=2, warn_threshold=1000):
         """

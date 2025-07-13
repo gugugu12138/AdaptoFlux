@@ -18,12 +18,9 @@ class TestCalculateTotalCombinations(unittest.TestCase):
                     ]
                 }
 
-        class MockModelTrainer:
-            def __init__(self):
-                self.adaptoflux = MockAdaptoflux()
 
         # 初始化引擎
-        engine = ExhaustiveSearchEngine(MockModelTrainer())
+        engine = ExhaustiveSearchEngine(MockAdaptoflux())
 
         output_sizes = [len(engine.adaptoflux.feature_types)]  # 初始输入维度
         num_layers = 2

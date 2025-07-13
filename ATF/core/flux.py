@@ -105,6 +105,19 @@ class AdaptoFlux:
             collapse_method=collapse_method
         )
 
+    def get_input_dimension(self):
+        """
+        获取输入维度（特征数量）
+        """
+        if self.values is not None:
+            return self.values.shape[1]
+        
+        # 如果没有 values，尝试从图结构中获取
+        if "root" in self.graph:
+            return len(list(self.graph.out_edges("root")))
+        
+        return 0  # 默认值
+
     
     def add_collapse_method(self, collapse_function):
         """

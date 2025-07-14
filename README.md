@@ -237,24 +237,31 @@ f_n(a,b) = a \cdot c_n + b \cdot d_n
 ### 组合路径数量公式
 
 #### **公式定义**
-$$
+```math
+N_{paths}^l = \sum_{\text{prev\_combo} \in \text{Layer } l-1} \text{GenerateValidCombinations}(F_1^l(s), ..., F_{n_l}^l(s))
+```
+
+当所有组合皆为合法时，该公式等效于：
+
+```math
 N_{\text{paths}}^{(l)} = \sum_{\text{prev\_combo} \in \text{Layer } l-1} C_{\text{current}}(\text{prev\_combo})
-$$
+```
 
 其中：
 - $ N_{\text{paths}}^{(l)} $：第 $ l $ 层的总函数选择组合数（即穷举空间大小）
 - $ \text{prev\_combo} $：上一层（第 $ l-1 $ 层）的所有可能函数组合
 - $ C_{\text{current}}(\text{prev\_combo}) $：在该输入结构下当前层的函数选择组合数，计算方式为：
 
-$$
+```math
 C_{\text{current}}(\text{prev\_combo}) = \prod_{i=1}^{n_l} |F_i^{(l)}|
-$$
+```
 
 其中：
 - $ n_l $：当前层的输入节点数（由上一层输出决定）
 - $ F_i^{(l)} $：第 $ i $ 个输入节点的方法池（函数集合）
 
 注：当某个节点方法池为空时，将其视为只有一个方法，即 $ |F_i^{(l)}| = 1 $
+
 
 ---
 ---

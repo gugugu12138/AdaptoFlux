@@ -1,7 +1,8 @@
 import numpy as np
 import networkx as nx
 from ..model_trainer import ModelTrainer
-from itertools import product
+from itertools import permutations, product
+from collections import defaultdict
 
 class ExhaustiveSearchEngine(ModelTrainer):
     def __init__(self, adaptoflux_instance):
@@ -69,6 +70,114 @@ class ExhaustiveSearchEngine(ModelTrainer):
         print("\n✅ 穷举搜索完成，已使用最佳模型更新 AdaptoFlux 实例")
         print(f"最终准确率：{best_accuracy:.4f}")
         return best_accuracy
+    
+    def _build_layer_info(self, layer_idx, structure, combo):
+        """
+        根据当前层的结构和函数组合，构造结构化信息
+        
+        :param layer_idx: 层索引
+        :param structure: 输入结构（如 ['numerical', 'categorical']）
+        :param combo: 函数组合 [(name, info), ...]
+        :return: dict 包含 index_map, valid_groups, unmatched
+        """
+        index_map = {}
+        valid_groups = defaultdict(list) 
+
+        for idx, (func_name, method_info) in enumerate(combo):
+            input_count = self.adaptoflux.methods[func_name]["input_count"]
+            if input_count <= 0:
+                raise ValueError(f"方法 '{func_name}' 的 input_count 必须大于 0")
+
+            groups = [list(range(idx, idx + input_count))]  # 示例简单分组
+            for group in groups:
+                if len(group) == input_count:
+                    valid_groups[func_name].append(group)
+                    for i in group:
+                        index_map[i] = {"method": func_name, "group": tuple(group)}
+
+        return {
+            "index_map": index_map,
+            "valid_groups": dict(valid_groups),
+            "unmatched": []
+        }
+
+    def _generate_valid_layer_combinations(input_indices, function_pool_by_input_type):
+        """
+        根据输入索引和按输入类型划分的方法池，生成当前层所有合法的函数组合。
+        
+        :param input_indices: 当前层的输入索引列表，如 [0, 1, 2]
+        :param function_pool_by_input_type: 按输入类型组织的方法池：
+            {
+                'numerical': [('func_A', method_info), ('func_B', method_info)],
+                ...
+            }
+        :return: list of combinations，每个组合是 [(group_indices, func_name), ...]
+        """
+        n_inputs = len(input_indices)
+        all_possible_groups = []
+
+        # Step 1: 枚举所有可能的合法分组（按 input_count 分）
+        def dfs(used_indices, current_groups, start=0):
+            if len(used_indices) == n_inputs:
+                all_possible_groups.append(current_groups.copy())
+                return
+
+            for i in range(start, n_inputs):
+                if input_indices[i] in used_indices:
+                    continue
+
+                # 尝试以当前索引为起点，尝试各种 input_count
+                possible_input_counts = set(
+                    method_info["input_count"]
+                    for input_type in function_pool_by_input_type
+                    for (name, method_info) in function_pool_by_input_type.get(input_type, [])
+                )
+
+                for input_count in sorted(possible_input_counts):
+                    end = i + input_count
+                    if end > n_inputs:
+                        continue
+
+                    group = input_indices[i:end]
+                    if any(x in used_indices for x in group):
+                        continue
+
+                    current_groups.append(tuple(group))
+                    dfs(used_indices + list(group), current_groups, end)
+                    current_groups.pop()
+
+        dfs([], [])
+
+        # Step 2: 对每种分组方式，枚举每组可选的函数（根据输入类型）
+        valid_combinations = []
+
+        for group_list in all_possible_groups:
+            group_function_options = []
+
+            for group in group_list:
+                # 假设该组的输入类型一致，或取第一个输入点的类型（你可以扩展为更复杂的逻辑）
+                input_type = 'numerical'  # 这里只是一个占位符，你可以在外部动态指定
+
+                # 获取可用函数名（这里可以根据输入类型过滤）
+                possible_funcs = function_pool_by_input_type.get(input_type, [])
+
+                if not possible_funcs:
+                    possible_funcs = [('__empty__', {
+                        "input_count": 1,
+                        "output_count": 1,
+                        "input_types": [input_type],
+                        "output_types": ["None"],
+                        "function": lambda x: None
+                    })]
+
+                group_function_options.append([func_name for func_name, _ in possible_funcs])
+
+            # 枚举该分组下每个组的函数选择（笛卡尔积）
+            for func_choices in product(*group_function_options):
+                combination = list(zip(group_list, func_choices))
+                valid_combinations.append(combination)
+
+        return valid_combinations
 
     def _calculate_total_combinations(self, num_layers, output_sizes):
         """

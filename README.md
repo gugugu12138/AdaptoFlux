@@ -238,7 +238,7 @@ f_n(a,b) = a \cdot c_n + b \cdot d_n
 
 #### **公式定义**
 ```math
-N_{paths}^l = \sum_{\text{prev\_combo} \in \text{Layer } l-1} \text{GenerateValidCombinations}(F_1^l(s), ..., F_{n_l}^l(s))
+N_{paths}^l = \sum_{\text{prev\_combo} \in \text{Layer } l-1} \text{ValidCombinations}(F_1^l(s), ..., F_{n_l}^l(s))
 ```
 
 当所有组合皆为合法时，该公式等效于：

@@ -3,7 +3,7 @@ import networkx as nx
 from ..model_trainer import ModelTrainer
 from itertools import permutations, product
 from collections import defaultdict
-
+from .ModelTreeNode import ModelTreeNode
 class ExhaustiveSearchEngine(ModelTrainer):
     def __init__(self, adaptoflux_instance):
         super().__init__(adaptoflux_instance)
@@ -45,7 +45,7 @@ class ExhaustiveSearchEngine(ModelTrainer):
             num_layers, output_sizes, function_pool
         )
 
-        # 6. 生成所有模型组合（各层函数选择的笛卡尔积）
+        # 6. 生成所有模型组合
         all_model_combinations = self._generate_all_model_combinations(all_function_choices)
 
         print(f"已生成所有模型组合，共 {len(all_model_combinations)} 种")
@@ -83,7 +83,7 @@ class ExhaustiveSearchEngine(ModelTrainer):
         index_map = {}
         valid_groups = defaultdict(list) 
 
-        for idx, (func_name, method_info) in enumerate(combo):
+        for idx, (_, func_name) in enumerate(combo):
             input_count = self.adaptoflux.methods[func_name]["input_count"]
             if input_count <= 0:
                 raise ValueError(f"方法 '{func_name}' 的 input_count 必须大于 0")
@@ -101,76 +101,97 @@ class ExhaustiveSearchEngine(ModelTrainer):
             "unmatched": []
         }
 
-    def _generate_valid_layer_combinations(input_indices, function_pool_by_input_type):
+    def generate_valid_layer_combinations(self, input_function_pools):
         """
-        根据输入索引和按输入类型划分的方法池，生成当前层所有合法的函数组合。
+        根据每个输入点的函数池，生成当前层所有合法的函数组合。
+        支持多输入函数，自动处理函数对输入数量的需求。
         
-        :param input_indices: 当前层的输入索引列表，如 [0, 1, 2]
-        :param function_pool_by_input_type: 按输入类型组织的方法池：
-            {
-                'numerical': [('func_A', method_info), ('func_B', method_info)],
-                ...
-            }
+        :param input_function_pools: list[list[tuple(method_name, method_info)]]
         :return: list of combinations，每个组合是 [(group_indices, func_name), ...]
         """
-        n_inputs = len(input_indices)
+        n_inputs = len(input_function_pools)
         all_possible_groups = []
 
-        # Step 1: 枚举所有可能的合法分组（按 input_count 分）
+        # Step 1: 枚举所有合法分组（基于函数所需的 input_count）
         def dfs(used_indices, current_groups, start=0):
+            """
+            深度优先搜索函数，用于枚举当前层所有合法的输入分组方式。
+            
+            :param used_indices: list，已使用的输入索引列表，例如 [0, 1]
+            :param current_groups: list of tuples，当前尝试的分组方式，例如 [(0,1), (2,)]
+            :param start: int，尝试从哪个输入索引开始分组
+            """
+
+            # 如果所有输入点都被使用了，说明找到了一个合法的完整分组方式
             if len(used_indices) == n_inputs:
+                # 将当前分组方式加入结果列表（拷贝一份，防止后续修改）
                 all_possible_groups.append(current_groups.copy())
                 return
 
+            # 从 start 开始尝试每一个输入点
             for i in range(start, n_inputs):
-                if input_indices[i] in used_indices:
+                # 如果当前输入点已经被使用了，跳过
+                if i in used_indices:
                     continue
 
-                # 尝试以当前索引为起点，尝试各种 input_count
+                # 获取当前输入点上所有函数支持的 input_count（即一个函数可以处理几个输入）
+                # 去重处理，避免重复尝试相同的 input_count
                 possible_input_counts = set(
                     method_info["input_count"]
-                    for input_type in function_pool_by_input_type
-                    for (name, method_info) in function_pool_by_input_type.get(input_type, [])
+                    for method_name, method_info in input_function_pools[i]
                 )
 
+                # 对所有可能的 input_count 按从小到大排序，尝试每种可能性
                 for input_count in sorted(possible_input_counts):
+                    # 计算这个函数处理的输入范围：从 i 开始，连续 input_count 个输入点
                     end = i + input_count
+
+                    # 如果超出了输入点范围，跳过
                     if end > n_inputs:
                         continue
 
-                    group = input_indices[i:end]
+                    # 构造当前函数要处理的输入组（如 i=0, input_count=2 → group = [0, 1]）
+                    group = list(range(i, end))
+
+                    # 如果这个组中已经有输入点被使用了，跳过
                     if any(x in used_indices for x in group):
                         continue
 
+                    # 将当前组加入 current_groups（尝试这个分组）
                     current_groups.append(tuple(group))
-                    dfs(used_indices + list(group), current_groups, end)
+
+                    # 递归调用：继续尝试从 end 开始分组
+                    dfs(used_indices + group, current_groups, end)
+
+                    # 回溯：尝试完当前分组后，将当前组从 current_groups 中弹出
                     current_groups.pop()
 
         dfs([], [])
 
-        # Step 2: 对每种分组方式，枚举每组可选的函数（根据输入类型）
+        # Step 2: 对每种分组方式，枚举每组可选的函数
         valid_combinations = []
 
         for group_list in all_possible_groups:
             group_function_options = []
 
             for group in group_list:
-                # 假设该组的输入类型一致，或取第一个输入点的类型（你可以扩展为更复杂的逻辑）
-                input_type = 'numerical'  # 这里只是一个占位符，你可以在外部动态指定
+                # 取第一个输入点的函数池作为候选（假设同一组内函数池一致或兼容）
+                candidate_funcs = input_function_pools[group[0]]
 
-                # 获取可用函数名（这里可以根据输入类型过滤）
-                possible_funcs = function_pool_by_input_type.get(input_type, [])
+                # 过滤出 input_count == len(group) 的函数
+                valid_funcs = [
+                    (name, info) for name, info in candidate_funcs
+                    if info.get("input_count", 1) == len(group)
+                ]
 
-                if not possible_funcs:
-                    possible_funcs = [('__empty__', {
-                        "input_count": 1,
+                if not valid_funcs:
+                    valid_funcs = [("__empty__", {
+                        "input_count": len(group),
                         "output_count": 1,
-                        "input_types": [input_type],
-                        "output_types": ["None"],
-                        "function": lambda x: None
+                        "output_types": ["None"]
                     })]
 
-                group_function_options.append([func_name for func_name, _ in possible_funcs])
+                group_function_options.append([name for name, _ in valid_funcs])
 
             # 枚举该分组下每个组的函数选择（笛卡尔积）
             for func_choices in product(*group_function_options):
@@ -179,70 +200,88 @@ class ExhaustiveSearchEngine(ModelTrainer):
 
         return valid_combinations
 
-    def _calculate_total_combinations(self, num_layers, output_sizes):
+    def _calculate_total_combinations(self, num_layers):
         """
-        基于你的公式 N_paths^l = sum_{prev_combo ∈ Layer l-1} (prod_{i=1}^{n_l} |F_i^l|)
-        动态计算每一层的组合数，并更新下一层的输入结构。
+        动态计算每一层的组合数，并构建树状结构来记录所有模型组合
         
         :param num_layers: 层数
-        :param output_sizes: 初始输入数据量列表（逐步扩展）
-        :return: 总组合数, output_sizes 更新后的列表
+        :return: total_combinations 总组合数, root 树根节点
         """
 
-        # 初始化第一层输入结构（假设初始输入为 'numerical' 类型）
-        prev_layer_structures = [ self.adaptoflux.feature_types ] 
+        root = ModelTreeNode(layer_idx=0, structure=self.adaptoflux.feature_types)
+        current_nodes = [root]
 
-        total_combinations = 1  # 第一层开始累计组合数
-        self.function_pool_by_input_type = self.adaptoflux.build_function_pool_by_input_type(self)
+        total_combinations = 1
+        function_pool_by_input_type = self.adaptoflux.build_function_pool_by_input_type()
 
         for layer_idx in range(num_layers):
             print(f"\n--- 第 {layer_idx + 1} 层计算开始 ---")
-
-            current_layer_combinations = 0  # 当前层组合数
-            next_layer_structures = []      # 下一层输入结构列表（用于下一轮）
-
-            # 遍历上一层的所有输入结构组合
-            for structure in prev_layer_structures:
-                # 获取每个输入点的可用函数池
+            next_layer_nodes = []
+            current_layer_combinations = 0
+            next_layer_structures = []
+            
+            for node in current_nodes:
+                # 为每个节点在input_function_pools配置对应的函数池
+                structure = node.structure
                 input_function_pools = [
-                    self.function_pool_by_input_type.get(input_type, [])
+                    function_pool_by_input_type.get(input_type, [])
                     for input_type in structure
                 ]
-
-                # 每个节点至少有一个函数选择（空函数）
+            
                 input_function_pools = [
-                    pool if len(pool) > 0 else [('__empty__', {'output_types': ["None"]})]
+                    pool if len(pool) > 0 else [("__empty__", {
+                        "input_count": 1,
+                        "output_count": 1,
+                        "input_types": ["None"],
+                        "output_types": ["None"],
+                        "group": "none",
+                        "weight": 0.0,
+                        "vectorized": True,
+                        "function": lambda x: None
+                    })]
                     for pool in input_function_pools
                 ]
 
                 # 生成该结构下的所有函数组合（笛卡尔积）
-                all_function_combinations = list(product(*input_function_pools))
+                all_function_combinations = self.generate_valid_layer_combinations(input_function_pools)
 
-                # 累加该结构下的组合数
-                function_choices_for_structure = len(all_function_combinations)
-                current_layer_combinations += function_choices_for_structure
+                current_layer_combinations += len(all_function_combinations)
 
-                # 遍历所有函数组合，生成对应的输出结构
                 for combo in all_function_combinations:
+                    # 构造下一层结构
                     input_types_for_next_layer = []
-                    for _, method_info in combo:
-                        output_types = method_info.get('output_types', ["None"])
+                    for group_indices, method_name in combo:
+
+                        method_info = self.adaptoflux.methods.get(method_name, None)
+                        if method_info is None:
+                            raise ValueError(f"未找到方法 '{method_name}' 的定义")
+                        output_types = method_info.get("output_types", ["None"])
                         input_types_for_next_layer.extend(output_types)
 
                     next_layer_structures.append(input_types_for_next_layer)
 
-            # 更新总组合数
-            total_combinations = current_layer_combinations
+                    # 构建结构化信息
+                    node_info = self._build_layer_info(layer_idx + 1, structure, combo)
 
-            # 输出日志
+                    # 创建新节点
+                    child_node = ModelTreeNode(
+                        layer_idx=layer_idx + 1,
+                        structure=input_types_for_next_layer,
+                        function_combo=combo,
+                        parent=node
+                    )
+                    child_node.node_info = node_info
+                    node.children.append(child_node)
+                    next_layer_nodes.append(child_node)
+
+            # 更新状态
+            total_combinations = current_layer_combinations
+            current_nodes = next_layer_nodes
+
             print(f"第 {layer_idx + 1} 层组合数：{current_layer_combinations}")
             print(f"下一层输入结构（示例）：{next_layer_structures} 共{len(next_layer_structures)} 种")
 
-            # 更新下一层输入结构与数量
-            output_sizes.append(len(next_layer_structures)) if next_layer_structures else output_sizes.append(0)
-            prev_layer_structures = next_layer_structures
-
-        return total_combinations, output_sizes
+        return total_combinations, root
     
     def _generate_layer_function_choices(self, num_layers, output_sizes, function_pool):
         from itertools import product

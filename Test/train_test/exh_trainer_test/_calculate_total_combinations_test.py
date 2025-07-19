@@ -9,30 +9,96 @@ class TestCalculateTotalCombinations(unittest.TestCase):
             def __init__(self):
                 self.feature_types = ['numerical', 'numerical','one']
                 self.values = None  # 可以忽略，因为只用到了 feature_types
+                # 手动构造 methods 字段
+                self.methods = {
+                    'f1': {
+                        "input_count": 1,
+                        "output_count": 1,
+                        "input_types": ["numerical"],
+                        "output_types": ["numerical"],
+                        "group": "transform",
+                        "weight": 1.0,
+                        "vectorized": True,
+                        "function": lambda x: x  # 可选：添加一个 dummy 函数
+                    },
+                    'f2': {
+                        "input_count": 1,
+                        "output_count": 1,
+                        "input_types": ["numerical"],
+                        "output_types": ["text"],
+                        "group": "transform",
+                        "weight": 1.0,
+                        "vectorized": False,
+                        "function": lambda x: x
+                    },
+                    'f3': {
+                        "input_count": 1,
+                        "output_count": 1,
+                        "input_types": ["one"],
+                        "output_types": ["numerical"],
+                        "group": "transform",
+                        "weight": 1.0,
+                        "vectorized": True,
+                        "function": lambda x: x  # 可选：添加一个 dummy 函数
+                    },
+                    '__empty__': {  # 可选：支持空函数
+                        "input_count": 1,
+                        "output_count": 1,
+                        "input_types": ["None"],
+                        "output_types": ["None"],
+                        "group": "none",
+                        "weight": 0.0,
+                        "vectorized": True,
+                        "function": lambda x: x
+                    }
+                }
 
-            def build_function_pool_by_input_type(self, _):
+            def build_function_pool_by_input_type(self):
                 return {
                     'numerical': [
-                        ('f1', {'output_types': ['numerical']}),
-                        ('f2', {'output_types': ['text']})
+                        ('f1', {
+                            "input_count": 1,
+                            "output_count": 1,
+                            "input_types": ["numerical"],
+                            "output_types": ["numerical"],
+                            "group": "transform",
+                            "weight": 1.0,
+                            "vectorized": True
+                        }),
+                        ('f2', {
+                            "input_count": 1,
+                            "output_count": 1,
+                            "input_types": ["numerical"],
+                            "output_types": ["text"],
+                            "group": "transform",
+                            "weight": 1.0,
+                            "vectorized": False
+                        })
                     ],
-                    'one':[('f1', {'output_types': ['numerical']})]
+                    'one': [
+                        ('f3', {
+                            "input_count": 1,
+                            "output_count": 1,
+                            "input_types": ["one"],
+                            "output_types": ["numerical"],
+                            "group": "transform",
+                            "weight": 1.0,
+                            "vectorized": True
+                        })]
                 }
 
 
         # 初始化引擎
         engine = ExhaustiveSearchEngine(MockAdaptoflux())
 
-        output_sizes = [len(engine.adaptoflux.feature_types)]  # 初始输入维度
-        num_layers = 50
+        num_layers = 2
 
-        total_combinations, updated_output_sizes = engine._calculate_total_combinations(
-            num_layers, output_sizes
+        total_combinations, tree = engine._calculate_total_combinations(
+            num_layers
         )
 
         # 验证组合数是否正确
         self.assertEqual(total_combinations, 18)
-        self.assertEqual(updated_output_sizes, [3, 4, 18])
 
 
 if __name__ == '__main__':

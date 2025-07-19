@@ -161,7 +161,7 @@ class ModelTrainer:
         predictions = self.adaptoflux.infer_with_graph(self.adaptoflux.values)
         return np.mean(predictions == self.adaptoflux.labels)
     
-    def exhaustive_search_train_v2(self, num_layers=2, warn_threshold=1000):
+    def exhaustive_search_train(self, num_layers=2, warn_threshold=1000):
         """
         使用穷举法在指定层数下遍历所有可能的模型组合，寻找最优模型。
         每层的节点数由前一层输出决定（假设每个函数输出1个数据）。

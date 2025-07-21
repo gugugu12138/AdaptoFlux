@@ -4,6 +4,8 @@ from ..model_trainer import ModelTrainer
 from itertools import permutations, product
 from collections import defaultdict
 from .ModelTreeNode import ModelTreeNode
+from itertools import combinations
+
 class ExhaustiveSearchEngine(ModelTrainer):
     def __init__(self, adaptoflux_instance):
         super().__init__(adaptoflux_instance)
@@ -103,102 +105,120 @@ class ExhaustiveSearchEngine(ModelTrainer):
 
     def generate_valid_layer_combinations(self, input_function_pools):
         """
-        根据每个输入点的函数池，生成当前层所有合法的函数组合。
-        支持多输入函数，自动处理函数对输入数量的需求。
-        
-        :param input_function_pools: list[list[tuple(method_name, method_info)]]
-        :return: list of combinations，每个组合是 [(group_indices, func_name), ...]
+        主流程：生成当前层所有合法的函数组合。
+        支持多输入函数。
+        """
+        # Step 1: 枚举所有合法的输入分组方式
+        all_possible_groups = self.enumerate_input_groups(input_function_pools)
+
+        # Step 2: 对每种分组方式，生成所有可能的函数组合（笛卡尔积）
+        valid_combinations = []
+        for group_list in all_possible_groups:
+            combinations = self.generate_combinations_for_group(input_function_pools, group_list)
+            valid_combinations.extend(combinations)
+
+        return valid_combinations
+
+    def enumerate_input_groups(self, input_function_pools):
+        """
+        枚举当前层所有合法的输入分组方式（连续、不重复、覆盖所有输入）。
         """
         n_inputs = len(input_function_pools)
         all_possible_groups = []
 
-        # Step 1: 枚举所有合法分组（基于函数所需的 input_count）
         def dfs(used_indices, current_groups, start=0):
-            """
-            深度优先搜索函数，用于枚举当前层所有合法的输入分组方式。
-            
-            :param used_indices: list，已使用的输入索引列表，例如 [0, 1]
-            :param current_groups: list of tuples，当前尝试的分组方式，例如 [(0,1), (2,)]
-            :param start: int，尝试从哪个输入索引开始分组
-            """
-
-            # 如果所有输入点都被使用了，说明找到了一个合法的完整分组方式
             if len(used_indices) == n_inputs:
-                # 将当前分组方式加入结果列表（拷贝一份，防止后续修改）
                 all_possible_groups.append(current_groups.copy())
                 return
 
-            # 从 start 开始尝试每一个输入点
             for i in range(start, n_inputs):
-                # 如果当前输入点已经被使用了，跳过
                 if i in used_indices:
                     continue
 
-                # 获取当前输入点上所有函数支持的 input_count（即一个函数可以处理几个输入）
-                # 去重处理，避免重复尝试相同的 input_count
                 possible_input_counts = set(
                     method_info["input_count"]
-                    for method_name, method_info in input_function_pools[i]
+                    for _, method_info in input_function_pools[i]
                 )
 
-                # 对所有可能的 input_count 按从小到大排序，尝试每种可能性
                 for input_count in sorted(possible_input_counts):
-                    # 计算这个函数处理的输入范围：从 i 开始，连续 input_count 个输入点
                     end = i + input_count
-
-                    # 如果超出了输入点范围，跳过
                     if end > n_inputs:
                         continue
 
-                    # 构造当前函数要处理的输入组（如 i=0, input_count=2 → group = [0, 1]）
                     group = list(range(i, end))
-
-                    # 如果这个组中已经有输入点被使用了，跳过
                     if any(x in used_indices for x in group):
                         continue
 
-                    # 将当前组加入 current_groups（尝试这个分组）
                     current_groups.append(tuple(group))
-
-                    # 递归调用：继续尝试从 end 开始分组
                     dfs(used_indices + group, current_groups, end)
-
-                    # 回溯：尝试完当前分组后，将当前组从 current_groups 中弹出
                     current_groups.pop()
 
         dfs([], [])
+        return all_possible_groups
+    
+    def enumerate_input_groups(self, input_function_pools):
+        """
+        枚举当前层所有合法的输入分组方式（允许非连续、不重复、覆盖所有输入）
+        """
+        n_inputs = len(input_function_pools)
+        all_possible_groups = []
 
-        # Step 2: 对每种分组方式，枚举每组可选的函数
-        valid_combinations = []
+        def dfs(used_indices, current_groups):
+            if len(used_indices) == n_inputs:
+                all_possible_groups.append(current_groups.copy())
+                return
 
-        for group_list in all_possible_groups:
-            group_function_options = []
+            available_indices = [i for i in range(n_inputs) if i not in used_indices]
+            for i in available_indices:
+                if i in used_indices:
+                    continue
+                possible_input_counts = set(
+                    method_info["input_count"]
+                    for _, method_info in input_function_pools[i]
+                )
+                for input_count in sorted(possible_input_counts):
+                    # 从剩余可用索引中选择 input_count 个不重复的索引
+                    available = [x for x in available_indices if x >= i]
+                    for group in permutations(available, input_count):
+                        if len(set(group)) != input_count:
+                            continue  # 避免重复索引
+                        current_groups.append(group)
+                        dfs(used_indices + list(group), current_groups)
+                        current_groups.pop()
 
-            for group in group_list:
-                # 取第一个输入点的函数池作为候选（假设同一组内函数池一致或兼容）
-                candidate_funcs = input_function_pools[group[0]]
+        dfs([], [])
+        return all_possible_groups
 
-                # 过滤出 input_count == len(group) 的函数
-                valid_funcs = [
-                    (name, info) for name, info in candidate_funcs
-                    if info.get("input_count", 1) == len(group)
-                ]
+    def get_group_functions(self, input_function_pools, group):
+        """
+        获取一个 group 对应的可选函数名列表。
+        """
+        candidate_funcs = input_function_pools[group[0]]
+        valid_funcs = [
+            name for name, info in candidate_funcs
+            if info.get("input_count", 1) == len(group)
+        ]
 
-                if not valid_funcs:
-                    valid_funcs = [("__empty__", {
-                        "input_count": len(group),
-                        "output_count": 1,
-                        "output_types": ["None"]
-                    })]
+        if not valid_funcs:
+            valid_funcs = ["__empty__"]
 
-                group_function_options.append([name for name, _ in valid_funcs])
+        return valid_funcs
 
-            # 枚举该分组下每个组的函数选择（笛卡尔积）
-            for func_choices in product(*group_function_options):
-                combination = list(zip(group_list, func_choices))
-                valid_combinations.append(combination)
+    def generate_combinations_for_group(self, input_function_pools, group_list):
+        """
+        对一个 group_list，生成所有合法的函数组合（笛卡尔积）。
+        """
+        group_function_options = []
+        for group in group_list:
+            funcs = self.get_group_functions(input_function_pools, group)
+            group_function_options.append(funcs)
 
-        return valid_combinations
+        combinations = []
+        for func_choices in product(*group_function_options):
+            combination = list(zip(group_list, func_choices))
+            combinations.append(combination)
+
+        return combinations
 
     def _calculate_total_combinations(self, num_layers):
         """

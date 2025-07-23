@@ -5,7 +5,7 @@ from itertools import permutations, product
 from collections import defaultdict
 from .ModelTreeNode import ModelTreeNode
 from itertools import combinations
-
+# 未完成 有严重bug 不建议使用
 class ExhaustiveSearchEngine(ModelTrainer):
     def __init__(self, adaptoflux_instance):
         super().__init__(adaptoflux_instance)
@@ -212,7 +212,7 @@ class ExhaustiveSearchEngine(ModelTrainer):
 
         # 启动深度优先搜索，初始状态：没有索引被使用，分组列表为空
         dfs([], [])
-        
+
         print(all_possible_groups)
         # 返回所有找到的合法分组方案
         return all_possible_groups

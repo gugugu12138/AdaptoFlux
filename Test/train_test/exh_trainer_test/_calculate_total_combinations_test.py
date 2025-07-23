@@ -91,14 +91,14 @@ class TestCalculateTotalCombinations(unittest.TestCase):
         # 初始化引擎
         engine = ExhaustiveSearchEngine(MockAdaptoflux())
 
-        num_layers = 2
+        num_layers = 1
 
         total_combinations, tree = engine._calculate_total_combinations(
             num_layers
         )
 
         # 验证组合数是否正确
-        self.assertEqual(total_combinations, 18)
+        self.assertEqual(total_combinations, )
 
 
 if __name__ == '__main__':

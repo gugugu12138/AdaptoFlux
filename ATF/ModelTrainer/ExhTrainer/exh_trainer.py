@@ -118,45 +118,8 @@ class ExhaustiveSearchEngine(ModelTrainer):
             valid_combinations.extend(combinations)
 
         return valid_combinations
-
-    def enumerate_input_groups(self, input_function_pools):
-        """
-        枚举当前层所有合法的输入分组方式（连续、不重复、覆盖所有输入）。
-        """
-        n_inputs = len(input_function_pools)
-        all_possible_groups = []
-
-        def dfs(used_indices, current_groups, start=0):
-            if len(used_indices) == n_inputs:
-                all_possible_groups.append(current_groups.copy())
-                return
-
-            for i in range(start, n_inputs):
-                if i in used_indices:
-                    continue
-
-                possible_input_counts = set(
-                    method_info["input_count"]
-                    for _, method_info in input_function_pools[i]
-                )
-
-                for input_count in sorted(possible_input_counts):
-                    end = i + input_count
-                    if end > n_inputs:
-                        continue
-
-                    group = list(range(i, end))
-                    if any(x in used_indices for x in group):
-                        continue
-
-                    current_groups.append(tuple(group))
-                    dfs(used_indices + group, current_groups, end)
-                    current_groups.pop()
-
-        dfs([], [])
-        return all_possible_groups
     
-    def enumerate_input_groups(self, input_function_pools):
+    def enumerate_input_groups(self, input_function_pools, allow_non_increasing_order=True):
         """
         枚举当前层所有合法的输入分组方式（允许非连续、不重复、覆盖所有输入）
         
@@ -223,7 +186,11 @@ class ExhaustiveSearchEngine(ModelTrainer):
                     # 因为我们使用的是 permutations。
                     # 这一步保证[(0,),(1,2)]和[(1,2),(0,)]不会被重复遍历（语义上是相同的）、
                     # 如果组内顺序（groups）对结果有影响直接使用available_indices
-                    available = [x for x in available_indices if x >= i]
+                    # 控制是否启用剪枝逻辑
+                    if allow_non_increasing_order:
+                        available = [x for x in available_indices if x >= i]
+                    else:
+                        available = available_indices  # 允许任意顺序组合
 
                     # 使用 itertools.permutations 生成从 'available' 中选取 'input_count' 个索引的所有排列
                     # 例如：available=[0,1,2], input_count=2 -> (0,1), (0,2), (1,0), (1,2), (2,0), (2,1)
@@ -246,6 +213,7 @@ class ExhaustiveSearchEngine(ModelTrainer):
         # 启动深度优先搜索，初始状态：没有索引被使用，分组列表为空
         dfs([], [])
         
+        print(all_possible_groups)
         # 返回所有找到的合法分组方案
         return all_possible_groups
 

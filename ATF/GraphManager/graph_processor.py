@@ -235,3 +235,7 @@ class GraphProcessor:
 
         # 返回单个样本的结果
         return result[0]
+
+    def infer_with_pipeline(self, input_batches, max_timesteps=3, num_stages=3):
+        # 多线程并行加速占位
+        pass

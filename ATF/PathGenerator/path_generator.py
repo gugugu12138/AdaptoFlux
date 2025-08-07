@@ -98,6 +98,10 @@ class PathGenerator:
                 for idx in group:
                     all_index_entries.append((method_name, group, idx))
 
+        for unmatched_group in unmatched:
+            for unmatched_idx in unmatched_group:
+                all_index_entries.append(("unmatched", unmatched_group, unmatched_idx))
+
         total_indices = len(all_index_entries)
         if n > total_indices:
             raise ValueError(f"无法替换 {n} 个索引，总数只有 {total_indices}")

@@ -84,6 +84,8 @@ class LayerGrowTrainer(ModelTrainer):
         input_data: np.ndarray,
         target: np.ndarray,
         max_layers: int = 10,
+        discard_unmatched='to_discard', 
+        discard_node_method_name="null",
         **kwargs
     ) -> dict:
         """
@@ -93,15 +95,11 @@ class LayerGrowTrainer(ModelTrainer):
         :param input_data: 用于快速评估的输入数据（小批量）
         :param target: 对应的标签
         :param max_layers: 最多尝试添加的新层数量
-        :param kwargs: 其他可选参数（例如，discard_unmatched, discard_node_method_name）
+        :param kwargs: 其他可选参数
         :return: 一个包含训练过程信息的字典
         """
         if self.verbose:
             logger.info(f"Starting LayerGrowTrainer. Max layers to grow: {max_layers}")
-
-        # 从 kwargs 中获取 append_nx_layer 的参数，设置默认值
-        discard_unmatched = kwargs.get('discard_unmatched', 'to_discard')
-        discard_node_method_name = kwargs.get('discard_node_method_name', 'null')
 
         results = {
             "layers_added": 0,
@@ -127,10 +125,11 @@ class LayerGrowTrainer(ModelTrainer):
                     logger.info(f"  Attempt {attempt}/{self.max_attempts}")
 
                 # 1. GENERATE: 生成候选方案
-                candidate_plan = self._generate_candidate_plan()
+                candidate_plan = self.path_generator.process_random_method()
+                # 生成为空则跳过，这个地方代码逻辑有一丢丢问题，应该要全为空但是问题不大
                 if not candidate_plan["valid_groups"]:
                     if self.verbose:
-                        logger.warning("  Generated candidate plan is empty. Skipping.")
+                        logger.warning("  process_random_method is empty. Skipping.")
                     attempt_info["status"] = "empty_plan"
                     attempt_record["attempts"].append(attempt_info)
                     continue
@@ -162,6 +161,7 @@ class LayerGrowTrainer(ModelTrainer):
                                     f"Loss improved from {base_loss:.6f} to {new_loss:.6f}.")
                     attempt_info["accepted"] = True
                     attempt_info["status"] = "accepted"
+                    attempt_record["attempts"].append(attempt_info)
                     layer_success = True
                     break
                 else:

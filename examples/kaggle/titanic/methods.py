@@ -104,6 +104,22 @@ def return_two_values(x):
     return [x, x]
 
 @method_profile(
+    output_count=3,
+    input_types=['scalar'],
+    output_types=['scalar', 'scalar', 'scalar'],
+    group="basic",           # ✅ 统一分组
+    weight=1.0,
+    vectorized=False
+)
+def return_three_values(x):
+    """
+    返回两个原数值
+    :param x: 输入数值
+    :return: 原数值
+    """
+    return [x, x, x]
+
+@method_profile(
     output_count=1,
     input_types=['scalar'],
     output_types=['scalar'],

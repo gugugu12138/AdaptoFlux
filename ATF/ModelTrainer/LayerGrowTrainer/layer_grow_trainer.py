@@ -166,6 +166,8 @@ class LayerGrowTrainer(ModelTrainer):
                     )
                 except Exception as e:
                     logger.error(f"  Failed to append layer: {e}")
+                    import traceback
+                    logger.error(f"Exception traceback:\n{traceback.format_exc()}")  # 👈 关键：打印完整堆栈
                     attempt_info["status"] = f"append_failed: {e}"
                     attempt_record["attempts"].append(attempt_info)
                     continue

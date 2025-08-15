@@ -173,7 +173,7 @@ class AdaptoFlux:
         # 遍历模块中的所有成员
         for name, obj in inspect.getmembers(module):
             if inspect.isfunction(obj):  # 检查是否为函数
-                if getattr(obj, "is_decorator", False):
+                if getattr(obj, "is_internal_decorator", False):
                     continue
                 # 获取函数所需的参数数量
                 input_count = len(inspect.signature(obj).parameters)

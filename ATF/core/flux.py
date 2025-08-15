@@ -15,6 +15,7 @@ import pandas as pd
 from ..CollapseManager.collapse_functions import CollapseFunctionManager, CollapseMethod
 from ..GraphManager.graph_processor import GraphProcessor
 from ..PathGenerator.path_generator import PathGenerator
+from ..ModelTrainer.model_trainer import ModelTrainer
 
 
 class AdaptoFlux:
@@ -76,9 +77,9 @@ class AdaptoFlux:
                 )
             self.layer = 0
         
-        # 选择的坍缩方法
-        self.collapse_method = collapse_method  # 默认使用 SUM 方法
-        self.custom_collapse_function = None  # 预定义自定义坍缩方法，默认值为 None
+        # # 选择的坍缩方法
+        # self.collapse_method = collapse_method  # 默认使用 SUM 方法
+        # self.custom_collapse_function = None  # 预定义自定义坍缩方法，默认值为 None
         
         # 记录推理过程中的输入值
         self.method_input_values = {}  # 记录当前层的方法输入值
@@ -104,6 +105,12 @@ class AdaptoFlux:
             methods=self.methods,
             collapse_method=collapse_method
         )
+
+        # 自动导入方法
+        if self.methods_path is not None:
+            self.import_methods_from_file(self.methods_path)
+        
+        self.model_trainer = ModelTrainer(adaptoflux_instance=self)
 
     def get_input_dimension(self):
         """
@@ -147,11 +154,17 @@ class AdaptoFlux:
         self.method_inputs[method_name] = []
         self.method_input_values[method_name] = [] # 疑似没有必要
 
-    def import_methods_from_file(self):
+    def import_methods_from_file(self, path=None):
         """
         从指定文件中导入所有方法并添加到方法字典中。
         :param file_path: Python 文件路径
         """
+
+        import_path = path or self.methods_path
+        if import_path is None:
+            print("没有指定 methods 文件路径，跳过导入")
+            return
+
         # 动态加载模块
         spec = importlib.util.spec_from_file_location("module.name", self.methods_path)
         module = importlib.util.module_from_spec(spec)
@@ -160,10 +173,17 @@ class AdaptoFlux:
         # 遍历模块中的所有成员
         for name, obj in inspect.getmembers(module):
             if inspect.isfunction(obj):  # 检查是否为函数
+                if getattr(obj, "is_decorator", False):
+                    continue
                 # 获取函数所需的参数数量
                 input_count = len(inspect.signature(obj).parameters)
                 output_count = getattr(obj, "output_count", 1)
-                self.add_method(name, obj, input_count, output_count)
+                input_types = getattr(obj, "input_types", None)
+                output_types = getattr(obj, "output_types", None)
+                group = getattr(obj, "group", "default")
+                weight = getattr(obj, "weight", 1.0)
+                vectorized = getattr(obj, "vectorized", False)
+                self.add_method(name, obj, input_count, output_count, input_types, output_types, group, weight, vectorized)
         # 记录初始状态
         self.history_method_inputs.append(self.method_inputs)
         self.history_method_input_values.append(self.method_input_values)
@@ -202,7 +222,7 @@ class AdaptoFlux:
         :return: 计算后的坍缩值
         :raises ValueError: 如果指定的坍缩方法未知，则抛出异常
         """
-        return self.collapse_manager.collapse(values)
+        return self.graph_processor.collapse_manager.collapse(values)
 
     # 生成单次路径选择
     def process_random_method(self, shuffle_indices=True):
@@ -400,22 +420,6 @@ class AdaptoFlux:
                 method_counter[method_name] += 1
 
         return method_counter
-        
-    def RMSE(self, y_true, y_pred):
-        """
-        计算均方根误差 (RMSE)
-
-        Args:
-            y_true (array-like): 真实值
-            y_pred (array-like): 预测值
-
-        Returns:
-            float: RMSE 值
-        """
-        y_true = np.array(y_true)
-        y_pred = np.array(y_pred)
-        mse = np.mean((y_true - y_pred) ** 2)  # 计算均方误差 (MSE)
-        return np.sqrt(mse)  # 计算 RMSE
     
     def generate_models(self, num_models=5, max_layers=3):
         """
@@ -464,189 +468,6 @@ class AdaptoFlux:
             })
 
         return model_candidates
-
-                    
-    # # 训练方法,epochs决定最终训练出来的模型层数,step用于控制重随机时每次增加几个重随机的指数上升速度 # 第一轮训练如果直接失败会出现错误，待解决
-    # def training(self, epochs=20, depth_interval=1, depth_reverse=1, step=2, target_accuracy=None):
-    #     """
-    #     训练方法，用于训练模型，执行指定的轮次并在每一轮中根据训练集和验证集的表现进行调整。
-        
-    #     - 该方法会根据给定的 `epochs` 参数迭代指定次数，逐步调整模型的权重和输入方法。
-    #     - 在每一轮迭代中，会计算当前模型的训练集准确率、方差以及与前一轮相比的变化。
-    #     - 训练过程中可能会根据预设的条件重新调整方法的输入，尝试不同的路径来改进模型表现。
-    #     - 如果本轮训练的方差较小或者准确率较高，则将当前模型保存到历史记录中；否则，会进行调整，重新计算适合的路径。
-        
-    #     参数：
-    #         epochs (int): 训练的轮次，决定了模型训练的次数，默认为 10000。
-    #         depth_interval (int): 控制深度的增量，默认为 1。
-    #         depth_reverse (int): 控制深度的反向调整，默认为 1。
-    #         step (int): 控制重随机时每次增加的指数上升速度，默认为 2。
-        
-    #     返回值：
-    #         None: 该方法不返回任何值，而是直接修改类的状态并进行模型训练。
-    #     """
-    #     try:
-    #         # 清空路径列表
-    #         self.paths = []
-    #         # 创建动态权重控制器
-    #         dynamicWeightController = DynamicWeightController.DynamicWeightController(epochs)
-
-    #         # 训练循环
-    #         for i in range(1, epochs + 1):
-    #             print("epoch:", i)
-    #             last_method = self.process_random_method()  # 获取当前的随机方法
-    #             new_last_values = self.process_array_with_list(last_method)  # 根据随机方法处理数据
-
-    #             # 计算训练集方差和准确率
-    #             last_collapse_values = np.apply_along_axis(self.collapse, axis=1, arr=self.last_values)
-    #             new_collapse_values = np.apply_along_axis(self.collapse, axis=1, arr=new_last_values)
-    #             last_vs_train = last_collapse_values == self.labels  # 计算训练集的相等情况
-    #             new_vs_train = new_collapse_values == self.labels  # 计算新训练集的相等情况
-                
-    #             # 计算准确率和损失
-    #             last_accuracy_trian = np.mean(last_vs_train)  # 计算上一轮训练集准确率
-    #             new_accuracy_trian = np.mean(new_vs_train)  # 计算本轮训练集准确率
-    #             last_loss_value = self.RMSE(self.labels, last_collapse_values)
-    #             new_loss_value = self.RMSE(self.labels, new_collapse_values)
-
-    #             print("上一轮训练集相等概率:" + str(last_accuracy_trian))
-    #             print("本轮训练集相等概率：" + str(new_accuracy_trian))
-
-    #             # 计算前后路径熵和从动态权重控制器获取权值
-    #             last_path_entropy = self.get_path_entropy(self.paths)
-    #             new_path_entropy = self.get_path_entropy(self.paths+ [last_method])
-
-
-    #             last_alpha,last_beta,last_gamma,last_delta = dynamicWeightController.get_weights(i - 1, last_path_entropy, last_loss_value)
-    #             new_alpha,new_beta,new_gamma,new_delta = dynamicWeightController.get_weights(i, new_path_entropy, new_loss_value)
-
-    #             # 计算指导值（暂未编写冗余部分）
-    #             last_guiding_value = last_alpha * last_accuracy_trian + last_beta * last_path_entropy - last_delta * last_loss_value
-    #             new_guiding_value = new_alpha * new_accuracy_trian + new_beta * new_path_entropy - new_delta * new_loss_value
-
-    #             print("上一轮训练集指导值:" + str(last_guiding_value))
-    #             print("本轮训练集指导值：" + str(new_guiding_value))
-                
-    #             # 判断是否要更新网络路径
-    #             if (last_guiding_value < new_guiding_value) and new_last_values.size != 0:
-    #                 self.paths.append(last_method)
-    #                 self.history_values.append(new_last_values)
-    #                 self.last_values = new_last_values
-    #                 self.history_method_inputs.append(self.method_inputs)
-    #                 self.history_method_input_values.append(self.method_input_values)
-    #                 self.metrics["accuracy"] = new_accuracy_trian
-    #                 self.metrics["entropy"] = new_path_entropy
-
-    #                 if self.metrics["accuracy"] > self.metrics["max_accuracy"]:
-    #                     self.metrics["max_accuracy"] = self.metrics["accuracy"]
-
-    #                 self.rollback_count = 0
-
-    #                 if target_accuracy is not None and new_accuracy_trian >= target_accuracy:
-    #                     print(f"训练提前停止，准确率达到 {new_accuracy_trian}，大于等于目标 {target_accuracy}")
-    #                     # 保存模型或处理
-    #                     self.save_model()  # 假设 save_model 方法已经定义
-    #                     return
-    #             else:
-    #                 # 如果本轮训练不符合要求，重随机重新寻找合适的路径
-    #                 j = 1
-    #                 while j <= len(last_method):
-    #                     print(f"在当层重新寻找适合的路径：当前重随机数{j}")
-    #                     if self.history_method_inputs:  # 检查是否有历史输入
-    #                         self.method_inputs = self.history_method_inputs[-1]
-
-    #                     if self.history_method_input_values:  # 检查是否有历史输入值
-    #                         self.method_input_values = self.history_method_input_values[-1]
-
-    #                     last_method = self.replace_random_elements(last_method, j)  # 替换方法中的随机元素
-    #                     j *= step  # 增加重随机的步长
-                        
-    #                     new_last_values = self.process_array_with_list(last_method)  # 处理新的数据
-
-    #                     # 计算训练集方差和准确率
-    #                     last_collapse_values = np.apply_along_axis(self.collapse, axis=1, arr=self.last_values)
-    #                     new_collapse_values = np.apply_along_axis(self.collapse, axis=1, arr=new_last_values)
-    #                     last_vs_train = last_collapse_values == self.labels  # 计算训练集的相等情况
-    #                     new_vs_train = new_collapse_values == self.labels  # 计算新训练集的相等情况
-                        
-    #                     # 计算准确率和损失
-    #                     last_accuracy_trian = np.mean(last_vs_train)  # 计算上一轮训练集准确率
-    #                     new_accuracy_trian = np.mean(new_vs_train)  # 计算本轮训练集准确率
-    #                     last_loss_value = self.RMSE(self.labels, last_collapse_values)
-    #                     new_loss_value = self.RMSE(self.labels, new_collapse_values)
-
-    #                     print("上一轮训练集相等概率:" + str(last_accuracy_trian))
-    #                     print("本轮训练集相等概率：" + str(new_accuracy_trian))
-
-    #                     # 计算前后路径熵和从动态权重控制器获取权值
-    #                     last_path_entropy = self.get_path_entropy(self.paths)
-    #                     new_path_entropy = self.get_path_entropy(self.paths+ [last_method])
-
-    #                     last_alpha,last_beta,last_gamma,last_delta = dynamicWeightController.get_weights(i - 1, last_path_entropy, last_loss_value)
-    #                     new_alpha,new_beta,new_gamma,new_delta = dynamicWeightController.get_weights(i, new_path_entropy, new_loss_value)
-
-    #                     # 计算指导值（暂未编写冗余部分）
-    #                     last_guiding_value = last_alpha * last_accuracy_trian + last_beta * last_path_entropy - last_delta * last_loss_value
-    #                     new_guiding_value = new_alpha * new_accuracy_trian + new_beta * new_path_entropy - new_delta * new_loss_value
-
-    #                     print("上一轮训练集指导值:" + str(last_guiding_value))
-    #                     print("本轮训练集指导值：" + str(new_guiding_value))
-
-    #                     # 判断是否需要更新路径
-    #                     if (last_guiding_value < new_guiding_value) and new_last_values.size != 0:
-    #                         self.paths.append(last_method)
-    #                         self.history_values.append(new_last_values)
-    #                         self.last_values = new_last_values
-    #                         self.history_method_inputs.append(self.method_inputs)
-    #                         self.history_method_input_values.append(self.method_input_values)
-    #                         self.metrics["accuracy"] = new_accuracy_trian
-    #                         self.metrics["entropy"] = new_path_entropy
-                            
-    #                         if self.metrics["accuracy"] > self.metrics["max_accuracy"]:
-    #                             self.metrics["max_accuracy"] = self.metrics["accuracy"]
-                            
-    #                         self.rollback_count = 0
-
-    #                         if target_accuracy is not None and new_accuracy_trian >= target_accuracy:
-    #                             print(f"训练提前停止，准确率达到 {new_accuracy_trian}，大于等于目标 {target_accuracy}")
-    #                             # 保存模型或处理
-    #                             self.save_model()  # 假设 save_model 方法已经定义
-    #                             return  
-    #                         break
-
-    #                 else:
-    #                     # 记录最高准确率未更新但发生回退的次数
-    #                     self.rollback_count += 1
-    #                     # 避免过度回退
-    #                     self.rollback_count = min(self.rollback_count, 5)
-    #                     # 如果找不到合适的路径，则清除上一层网络并重新寻找
-    #                     print(f'清除上{self.rollback_count}层网络')
-    #                     for k in range(self.rollback_count):
-    #                         if self.history_method_inputs:  # 检查是否有历史输入
-    #                             self.history_method_inputs.pop()
-    #                         if self.history_method_input_values:  # 检查是否有历史输入值
-    #                             self.history_method_input_values.pop()
-                                
-    #                         if len(self.history_values) > 1:
-    #                             self.history_values.pop()
-    #                             self.paths.pop()
-    #                         self.last_values = self.history_values[-1]
-
-    #         # 打开文件并写入路径数据
-    #         self.save_model()
-
-    #     except KeyboardInterrupt:
-    #         print("\n检测到中断，正在导出路径数据...")
-    #         self.save_model()
-    #         print(f"已导出 {len(self.paths)} 层路径到 output.txt。训练结束。")
-    #     except Exception as e:
-    #         exception_details = traceback.format_exc()
-    #         print(f"\n发生异常: {str(e)}，正在导出路径数据...")
-    #         with open("error_log.txt", "w", encoding="utf-8") as error_file:
-    #             error_file.write(exception_details)
-    #         self.save_model()
-    #         print(f"已导出 {len(self.paths)} 层路径到 output.txt。训练结束。")
-
 
     def load_paths_from_file(self, file_path="output.txt"):
         """

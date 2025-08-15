@@ -28,3 +28,5 @@ def method_profile(
         func.vectorized = vectorized  # 添加新属性
         return func
     return decorator
+
+method_profile.is_internal_decorator = True

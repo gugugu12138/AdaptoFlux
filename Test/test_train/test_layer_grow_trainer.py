@@ -23,9 +23,6 @@ class TestLayerGrowTrainer(unittest.TestCase):
         self.adaptoflux.graph_processor = MagicMock()
         self.adaptoflux.graph_processor.infer_with_graph.side_effect = lambda x: x @ np.random.rand(x.shape[1], 10)
 
-        self.adaptoflux.loss_fn = MagicMock()
-        self.adaptoflux.loss_fn.side_effect = lambda output, target: np.mean((output - target) ** 2)
-
         self.adaptoflux.append_nx_layer = MagicMock()
         self.adaptoflux.remove_last_nx_layer = MagicMock()
 
@@ -35,6 +32,9 @@ class TestLayerGrowTrainer(unittest.TestCase):
             decision_threshold=0.0,
             verbose=True
         )
+
+        self.trainer.loss_fn = MagicMock()
+        self.trainer.loss_fn.side_effect = lambda output, target: np.mean((output - target) ** 2)
 
         # ✅ 修复关键：mock 方法
         self.mock_process_random = MagicMock()
@@ -50,7 +50,7 @@ class TestLayerGrowTrainer(unittest.TestCase):
         # 模拟 path_generator 的 process_random_method 返回空
         self.trainer.path_generator.process_random_method.return_value = {"valid_groups": []}
 
-        result = self.trainer.train(self.input_data, self.target, max_layers=1)
+        result = self.trainer.train(self.input_data, self.target, max_layers=1, save_model=False)
 
         # 断言：append 和 remove 都没有被调用
         self.adaptoflux.append_nx_layer.assert_not_called()
@@ -72,14 +72,14 @@ class TestLayerGrowTrainer(unittest.TestCase):
         self.trainer.path_generator.process_random_method.return_value = mock_plan
 
         # 模拟损失：第一次评估 base_loss = 1.0，添加后 new_loss = 0.5
-        self.adaptoflux.loss_fn.side_effect = None
-        self.adaptoflux.loss_fn.return_value = 1.0  # 第一次 base_loss
-        self.adaptoflux.loss_fn.side_effect = [
+        self.trainer.loss_fn.side_effect = None
+        self.trainer.loss_fn.return_value = 1.0  # 第一次 base_loss
+        self.trainer.loss_fn.side_effect = [
             1.0,    # base_loss
             0.5     # new_loss after append
         ]
 
-        result = self.trainer.train(self.input_data, self.target, max_layers=1)
+        result = self.trainer.train(self.input_data, self.target, max_layers=1, save_model=False)
 
         # 断言：append 被调用一次，remove 未被调用
         self.adaptoflux.append_nx_layer.assert_called_once()
@@ -101,13 +101,13 @@ class TestLayerGrowTrainer(unittest.TestCase):
         self.trainer.path_generator.process_random_method.return_value = mock_plan
 
         # 损失序列：base=1.0, 尝试1: 1.2（变差）, 尝试2: 0.6（变好）
-        self.adaptoflux.loss_fn.side_effect = [
+        self.trainer.loss_fn.side_effect = [
             1.0,    # base_loss
             1.2,    # 尝试1 -> 拒绝
             0.6     # 尝试2 -> 接受
         ]
 
-        result = self.trainer.train(self.input_data, self.target, max_layers=1)
+        result = self.trainer.train(self.input_data, self.target, max_layers=1, save_model=False)
 
         # 断言：append 被调两次，remove 被调一次
         self.assertEqual(self.adaptoflux.append_nx_layer.call_count, 2)
@@ -128,9 +128,9 @@ class TestLayerGrowTrainer(unittest.TestCase):
         self.trainer.path_generator.process_random_method.return_value = mock_plan
 
         # 所有 new_loss 都大于 base_loss
-        self.adaptoflux.loss_fn.side_effect = lambda *args: 1.5  # 固定返回高损失
+        self.trainer.loss_fn.side_effect = lambda *args: 1.5  # 固定返回高损失
 
-        result = self.trainer.train(self.input_data, self.target, max_layers=5)
+        result = self.trainer.train(self.input_data, self.target, max_layers=5, save_model=False)
 
         # 断言：只尝试了一层，失败后停止
         self.assertEqual(len(result["attempt_history"]), 1)
@@ -151,12 +151,12 @@ class TestLayerGrowTrainer(unittest.TestCase):
         self.adaptoflux.append_nx_layer.side_effect = [Exception("Simulated append error"), None]
 
         # 损失：第一次失败，第二次成功
-        self.adaptoflux.loss_fn.side_effect = [
+        self.trainer.loss_fn.side_effect = [
             1.0,    # base
             0.5     # 第二次成功
         ]
 
-        result = self.trainer.train(self.input_data, self.target, max_layers=1)
+        result = self.trainer.train(self.input_data, self.target, max_layers=1, save_model=False)
 
         # 断言：第一次 append 失败，第二次成功
         self.assertEqual(self.adaptoflux.append_nx_layer.call_count, 2)
@@ -175,10 +175,10 @@ class TestLayerGrowTrainer(unittest.TestCase):
         self.trainer.path_generator.process_random_method.return_value = mock_plan
 
         # 第一次评估：损失变差，需要回退，但 remove 失败
-        self.adaptoflux.loss_fn.side_effect = [1.0, 1.2]
+        self.trainer.loss_fn.side_effect = [1.0, 1.2]
         self.adaptoflux.remove_last_nx_layer.side_effect = Exception("Simulated rollback error")
 
-        result = self.trainer.train(self.input_data, self.target, max_layers=1)
+        result = self.trainer.train(self.input_data, self.target, max_layers=1, save_model=False)
 
         # 断言：append 被调一次，remove 被调一次并失败
         self.adaptoflux.append_nx_layer.assert_called_once()

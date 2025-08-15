@@ -36,13 +36,6 @@ class LayerGrowTrainer(ModelTrainer):
         self.max_attempts = max_attempts
         self.decision_threshold = decision_threshold
         self.verbose = verbose
-
-        # 从 adaptoflux_instance 中获取 graph 和 methods
-        # 并创建一个 PathGenerator 实例用于生成候选方案
-        self.path_generator = PathGenerator(
-            graph=self.adaptoflux.graph,
-            methods=self.adaptoflux.methods
-        )
         
 
     def _evaluate_loss(self, input_data: np.ndarray, target: np.ndarray) -> float:
@@ -61,11 +54,38 @@ class LayerGrowTrainer(ModelTrainer):
             if output.shape[0] != target.shape[0]:
                 raise ValueError(f"Output batch size {output.shape[0]} != target batch size {target.shape[0]}")
             # 使用 AdaptoFlux 实例的损失函数
-            loss = self.adaptoflux.loss_fn(output, target)
+            loss = self.loss_fn(output, target)
             return loss
         except Exception as e:
             logger.error(f"Evaluation failed: {e}")
             return float('inf')
+    
+    def _evaluate_accuracy(self, input_data: np.ndarray, target: np.ndarray) -> float:
+        """
+        计算当前图结构的分类准确率。
+        
+        :param input_data: 输入数据
+        :param target: 真实标签 (shape: [N,] 或 [N, 1])
+        :return: 准确率 (0~1)
+        """
+        try:
+            output = self.adaptoflux.graph_processor.infer_with_graph(input_data)  # [N, C] 或 [N,]
+
+            # 假设是分类任务
+            if len(output.shape) == 1 or output.shape[1] == 1:
+                # 二分类，输出是单值
+                pred_classes = (output >= 0.5).astype(int).flatten()
+            else:
+                # 多分类，取最大值索引
+                pred_classes = np.argmax(output, axis=1)
+
+            true_labels = np.array(target).flatten()
+            accuracy = np.mean(pred_classes == true_labels)
+            return accuracy
+
+        except Exception as e:
+            logger.error(f"Accuracy evaluation failed: {e}")
+            return 0.0  # 失败时返回 0
 
     def _should_accept(self, old_loss: float, new_loss: float) -> bool:
         """
@@ -86,6 +106,7 @@ class LayerGrowTrainer(ModelTrainer):
         max_layers: int = 10,
         discard_unmatched='to_discard', 
         discard_node_method_name="null",
+        save_model: bool = True,
         **kwargs
     ) -> dict:
         """
@@ -110,10 +131,11 @@ class LayerGrowTrainer(ModelTrainer):
             if self.verbose:
                 logger.info(f"--- Starting to grow layer {layer_idx + 1} ---")
 
-            # 记录当前状态（损失）
+            # 记录当前状态（损失 + 准确率）
             base_loss = self._evaluate_loss(input_data, target)
+            base_acc = self._evaluate_accuracy(input_data, target)
             if self.verbose:
-                logger.info(f"Base loss before attempt: {base_loss:.6f}")
+                logger.info(f"Base loss before attempt: {base_loss:.6f}, Accuracy: {base_acc:.4f}")
 
             layer_success = False
             attempt_record = {"layer": layer_idx + 1, "attempts": []}
@@ -125,7 +147,7 @@ class LayerGrowTrainer(ModelTrainer):
                     logger.info(f"  Attempt {attempt}/{self.max_attempts}")
 
                 # 1. GENERATE: 生成候选方案
-                candidate_plan = self.path_generator.process_random_method()
+                candidate_plan = self.adaptoflux.process_random_method()
                 # 生成为空则跳过，这个地方代码逻辑有一丢丢问题，应该要全为空但是问题不大
                 if not candidate_plan["valid_groups"]:
                     if self.verbose:
@@ -138,7 +160,6 @@ class LayerGrowTrainer(ModelTrainer):
                 # 这里直接调用 AdaptoFlux 实例的 append_nx_layer 方法
                 try:
                     self.adaptoflux.append_nx_layer(
-                        self.adaptoflux.methods,
                         candidate_plan,
                         discard_unmatched=discard_unmatched,
                         discard_node_method_name=discard_node_method_name
@@ -152,13 +173,16 @@ class LayerGrowTrainer(ModelTrainer):
                 # 2.2 EVALUATE: 评估新图的性能
                 new_loss = self._evaluate_loss(input_data, target)
                 attempt_info["new_loss"] = new_loss
+                new_acc = self._evaluate_accuracy(input_data, target)
+                attempt_info["new_acc"] = new_acc
 
                 # 3. DECIDE: 决定是否接受
                 if self._should_accept(base_loss, new_loss):
                     # 4. ACCEPT: 决策成功，新层已通过 append_nx_layer 永久集成
                     if self.verbose:
                         logger.info(f"  ✅ Layer accepted on attempt {attempt}. "
-                                    f"Loss improved from {base_loss:.6f} to {new_loss:.6f}.")
+                                    f"Loss: {base_loss:.6f} → {new_loss:.6f}, "
+                                    f"Acc: {base_acc:.4f} → {new_acc:.4f}")
                     attempt_info["accepted"] = True
                     attempt_info["status"] = "accepted"
                     attempt_record["attempts"].append(attempt_info)
@@ -176,7 +200,8 @@ class LayerGrowTrainer(ModelTrainer):
                         break
 
                     if self.verbose:
-                        logger.info(f"  ❌ Layer rejected. Loss: {new_loss:.6f} (base: {base_loss:.6f}). "
+                        logger.info(f"  ❌ Layer rejected. Loss: {new_loss:.6f} (base: {base_loss:.6f}), "
+                                    f"Acc: {new_acc:.4f} (base: {base_acc:.4f}). "
                                     f"Reverted to previous state.")
 
                     attempt_info["status"] = "rejected"
@@ -197,5 +222,14 @@ class LayerGrowTrainer(ModelTrainer):
 
         if self.verbose:
             logger.info(f"LayerGrowTrainer finished. Successfully added {results['layers_added']} layers.")
+
+        # 根据参数决定是否保存模型
+        if save_model:
+            try:
+                self.adaptoflux.save_model()
+                if self.verbose:
+                    logger.info("Model saved successfully.")
+            except Exception as e:
+                logger.error(f"Failed to save model: {e}")
 
         return results

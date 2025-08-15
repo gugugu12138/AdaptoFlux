@@ -8,3 +8,4 @@ error_log.txt
 paper/
 .conda/
 .vscode/
+.VSCodeCounter/

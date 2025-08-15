@@ -49,6 +49,17 @@ class GraphProcessor:
                     new_index_edge += 1
 
                 method_counts[method_name] += 1
+            
+            # === 新增：检测无入边的新节点 ===
+            for method_name, count in method_counts.items():
+                if method_name == "unmatched":
+                    continue
+                for i in range(count):
+                    new_node = f"{self.layer}_{i}_{method_name}"
+                    if self.graph.in_degree(new_node) == 0:
+                        print(f"[警告] 节点 '{new_node}' 没有入边！其属性为：")
+                        print(dict(self.graph.nodes[new_node]))
+                        print(result['valid_groups'])
 
         # 收集所有输入边的 data_type
         input_data_types = []

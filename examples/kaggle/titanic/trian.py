@@ -66,7 +66,7 @@ model.add_collapse_method(collapse_sum_positive)
 
 trainer = LayerGrowTrainer(
             adaptoflux_instance=model,
-            max_attempts=100,
+            max_attempts=10,
             decision_threshold=0.0,
             verbose=True
         )
@@ -74,8 +74,11 @@ trainer = LayerGrowTrainer(
 trainer.train(
     input_data=model.values,
     target=model.labels,
-    max_layers=100,  # 设置最大层数
-    save_model=True  # 不保存模型
+    max_layers=20,  # 设置最大层数
+    save_model=True,  # 保存模型
+    on_retry_exhausted = "rollback",
+    rollback_layers = 2,
+    max_total_attempts = 3000
 )
 
 

@@ -3,6 +3,9 @@ from ..model_trainer import ModelTrainer
 import numpy as np
 import logging
 import random
+import copy
+from typing import Optional
+import os
 from ...PathGenerator.path_generator import PathGenerator
 from ...GraphManager.graph_processor import GraphProcessor
 
@@ -107,27 +110,59 @@ class LayerGrowTrainer(ModelTrainer):
         discard_unmatched='to_discard', 
         discard_node_method_name="null",
         save_model: bool = True,
+        on_retry_exhausted: str = "stop",  # 新增：失败后策略
+        rollback_layers: int = 1,          # 新增：回退层数
+        max_total_attempts: Optional[int] = None,  # 👈 新增：全局最大尝试次数
+        model_save_path: Optional[str] = None,
+        save_best_model: bool = True,           # 👈 新增：是否保存最佳模型
+        best_model_subfolder: str = "best",     # 👈 新增：最佳模型子目录
+        final_model_subfolder: str = "final",   # 👈 新增：最终模型子目录
         **kwargs
     ) -> dict:
         """
         实现基类的 train 方法。
         执行完整的“层叠式生成-评估-回退”循环，尝试为当前图添加多个新层。
+        如果考虑加速可以把上一层处理的结果缓存下来，避免重复计算。不过这个方法在推理阶段使用适配很差，后期再写。
 
         :param input_data: 用于快速评估的输入数据（小批量）
         :param target: 对应的标签
         :param max_layers: 最多尝试添加的新层数量
+        :param discard_unmatched: 是否丢弃不匹配的节点
+        :param discard_node_method_name: 丢弃节点的方法名称
+        :param save_model: 是否在训练结束后保存模型
+        :param on_retry_exhausted: 当所有尝试失败时的策略（如 "stop", "continue"）
+        :param rollback_layers: 如果添加失败，回退的层数
+        :param max_total_attempts: 全局最大增长尝试次数，防止无限循环。默认为 max_layers * 30
+        :param model_save_path: 模型保存的文件夹路径。仅在 save_model=True 时生效。默认为 None（使用 'models'）
         :param kwargs: 其他可选参数
         :return: 一个包含训练过程信息的字典
         """
+        best_acc = -1.0
+        best_graph_snapshot = None
+        best_layer_count = 0
         if self.verbose:
             logger.info(f"Starting LayerGrowTrainer. Max layers to grow: {max_layers}")
 
+        # 初始化 results 时添加
         results = {
             "layers_added": 0,
-            "attempt_history": []
+            "attempt_history": [],
+            "total_growth_attempts": 0,
+            "rollback_count": 0,
+            "rollback_events": []
         }
 
-        for layer_idx in range(max_layers):
+
+        # 设置默认值：如果不指定，则为 max_layers * 30
+        if max_total_attempts is None:
+            max_total_attempts = max_layers * 30
+
+        iteration_count = 0
+        layer_idx = 0
+        while layer_idx < max_layers and iteration_count < max_total_attempts:
+            iteration_count += 1
+            results["total_growth_attempts"] += 1
+
             if self.verbose:
                 logger.info(f"--- Starting to grow layer {layer_idx + 1} ---")
 
@@ -214,13 +249,74 @@ class LayerGrowTrainer(ModelTrainer):
 
             # 更新最终结果
             if layer_success:
+                layer_idx += 1
                 results["layers_added"] += 1
-                base_loss = new_loss # 更新 base_loss 用于下一层的比较
+                base_loss = new_loss  # 更新 base_loss 用于下一层的比较
+
+                if new_acc > best_acc:
+                    if self.verbose:
+                        logger.info(f"🎉 New best accuracy: {best_acc:.4f} → {new_acc:.4f}, layers={results['layers_added']}")
+                    best_acc = new_acc
+                    # 保存图结构和方法池的快照
+                    best_graph_snapshot = copy.deepcopy(self.adaptoflux.graph)
+                    best_methods_snapshot = copy.deepcopy(self.adaptoflux.methods)
+                    best_layer_count = results["layers_added"]
             else:
-                if self.verbose:
-                    logger.info(f"--- Failed to add layer {layer_idx + 1} after {self.max_attempts} attempts. "
-                                f"Stopping growth. ---")
-                break # 如果某一层失败，则停止继续添加
+                if on_retry_exhausted == "stop":
+                    if self.verbose:
+                        logger.info(f"--- Failed to add layer {layer_idx + 1} after {self.max_attempts} attempts. "
+                                    f"Stopping growth. ---")
+                    break
+
+                elif on_retry_exhausted == "rollback":
+                    if self.verbose:
+                        logger.info(f"--- Layer {layer_idx + 1} failed after {self.max_attempts} attempts. "
+                                    f"Rolling back {rollback_layers} layer(s). ---")
+
+                    results["rollback_count"] += 1
+                    rolled_back_success = 0
+                    rolled_back_fail = 0
+
+                    current_layers = results["layers_added"]
+                    actual_rollback = min(rollback_layers, current_layers)  # 安全限制
+
+                    for _ in range(actual_rollback):
+                        try:
+                            if layer_idx > 0:  # 确保有层可以回退
+                                if self.verbose:
+                                    logger.info(f"  Rolling back layer {layer_idx + 1}...")
+                                self.adaptoflux.remove_last_nx_layer()
+                                results["layers_added"] -= 1
+                                layer_idx -= 1
+                                rolled_back_success += 1
+                        except Exception as e:
+                            logger.error(f"Rollback failed: {e}")
+                            rolled_back_fail += 1
+
+                    results["layers_added"] += 1
+                    layer_idx += 1
+
+                    # 记录事件
+                    results["rollback_events"].append({
+                        "at_layer": layer_idx + 1,
+                        "rollback_layers": rollback_layers,
+                        "success_count": rolled_back_success,
+                        "failed_count": rolled_back_fail,
+                        "reason": "retry_exhausted"
+                    })
+
+                    if self.verbose:
+                        logger.info(f"Rolled back {rolled_back_success} layers (failed: {rolled_back_fail}).")
+
+                    # 👇 关键：更新当前性能基准
+                    base_loss = self._evaluate_loss(input_data, target)
+                    base_acc = self._evaluate_accuracy(input_data, target)
+                    if self.verbose:
+                        logger.info(f"  Reset base loss to: {base_loss:.6f}, acc: {base_acc:.4f}")
+
+                else:
+                    logger.warning(f"Invalid on_retry_exhausted='{on_retry_exhausted}'. Must be 'stop' or 'rollback'. Stopping.")
+                    break
 
         if self.verbose:
             logger.info(f"LayerGrowTrainer finished. Successfully added {results['layers_added']} layers.")
@@ -228,10 +324,42 @@ class LayerGrowTrainer(ModelTrainer):
         # 根据参数决定是否保存模型
         if save_model:
             try:
-                self.adaptoflux.save_model()
-                if self.verbose:
-                    logger.info("Model saved successfully.")
-            except Exception as e:
-                logger.error(f"Failed to save model: {e}")
+                base_save_path = model_save_path or "models"
+                os.makedirs(base_save_path, exist_ok=True)
 
-        return results
+                # === 保存最终模型 ===
+                final_path = os.path.join(base_save_path, final_model_subfolder)
+                self.adaptoflux.save_model(folder=final_path)
+                if self.verbose:
+                    logger.info(f"Final model saved to '{final_path}'")
+
+                # === 保存最佳模型 ===
+                if save_best_model and best_graph_snapshot is not None:
+                    best_path = os.path.join(base_save_path, best_model_subfolder)
+
+                    # 临时替换当前图结构以保存最佳状态
+                    original_graph = self.adaptoflux.graph
+                    original_methods = self.adaptoflux.methods
+
+                    self.adaptoflux.nx_graph = best_graph_snapshot
+                    self.adaptoflux.methods = best_methods_snapshot
+                    try:
+                        self.adaptoflux.save_model(folder=best_path)
+                        if self.verbose:
+                            logger.info(f"Best model saved to '{best_path}' (accuracy={best_acc:.4f}, layers={best_layer_count})")
+                    finally:
+                        # 恢复原始状态
+                        self.adaptoflux.graph = original_graph
+                        self.adaptoflux.methods = original_methods
+
+                # 添加到 results
+                results["final_model_saved"] = final_path
+                if save_best_model and best_graph_snapshot is not None:
+                    results["best_model_saved"] = best_path
+                    results["best_model_accuracy"] = best_acc
+                    results["best_model_layers"] = best_layer_count
+
+            except Exception as e:
+                logger.error(f"Failed to save model(s): {e}")
+                import traceback
+                logger.error(traceback.format_exc())

@@ -312,7 +312,6 @@ class AdaptoFlux:
         保存模型的路径数据、图结构（.gexf）和相关文件。
         
         1. 确保目标文件夹存在，如果不存在则创建。
-        2. 将模型的路径信息写入到 output.txt。
         3. 将图结构保存为 graph.gexf（可读性强）。
         4. 复制指定的 methods_path 文件到目标文件夹。
         

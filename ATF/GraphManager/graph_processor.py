@@ -20,6 +20,20 @@ class GraphProcessor:
 
         self.collapse_manager = CollapseFunctionManager(method=collapse_method)
 
+    def set_graph(self, new_graph):
+        """更新图结构"""
+        if not hasattr(new_graph, 'nodes') or not hasattr(new_graph, 'edges'):
+            raise ValueError("new_graph 不是一个有效的图对象")
+        self.graph = new_graph
+        print("图结构已更新。")
+
+    def set_methods(self, new_methods):
+        """更新 methods（函数字典或模块）"""
+        if not isinstance(new_methods, dict) and not callable(new_methods):
+            raise TypeError("methods 应该是一个函数字典或可调用对象")
+        self.methods = new_methods
+        print("Methods 已更新。")
+        
     def append_nx_layer(self, result, discard_unmatched='to_discard', discard_node_method_name="null"):
         """
         向图中添加一层新节点。

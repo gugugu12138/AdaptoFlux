@@ -341,42 +341,57 @@ class AdaptoFlux:
         if os.path.exists(self.methods_path):  # 确保源文件存在
             shutil.copy(self.methods_path, folder)  # 复制文件到目标文件夹
 
-    def get_path_entropy(self, paths):
+    def load_model(self, folder="models"):
         """
-        该方法已废弃
-        计算路径熵
+        从指定文件夹加载保存的模型：图结构（.gexf 或 .json）和 methods_path 文件。
 
-        :param paths: 需要计算的二维列表路径数据
-        :return: 计算得到的路径熵值
+        1. 检查目标文件夹是否存在。
+        2. 优先从 graph.gexf 加载图结构，若不存在则尝试 graph.json。
+        3. 恢复 methods_path 的路径（复制回原位置或更新引用）。
+        
+        参数:
+            folder (str): 包含模型文件的文件夹路径，默认为 "models"。
         """
-        try:
-            method_counter = Counter()
+        import os
+        import shutil
+        import json
+        import networkx as nx
+        from networkx.readwrite import json_graph
 
-            # 统计每种方法的出现次数
-            for node in self.graph.nodes:
-                data = self.graph.nodes[node]
-                method_name = data.get("method_name")
-                if method_name and method_name != "null":  # 忽略 null 节点
-                    method_counter[method_name] += 1
+        if not os.path.exists(folder):
+            raise FileNotFoundError(f"模型文件夹不存在: {folder}")
 
-            if not method_counter:
-                return 0.0
+        # 尝试优先加载 .gexf 文件
+        gexf_file_path = os.path.join(folder, "graph.gexf")
+        json_file_path = os.path.join(folder, "graph.json")
 
-            # 计算概率分布
-            total = sum(method_counter.values())
-            probabilities = [count / total for count in method_counter.values()]
+        self.graph = None
 
-            # 计算香农熵
-            entropy = -sum(p * math.log2(p) for p in probabilities if p > 0)
+        if os.path.exists(gexf_file_path):
+            try:
+                self.graph = nx.read_gexf(gexf_file_path)
+                self.graph_processor.set_graph(self.graph)
+                print("成功从 graph.gexf 加载图结构。")
+            except Exception as e:
+                print(f"读取 graph.gexf 失败: {e}")
+        elif os.path.exists(json_file_path):
+            try:
+                with open(json_file_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                self.graph = json_graph.node_link_graph(data, edges="edges")
+                self.graph_processor.set_graph(self.graph)
+                print("成功从 graph.json 加载图结构。")
+            except Exception as e:
+                print(f"读取 graph.json 失败: {e}")
+        else:
+            raise FileNotFoundError("未找到 graph.gexf 或 graph.json 文件。")
 
-            return entropy
-        except ValueError as ve:
-            print(f"值错误: {ve}")
-            return None
-        except Exception as e:
-            print(f"计算路径熵时发生错误: {e}")
-            print("路径数据:", paths)  # 打印路径数据以便定位问题
-            return None
+
+        # 确保图被成功加载
+        if self.graph is None:
+            raise RuntimeError("图结构加载失败。")
+
+        print(f"模型已成功从 '{folder}' 加载。")
         
     def get_graph_entropy(self):
         """
@@ -420,122 +435,6 @@ class AdaptoFlux:
 
         return method_counter
     
-    def generate_models(self, num_models=5, max_layers=3):
-        """
-        生成多个随机图模型，并计算它们的准确率。
-
-        参数:
-            num_models (int): 要生成的模型数量
-            max_layers (int): 每个模型的最大层数
-
-        返回:
-            List[Dict]: 包含模型及其准确率的字典列表，格式为 [{"model": graph, "accuracy": acc}, ...]
-        """
-        model_candidates = []
-
-        for _ in range(num_models):
-            # 创建一个新的临时图结构
-            temp_graph = nx.MultiDiGraph()
-            temp_graph.add_node("root")
-            temp_graph.add_node("collapse")
-
-            # 添加初始边（从 root 到 collapse）
-            for feature_index in range(self.values.shape[1]):
-                temp_graph.add_edge(
-                    "root",
-                    "collapse",
-                    output_index=0,
-                    data_coord=feature_index
-                )
-
-            layer = 0  # 局部层数计数器
-
-            # 添加多层随机节点
-            for _ in range(max_layers):
-                result = self.process_random_method()
-                self.append_nx_layer_to_graph(temp_graph, result, layer)
-                layer += 1
-
-            # 推理并计算准确率
-            predictions = self.infer_with_graph_custom(temp_graph, self.values)
-            accuracy = np.mean(predictions == self.labels)
-
-            # 存储模型及准确率
-            model_candidates.append({
-                "model": temp_graph,
-                "accuracy": accuracy
-            })
-
-        return model_candidates
-
-    def load_paths_from_file(self, file_path="output.txt"):
-        """
-        从指定的文件中加载路径数据到 self.paths 中。
-
-        参数:
-            file_path (str): 包含路径数据的文件路径，默认是 "output.txt"。
-        返回:
-            None
-        """
-        self.paths = [] # 清空self.paths
-        try:
-            with open(file_path, "r") as f:
-                for line in f:
-                    # 去除每行末尾的换行符并转为适当的数据类型
-                    item = line.strip()
-                    if item:  # 确保该行不为空
-                        self.paths.append(eval(item))  # 使用 eval 转换字符串回原数据类型
-        except FileNotFoundError:
-            print(f"文件 {file_path} 未找到。")
-            raise
-        except Exception as e:
-            print(f"读取文件时发生错误: {str(e)}")
-
-    # 评估函数
-    def evaluate(self, inputs, targets):
-        """
-        评估模型在给定输入和目标上的准确性。
-
-        该函数根据随机方法处理输入数据，计算模型预测值与目标值的匹配情况，并返回准确率。
-
-        参数:
-            inputs (np.ndarray): 输入数据，形状通常为 (样本数, 特征数)。
-            targets (np.ndarray): 真实目标值，与输入数据一一对应。
-
-        返回:
-            float: 模型在给定输入数据上的准确率。
-        """
-        for path in self.paths:
-            inputs = self.process_array_with_list(path, inputs)  # 根据随机方法处理数据
-
-        collapse_values = np.apply_along_axis(self.collapse, axis=1, arr=inputs)
-        # 计算预测值与真实值匹配的情况
-        prediction_matches = collapse_values == targets  
-        # 计算准确率
-        train_accuracy = np.mean(prediction_matches) 
-        print(f"准确率：{train_accuracy}")
-        return train_accuracy
-
-    def inference(self, data):
-        """
-        执行推理过程，将输入数据依次通过多个路径进行处理，最终合并成一个推理结果。
-
-        参数：
-        data : 任意类型
-            初始输入数据，将依次通过 `self.paths` 进行处理。
-
-        过程：
-        1. 遍历 `self.paths` 列表中的每个路径，并使用 `process_single_value_with_list` 处理数据。
-        2. 经过所有路径处理后，使用 `collapse` 方法合并最终数据。
-        3. 打印推理结果。
-
-        输出：
-        无直接返回值，但会在控制台打印最终的推理结果。
-        """
-        for path in self.paths:
-            data = self.process_single_value_with_list(path, data)
-        result = self.collapse(data)
-        print(f"推理值：{result}")
 
     def _create_graph_processor(self, graph):
         """

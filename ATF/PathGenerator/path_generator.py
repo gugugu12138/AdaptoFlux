@@ -43,7 +43,6 @@ class PathGenerator:
         
         method_list = []
         collapse_edges = list(self.graph.in_edges("collapse", data=True))
-        print(f"当前图中 'collapse' 节点的入边数量: {len(collapse_edges)}")
         num_elements = len(collapse_edges)
 
         for _ in range(num_elements):

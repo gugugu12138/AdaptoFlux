@@ -341,7 +341,7 @@ class LayerGrowTrainer(ModelTrainer):
                     original_graph = self.adaptoflux.graph
                     original_methods = self.adaptoflux.methods
 
-                    self.adaptoflux.nx_graph = best_graph_snapshot
+                    self.adaptoflux.graph = best_graph_snapshot
                     self.adaptoflux.methods = best_methods_snapshot
                     try:
                         self.adaptoflux.save_model(folder=best_path)

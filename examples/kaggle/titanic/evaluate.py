@@ -6,6 +6,40 @@ from ATF.CollapseManager.collapse_functions import CollapseMethod, CollapseFunct
 from ATF.ModelTrainer.LayerGrowTrainer.layer_grow_trainer import LayerGrowTrainer
 from ATF.ModelTrainer.model_trainer import ModelTrainer
 
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,  # 显示 INFO 及以上级别日志
+    format='[%(levelname)s] %(name)s: %(message)s'
+)
+
+
+def _evaluate_accuracy(output: np.ndarray, target: np.ndarray) -> float:
+    """
+    计算当前图结构的分类准确率。
+    
+    :param input_data: 输入数据
+    :param target: 真实标签 (shape: [N,] 或 [N, 1])
+    :return: 准确率 (0~1)
+    """
+    try:
+        # 假设是分类任务
+        if len(output.shape) == 1 or output.shape[1] == 1:
+            # 二分类，输出是单值
+            pred_classes = (output >= 0.5).astype(int).flatten()
+        else:
+            # 多分类，取最大值索引
+            pred_classes = np.argmax(output, axis=1)
+
+        true_labels = np.array(target).flatten()
+        accuracy = np.mean(pred_classes == true_labels)
+        return accuracy
+
+    except Exception as e:
+        logger.error(f"Accuracy evaluation failed: {e}")
+        traceback.print_exc()  # 👈 打印完整错误堆栈
+        return 0.0  # 失败时返回 0
+
 def collapse_sum_positive(values):
     """
     自定义坍缩方法：
@@ -27,32 +61,38 @@ def load_titanic_for_adaptoflux(train_processed_path, methods_path=None, collaps
     # 读取 CSV
     df = pd.read_csv(train_processed_path)
 
-    # 直接使用所有列作为特征
-    values = df.values  # 二维特征矩阵
+    # 确保存在 Survived 列
+    if 'Survived' not in df.columns:
+        raise ValueError("train_processed.csv 必须包含 'Survived' 列作为标签")
 
-    # 转换为 numpy 浮点类型
+    # 分离标签和特征
+    labels = df['Survived'].values  # 一维标签
+    values = df.drop(columns=['Survived']).values  # 二维特征矩阵
+
+    # 转换为 numpy 浮点类型（防止 int64/float64 混合类型问题）
     values = np.array(values, dtype=np.float64)
 
-    # 创建 AdaptoFlux 实例（不传 labels）
+    # 创建 AdaptoFlux 实例
     adaptoflux_instance = AdaptoFlux(
         values=values,
+        labels=labels,
         methods_path=methods_path,
         collapse_method=collapse_method
     )
 
     return adaptoflux_instance
 
-model = load_titanic_for_adaptoflux(train_processed_path='examples/kaggle/titanic/output/test_processed.csv',
+model = load_titanic_for_adaptoflux(train_processed_path='examples/kaggle/titanic/output/train_processed.csv',
                                     methods_path='examples/kaggle/titanic/methods.py')
 
 model.add_collapse_method(collapse_sum_positive)
 
-model.load_model(folder='models/final')
+model.load_model(folder='models/best')
 
-import pandas as pd
-
-# 假设 pred 是你的预测结果，shape 为 (n,)
 pred = model.infer_with_graph(model.values)
+
+print(_evaluate_accuracy(pred , model.labels))
+
 
 # 生成对应的 PassengerId，从 892 开始
 passenger_ids = range(892, 892 + len(pred))
@@ -67,25 +107,3 @@ submission = pd.DataFrame({
 submission.to_csv('examples/kaggle/titanic/submission.csv', index=False)
 
 print("✅ 提交文件已生成：submission.csv")
-
-import pandas as pd
-
-# 1. 读取你的预测结果
-pred_df = pd.read_csv('examples/kaggle/titanic/submission.csv')  # 或你保存的文件名
-
-# 2. 读取真实标签（正确标注）
-true_df = pd.read_csv('examples/kaggle/titanic/input/gender_submission.csv')  # 替换为你的真实文件名
-
-# 3. 按 PassengerId 对齐数据（确保顺序一致）
-pred_df = pred_df.sort_values('PassengerId').reset_index(drop=True)
-true_df = true_df.sort_values('PassengerId').reset_index(drop=True)
-
-# 4. 检查 PassengerId 是否完全一致
-if not (pred_df['PassengerId'].equals(true_df['PassengerId'])):
-    raise ValueError("PassengerId 不匹配，请确保两个文件的乘客 ID 一致")
-
-# 5. 计算准确率
-accuracy = (pred_df['Survived'] == true_df['Survived']).mean()
-
-# 6. 输出结果
-print(f"✅ 准确率: {accuracy:.4f} ({accuracy * 100:.2f}%)")

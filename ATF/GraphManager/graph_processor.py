@@ -33,7 +33,7 @@ class GraphProcessor:
             raise TypeError("methods 应该是一个函数字典或可调用对象")
         self.methods = new_methods
         print("Methods 已更新。")
-        
+
     def append_nx_layer(self, result, discard_unmatched='to_discard', discard_node_method_name="null"):
         """
         向图中添加一层新节点。

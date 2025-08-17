@@ -353,7 +353,6 @@ class AdaptoFlux:
             folder (str): 包含模型文件的文件夹路径，默认为 "models"。
         """
         import os
-        import shutil
         import json
         import networkx as nx
         from networkx.readwrite import json_graph
@@ -380,6 +379,7 @@ class AdaptoFlux:
                     data = json.load(f)
                 self.graph = json_graph.node_link_graph(data, edges="edges")
                 self.graph_processor.set_graph(self.graph)
+                self.graph_processor.set_methods(self.methods)
                 print("成功从 graph.json 加载图结构。")
             except Exception as e:
                 print(f"读取 graph.json 失败: {e}")

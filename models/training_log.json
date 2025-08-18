@@ -1,0 +1,1962 @@
+{
+    "layers_added": 20,
+    "attempt_history": [
+        {
+            "layer": 1,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": true,
+                    "new_loss": 0.5544332210998878,
+                    "new_acc": 0.44556677890011226,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 2,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.6307519640852974,
+                    "new_acc": 0.36924803591470257,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": true,
+                    "new_loss": 0.41414141414141414,
+                    "new_acc": 0.5858585858585859,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 3,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": true,
+                    "new_loss": 0.40291806958473625,
+                    "new_acc": 0.5970819304152637,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 4,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": true,
+                    "new_loss": 0.3984287317620651,
+                    "new_acc": 0.6015712682379349,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 5,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.40179573512906847,
+                    "new_acc": 0.5982042648709316,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": false,
+                    "new_loss": 0.6778900112233446,
+                    "new_acc": 0.3221099887766554,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 3,
+                    "accepted": false,
+                    "new_loss": 0.5881032547699214,
+                    "new_acc": 0.4118967452300786,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 4,
+                    "accepted": false,
+                    "new_loss": 0.44556677890011226,
+                    "new_acc": 0.5544332210998878,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 5,
+                    "accepted": true,
+                    "new_loss": 0.36363636363636365,
+                    "new_acc": 0.6363636363636364,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 6,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": true,
+                    "new_loss": 0.3265993265993266,
+                    "new_acc": 0.6734006734006734,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 7,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.3378226711560045,
+                    "new_acc": 0.6621773288439955,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": false,
+                    "new_loss": 0.35241301907968575,
+                    "new_acc": 0.6475869809203143,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 3,
+                    "accepted": false,
+                    "new_loss": 0.3759820426487093,
+                    "new_acc": 0.6240179573512907,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 4,
+                    "accepted": false,
+                    "new_loss": 0.3546576879910213,
+                    "new_acc": 0.6453423120089786,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 5,
+                    "accepted": false,
+                    "new_loss": 0.5151515151515151,
+                    "new_acc": 0.48484848484848486,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 6,
+                    "accepted": false,
+                    "new_loss": 0.32996632996632996,
+                    "new_acc": 0.67003367003367,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 7,
+                    "accepted": false,
+                    "new_loss": 0.6060606060606061,
+                    "new_acc": 0.3939393939393939,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 8,
+                    "accepted": false,
+                    "new_loss": 0.33221099887766553,
+                    "new_acc": 0.6677890011223344,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 9,
+                    "accepted": false,
+                    "new_loss": 0.3681257014590348,
+                    "new_acc": 0.6318742985409652,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 10,
+                    "accepted": true,
+                    "new_loss": 0.31874298540965207,
+                    "new_acc": 0.6812570145903479,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 8,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.4567901234567901,
+                    "new_acc": 0.5432098765432098,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": false,
+                    "new_loss": 0.4219977553310887,
+                    "new_acc": 0.5780022446689114,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 3,
+                    "accepted": false,
+                    "new_loss": 0.3333333333333333,
+                    "new_acc": 0.6666666666666666,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 4,
+                    "accepted": false,
+                    "new_loss": 0.34231200897867564,
+                    "new_acc": 0.6576879910213244,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 5,
+                    "accepted": false,
+                    "new_loss": 0.3389450056116723,
+                    "new_acc": 0.6610549943883277,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 6,
+                    "accepted": false,
+                    "new_loss": 0.34231200897867564,
+                    "new_acc": 0.6576879910213244,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 7,
+                    "accepted": false,
+                    "new_loss": 0.33221099887766553,
+                    "new_acc": 0.6677890011223344,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 8,
+                    "accepted": false,
+                    "new_loss": 0.37149270482603813,
+                    "new_acc": 0.6285072951739619,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 9,
+                    "accepted": false,
+                    "new_loss": 0.3557800224466891,
+                    "new_acc": 0.6442199775533108,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 10,
+                    "accepted": false,
+                    "new_loss": 0.35353535353535354,
+                    "new_acc": 0.6464646464646465,
+                    "status": "rejected"
+                }
+            ]
+        },
+        {
+            "layer": 7,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.3961840628507295,
+                    "new_acc": 0.6038159371492705,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": false,
+                    "new_loss": 0.388327721661055,
+                    "new_acc": 0.611672278338945,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 3,
+                    "accepted": false,
+                    "new_loss": 0.4006734006734007,
+                    "new_acc": 0.5993265993265994,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 4,
+                    "accepted": false,
+                    "new_loss": 0.574635241301908,
+                    "new_acc": 0.42536475869809204,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 5,
+                    "accepted": false,
+                    "new_loss": 0.37373737373737376,
+                    "new_acc": 0.6262626262626263,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 6,
+                    "accepted": true,
+                    "new_loss": 0.3445566778900112,
+                    "new_acc": 0.6554433221099888,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 8,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.3658810325476992,
+                    "new_acc": 0.6341189674523008,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": true,
+                    "new_loss": 0.34231200897867564,
+                    "new_acc": 0.6576879910213244,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 9,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.35802469135802467,
+                    "new_acc": 0.6419753086419753,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": false,
+                    "new_loss": 0.3501683501683502,
+                    "new_acc": 0.6498316498316499,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 3,
+                    "accepted": false,
+                    "new_loss": 0.5252525252525253,
+                    "new_acc": 0.47474747474747475,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 4,
+                    "accepted": false,
+                    "new_loss": 0.3445566778900112,
+                    "new_acc": 0.6554433221099888,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 5,
+                    "accepted": false,
+                    "new_loss": 0.3613916947250281,
+                    "new_acc": 0.6386083052749719,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 6,
+                    "accepted": true,
+                    "new_loss": 0.3389450056116723,
+                    "new_acc": 0.6610549943883277,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 10,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.3771043771043771,
+                    "new_acc": 0.622895622895623,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": false,
+                    "new_loss": 0.36363636363636365,
+                    "new_acc": 0.6363636363636364,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 3,
+                    "accepted": false,
+                    "new_loss": 0.3490460157126824,
+                    "new_acc": 0.6509539842873177,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 4,
+                    "accepted": false,
+                    "new_loss": 0.3793490460157127,
+                    "new_acc": 0.6206509539842873,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 5,
+                    "accepted": false,
+                    "new_loss": 0.35241301907968575,
+                    "new_acc": 0.6475869809203143,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 6,
+                    "accepted": false,
+                    "new_loss": 0.35353535353535354,
+                    "new_acc": 0.6464646464646465,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 7,
+                    "accepted": false,
+                    "new_loss": 0.34231200897867564,
+                    "new_acc": 0.6576879910213244,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 8,
+                    "accepted": false,
+                    "new_loss": 0.3961840628507295,
+                    "new_acc": 0.6038159371492705,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 9,
+                    "accepted": false,
+                    "new_loss": 0.37373737373737376,
+                    "new_acc": 0.6262626262626263,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 10,
+                    "accepted": false,
+                    "new_loss": 0.5712682379349046,
+                    "new_acc": 0.4287317620650954,
+                    "status": "rejected"
+                }
+            ]
+        },
+        {
+            "layer": 9,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.4163860830527497,
+                    "new_acc": 0.5836139169472503,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": false,
+                    "new_loss": 0.49382716049382713,
+                    "new_acc": 0.5061728395061729,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 3,
+                    "accepted": false,
+                    "new_loss": 0.372615039281706,
+                    "new_acc": 0.6273849607182941,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 4,
+                    "accepted": false,
+                    "new_loss": 0.37373737373737376,
+                    "new_acc": 0.6262626262626263,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 5,
+                    "accepted": false,
+                    "new_loss": 0.372615039281706,
+                    "new_acc": 0.6273849607182941,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 6,
+                    "accepted": false,
+                    "new_loss": 0.38608305274971944,
+                    "new_acc": 0.6139169472502806,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 7,
+                    "accepted": true,
+                    "new_loss": 0.3434343434343434,
+                    "new_acc": 0.6565656565656566,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 10,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.3771043771043771,
+                    "new_acc": 0.622895622895623,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": false,
+                    "new_loss": 0.574635241301908,
+                    "new_acc": 0.42536475869809204,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 3,
+                    "accepted": false,
+                    "new_loss": 0.38271604938271603,
+                    "new_acc": 0.6172839506172839,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 4,
+                    "accepted": false,
+                    "new_loss": 0.6958473625140292,
+                    "new_acc": 0.3041526374859708,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 5,
+                    "accepted": false,
+                    "new_loss": 0.4287317620650954,
+                    "new_acc": 0.5712682379349046,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 6,
+                    "accepted": false,
+                    "new_loss": 0.494949494949495,
+                    "new_acc": 0.5050505050505051,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 7,
+                    "accepted": false,
+                    "new_loss": 0.6621773288439955,
+                    "new_acc": 0.3378226711560045,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 8,
+                    "accepted": false,
+                    "new_loss": 0.6902356902356902,
+                    "new_acc": 0.30976430976430974,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 9,
+                    "accepted": false,
+                    "new_loss": 0.4377104377104377,
+                    "new_acc": 0.5622895622895623,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 10,
+                    "accepted": true,
+                    "new_loss": 0.3389450056116723,
+                    "new_acc": 0.6610549943883277,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 11,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.4163860830527497,
+                    "new_acc": 0.5836139169472503,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": false,
+                    "new_loss": 0.5611672278338945,
+                    "new_acc": 0.4388327721661055,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 3,
+                    "accepted": false,
+                    "new_loss": 0.4062850729517396,
+                    "new_acc": 0.5937149270482603,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 4,
+                    "accepted": false,
+                    "new_loss": 0.3557800224466891,
+                    "new_acc": 0.6442199775533108,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 5,
+                    "accepted": false,
+                    "new_loss": 0.3613916947250281,
+                    "new_acc": 0.6386083052749719,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 6,
+                    "accepted": false,
+                    "new_loss": 0.39057239057239057,
+                    "new_acc": 0.6094276094276094,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 7,
+                    "accepted": false,
+                    "new_loss": 0.3838383838383838,
+                    "new_acc": 0.6161616161616161,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 8,
+                    "accepted": false,
+                    "new_loss": 0.3984287317620651,
+                    "new_acc": 0.6015712682379349,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 9,
+                    "accepted": false,
+                    "new_loss": 0.3759820426487093,
+                    "new_acc": 0.6240179573512907,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 10,
+                    "accepted": false,
+                    "new_loss": 0.3389450056116723,
+                    "new_acc": 0.6610549943883277,
+                    "status": "rejected"
+                }
+            ]
+        },
+        {
+            "layer": 10,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": true,
+                    "new_loss": 0.34118967452300786,
+                    "new_acc": 0.6588103254769921,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 11,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": true,
+                    "new_loss": 0.3389450056116723,
+                    "new_acc": 0.6610549943883277,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 12,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": true,
+                    "new_loss": 0.33557800224466894,
+                    "new_acc": 0.6644219977553311,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 13,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.39281705948372614,
+                    "new_acc": 0.6071829405162739,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": false,
+                    "new_loss": 0.3389450056116723,
+                    "new_acc": 0.6610549943883277,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 3,
+                    "accepted": false,
+                    "new_loss": 0.35129068462401797,
+                    "new_acc": 0.6487093153759821,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 4,
+                    "accepted": false,
+                    "new_loss": 0.42424242424242425,
+                    "new_acc": 0.5757575757575758,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 5,
+                    "accepted": false,
+                    "new_loss": 0.3367003367003367,
+                    "new_acc": 0.6632996632996633,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 6,
+                    "accepted": false,
+                    "new_loss": 0.3546576879910213,
+                    "new_acc": 0.6453423120089786,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 7,
+                    "accepted": true,
+                    "new_loss": 0.31200897867564537,
+                    "new_acc": 0.6879910213243546,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 14,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.33221099887766553,
+                    "new_acc": 0.6677890011223344,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": false,
+                    "new_loss": 0.35353535353535354,
+                    "new_acc": 0.6464646464646465,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 3,
+                    "accepted": false,
+                    "new_loss": 0.31874298540965207,
+                    "new_acc": 0.6812570145903479,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 4,
+                    "accepted": false,
+                    "new_loss": 0.3490460157126824,
+                    "new_acc": 0.6509539842873177,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 5,
+                    "accepted": false,
+                    "new_loss": 0.39169472502805835,
+                    "new_acc": 0.6083052749719416,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 6,
+                    "accepted": false,
+                    "new_loss": 0.32098765432098764,
+                    "new_acc": 0.6790123456790124,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 7,
+                    "accepted": false,
+                    "new_loss": 0.32323232323232326,
+                    "new_acc": 0.6767676767676768,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 8,
+                    "accepted": false,
+                    "new_loss": 0.3153759820426487,
+                    "new_acc": 0.6846240179573513,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 9,
+                    "accepted": false,
+                    "new_loss": 0.31874298540965207,
+                    "new_acc": 0.6812570145903479,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 10,
+                    "accepted": false,
+                    "new_loss": 0.4478114478114478,
+                    "new_acc": 0.5521885521885522,
+                    "status": "rejected"
+                }
+            ]
+        },
+        {
+            "layer": 13,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.41301907968574636,
+                    "new_acc": 0.5869809203142536,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": false,
+                    "new_loss": 0.41975308641975306,
+                    "new_acc": 0.5802469135802469,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 3,
+                    "accepted": false,
+                    "new_loss": 0.5297418630751964,
+                    "new_acc": 0.4702581369248036,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 4,
+                    "accepted": true,
+                    "new_loss": 0.3378226711560045,
+                    "new_acc": 0.6621773288439955,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 14,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": true,
+                    "new_loss": 0.3344556677890011,
+                    "new_acc": 0.6655443322109988,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 15,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.345679012345679,
+                    "new_acc": 0.654320987654321,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": false,
+                    "new_loss": 0.33557800224466894,
+                    "new_acc": 0.6644219977553311,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 3,
+                    "accepted": false,
+                    "new_loss": 0.4051627384960718,
+                    "new_acc": 0.5948372615039281,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 4,
+                    "accepted": false,
+                    "new_loss": 0.3389450056116723,
+                    "new_acc": 0.6610549943883277,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 5,
+                    "accepted": true,
+                    "new_loss": 0.3265993265993266,
+                    "new_acc": 0.6734006734006734,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 16,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": true,
+                    "new_loss": 0.32098765432098764,
+                    "new_acc": 0.6790123456790124,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 17,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.39281705948372614,
+                    "new_acc": 0.6071829405162739,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": false,
+                    "new_loss": 0.32098765432098764,
+                    "new_acc": 0.6790123456790124,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 3,
+                    "accepted": false,
+                    "new_loss": 0.4006734006734007,
+                    "new_acc": 0.5993265993265994,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 4,
+                    "accepted": false,
+                    "new_loss": 0.48035914702581367,
+                    "new_acc": 0.5196408529741863,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 5,
+                    "accepted": false,
+                    "new_loss": 0.35353535353535354,
+                    "new_acc": 0.6464646464646465,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 6,
+                    "accepted": true,
+                    "new_loss": 0.31200897867564537,
+                    "new_acc": 0.6879910213243546,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 18,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.31986531986531985,
+                    "new_acc": 0.6801346801346801,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": false,
+                    "new_loss": 0.5140291806958474,
+                    "new_acc": 0.48597081930415265,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 3,
+                    "accepted": false,
+                    "new_loss": 0.6161616161616161,
+                    "new_acc": 0.3838383838383838,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 4,
+                    "accepted": false,
+                    "new_loss": 0.43546576879910215,
+                    "new_acc": 0.5645342312008979,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 5,
+                    "accepted": false,
+                    "new_loss": 0.34118967452300786,
+                    "new_acc": 0.6588103254769921,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 6,
+                    "accepted": false,
+                    "new_loss": 0.3569023569023569,
+                    "new_acc": 0.6430976430976431,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 7,
+                    "accepted": true,
+                    "new_loss": 0.30303030303030304,
+                    "new_acc": 0.696969696969697,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 19,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.38047138047138046,
+                    "new_acc": 0.6195286195286195,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": false,
+                    "new_loss": 0.33221099887766553,
+                    "new_acc": 0.6677890011223344,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 3,
+                    "accepted": false,
+                    "new_loss": 0.33108866442199775,
+                    "new_acc": 0.6689113355780022,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 4,
+                    "accepted": false,
+                    "new_loss": 0.345679012345679,
+                    "new_acc": 0.654320987654321,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 5,
+                    "accepted": false,
+                    "new_loss": 0.31425364758698093,
+                    "new_acc": 0.6857463524130191,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 6,
+                    "accepted": false,
+                    "new_loss": 0.4208754208754209,
+                    "new_acc": 0.5791245791245792,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 7,
+                    "accepted": false,
+                    "new_loss": 0.31200897867564537,
+                    "new_acc": 0.6879910213243546,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 8,
+                    "accepted": false,
+                    "new_loss": 0.31986531986531985,
+                    "new_acc": 0.6801346801346801,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 9,
+                    "accepted": false,
+                    "new_loss": 0.31200897867564537,
+                    "new_acc": 0.6879910213243546,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 10,
+                    "accepted": false,
+                    "new_loss": 0.4612794612794613,
+                    "new_acc": 0.5387205387205387,
+                    "status": "rejected"
+                }
+            ]
+        },
+        {
+            "layer": 18,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.3254769921436588,
+                    "new_acc": 0.6745230078563412,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": false,
+                    "new_loss": 0.36251402918069586,
+                    "new_acc": 0.6374859708193041,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 3,
+                    "accepted": false,
+                    "new_loss": 0.3344556677890011,
+                    "new_acc": 0.6655443322109988,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 4,
+                    "accepted": true,
+                    "new_loss": 0.287317620650954,
+                    "new_acc": 0.712682379349046,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 19,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.33557800224466894,
+                    "new_acc": 0.6644219977553311,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": false,
+                    "new_loss": 0.6666666666666666,
+                    "new_acc": 0.3333333333333333,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 3,
+                    "accepted": false,
+                    "new_loss": 0.372615039281706,
+                    "new_acc": 0.6273849607182941,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 4,
+                    "accepted": false,
+                    "new_loss": 0.4051627384960718,
+                    "new_acc": 0.5948372615039281,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 5,
+                    "accepted": false,
+                    "new_loss": 0.31986531986531985,
+                    "new_acc": 0.6801346801346801,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 6,
+                    "accepted": false,
+                    "new_loss": 0.3782267115600449,
+                    "new_acc": 0.621773288439955,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 7,
+                    "accepted": false,
+                    "new_loss": 0.3658810325476992,
+                    "new_acc": 0.6341189674523008,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 8,
+                    "accepted": false,
+                    "new_loss": 0.3288439955106622,
+                    "new_acc": 0.6711560044893379,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 9,
+                    "accepted": false,
+                    "new_loss": 0.5959595959595959,
+                    "new_acc": 0.40404040404040403,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 10,
+                    "accepted": false,
+                    "new_loss": 0.48035914702581367,
+                    "new_acc": 0.5196408529741863,
+                    "status": "rejected"
+                }
+            ]
+        },
+        {
+            "layer": 18,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": true,
+                    "new_loss": 0.3176206509539843,
+                    "new_acc": 0.6823793490460157,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 19,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.3479236812570146,
+                    "new_acc": 0.6520763187429854,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": false,
+                    "new_loss": 0.6026936026936027,
+                    "new_acc": 0.39730639730639733,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 3,
+                    "accepted": false,
+                    "new_loss": 0.45454545454545453,
+                    "new_acc": 0.5454545454545454,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 4,
+                    "accepted": false,
+                    "new_loss": 0.4826038159371493,
+                    "new_acc": 0.5173961840628507,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 5,
+                    "accepted": false,
+                    "new_loss": 0.3221099887766554,
+                    "new_acc": 0.6778900112233446,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 6,
+                    "accepted": false,
+                    "new_loss": 0.3176206509539843,
+                    "new_acc": 0.6823793490460157,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 7,
+                    "accepted": false,
+                    "new_loss": 0.4601571268237935,
+                    "new_acc": 0.5398428731762065,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 8,
+                    "accepted": false,
+                    "new_loss": 0.33557800224466894,
+                    "new_acc": 0.6644219977553311,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 9,
+                    "accepted": false,
+                    "new_loss": 0.3333333333333333,
+                    "new_acc": 0.6666666666666666,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 10,
+                    "accepted": false,
+                    "new_loss": 0.32996632996632996,
+                    "new_acc": 0.67003367003367,
+                    "status": "rejected"
+                }
+            ]
+        },
+        {
+            "layer": 18,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.38496071829405165,
+                    "new_acc": 0.6150392817059483,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": false,
+                    "new_loss": 0.3344556677890011,
+                    "new_acc": 0.6655443322109988,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 3,
+                    "accepted": false,
+                    "new_loss": 0.6161616161616161,
+                    "new_acc": 0.3838383838383838,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 4,
+                    "accepted": false,
+                    "new_loss": 0.3378226711560045,
+                    "new_acc": 0.6621773288439955,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 5,
+                    "accepted": false,
+                    "new_loss": 0.34118967452300786,
+                    "new_acc": 0.6588103254769921,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 6,
+                    "accepted": false,
+                    "new_loss": 0.3759820426487093,
+                    "new_acc": 0.6240179573512907,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 7,
+                    "accepted": false,
+                    "new_loss": 0.4107744107744108,
+                    "new_acc": 0.5892255892255892,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 8,
+                    "accepted": false,
+                    "new_loss": 0.36251402918069586,
+                    "new_acc": 0.6374859708193041,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 9,
+                    "accepted": false,
+                    "new_loss": 0.3468013468013468,
+                    "new_acc": 0.6531986531986532,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 10,
+                    "accepted": false,
+                    "new_loss": 0.37037037037037035,
+                    "new_acc": 0.6296296296296297,
+                    "status": "rejected"
+                }
+            ]
+        },
+        {
+            "layer": 17,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.37485970819304154,
+                    "new_acc": 0.6251402918069585,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": false,
+                    "new_loss": 0.3658810325476992,
+                    "new_acc": 0.6341189674523008,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 3,
+                    "accepted": false,
+                    "new_loss": 0.35353535353535354,
+                    "new_acc": 0.6464646464646465,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 4,
+                    "accepted": false,
+                    "new_loss": 0.6588103254769921,
+                    "new_acc": 0.34118967452300786,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 5,
+                    "accepted": false,
+                    "new_loss": 0.6307519640852974,
+                    "new_acc": 0.36924803591470257,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 6,
+                    "accepted": false,
+                    "new_loss": 0.41975308641975306,
+                    "new_acc": 0.5802469135802469,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 7,
+                    "accepted": false,
+                    "new_loss": 0.372615039281706,
+                    "new_acc": 0.6273849607182941,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 8,
+                    "accepted": false,
+                    "new_loss": 0.4208754208754209,
+                    "new_acc": 0.5791245791245792,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 9,
+                    "accepted": false,
+                    "new_loss": 0.4186307519640853,
+                    "new_acc": 0.5813692480359147,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 10,
+                    "accepted": false,
+                    "new_loss": 0.44668911335578004,
+                    "new_acc": 0.55331088664422,
+                    "status": "rejected"
+                }
+            ]
+        },
+        {
+            "layer": 16,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.5892255892255892,
+                    "new_acc": 0.4107744107744108,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": false,
+                    "new_loss": 0.3479236812570146,
+                    "new_acc": 0.6520763187429854,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 3,
+                    "accepted": false,
+                    "new_loss": 0.3501683501683502,
+                    "new_acc": 0.6498316498316499,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 4,
+                    "accepted": false,
+                    "new_loss": 0.6161616161616161,
+                    "new_acc": 0.3838383838383838,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 5,
+                    "accepted": false,
+                    "new_loss": 0.36924803591470257,
+                    "new_acc": 0.6307519640852974,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 6,
+                    "accepted": false,
+                    "new_loss": 0.4118967452300786,
+                    "new_acc": 0.5881032547699214,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 7,
+                    "accepted": false,
+                    "new_loss": 0.5757575757575758,
+                    "new_acc": 0.42424242424242425,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 8,
+                    "accepted": false,
+                    "new_loss": 0.4511784511784512,
+                    "new_acc": 0.5488215488215489,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 9,
+                    "accepted": false,
+                    "new_loss": 0.4388327721661055,
+                    "new_acc": 0.5611672278338945,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 10,
+                    "accepted": false,
+                    "new_loss": 0.3546576879910213,
+                    "new_acc": 0.6453423120089786,
+                    "status": "rejected"
+                }
+            ]
+        },
+        {
+            "layer": 15,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.7014590347923682,
+                    "new_acc": 0.29854096520763185,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": false,
+                    "new_loss": 0.6689113355780022,
+                    "new_acc": 0.33108866442199775,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 3,
+                    "accepted": true,
+                    "new_loss": 0.388327721661055,
+                    "new_acc": 0.611672278338945,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 16,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": true,
+                    "new_loss": 0.2996632996632997,
+                    "new_acc": 0.7003367003367004,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 17,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.39730639730639733,
+                    "new_acc": 0.6026936026936027,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": false,
+                    "new_loss": 0.40291806958473625,
+                    "new_acc": 0.5970819304152637,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 3,
+                    "accepted": false,
+                    "new_loss": 0.30864197530864196,
+                    "new_acc": 0.691358024691358,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 4,
+                    "accepted": false,
+                    "new_loss": 0.3400673400673401,
+                    "new_acc": 0.6599326599326599,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 5,
+                    "accepted": false,
+                    "new_loss": 0.372615039281706,
+                    "new_acc": 0.6273849607182941,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 6,
+                    "accepted": false,
+                    "new_loss": 0.3288439955106622,
+                    "new_acc": 0.6711560044893379,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 7,
+                    "accepted": false,
+                    "new_loss": 0.3041526374859708,
+                    "new_acc": 0.6958473625140292,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 8,
+                    "accepted": false,
+                    "new_loss": 0.31986531986531985,
+                    "new_acc": 0.6801346801346801,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 9,
+                    "accepted": false,
+                    "new_loss": 0.5611672278338945,
+                    "new_acc": 0.4388327721661055,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 10,
+                    "accepted": false,
+                    "new_loss": 0.33557800224466894,
+                    "new_acc": 0.6644219977553311,
+                    "status": "rejected"
+                }
+            ]
+        },
+        {
+            "layer": 16,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": true,
+                    "new_loss": 0.3838383838383838,
+                    "new_acc": 0.6161616161616161,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 17,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": true,
+                    "new_loss": 0.37149270482603813,
+                    "new_acc": 0.6285072951739619,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 18,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.39057239057239057,
+                    "new_acc": 0.6094276094276094,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": false,
+                    "new_loss": 0.372615039281706,
+                    "new_acc": 0.6273849607182941,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 3,
+                    "accepted": true,
+                    "new_loss": 0.36251402918069586,
+                    "new_acc": 0.6374859708193041,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 19,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.5948372615039281,
+                    "new_acc": 0.4051627384960718,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": false,
+                    "new_loss": 0.3838383838383838,
+                    "new_acc": 0.6161616161616161,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 3,
+                    "accepted": false,
+                    "new_loss": 0.5836139169472503,
+                    "new_acc": 0.4163860830527497,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 4,
+                    "accepted": false,
+                    "new_loss": 0.41975308641975306,
+                    "new_acc": 0.5802469135802469,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 5,
+                    "accepted": false,
+                    "new_loss": 0.5925925925925926,
+                    "new_acc": 0.4074074074074074,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 6,
+                    "accepted": true,
+                    "new_loss": 0.3344556677890011,
+                    "new_acc": 0.6655443322109988,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 20,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.49719416386083054,
+                    "new_acc": 0.5028058361391695,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": false,
+                    "new_loss": 0.44668911335578004,
+                    "new_acc": 0.55331088664422,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 3,
+                    "accepted": false,
+                    "new_loss": 0.38047138047138046,
+                    "new_acc": 0.6195286195286195,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 4,
+                    "accepted": false,
+                    "new_loss": 0.39057239057239057,
+                    "new_acc": 0.6094276094276094,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 5,
+                    "accepted": false,
+                    "new_loss": 0.38496071829405165,
+                    "new_acc": 0.6150392817059483,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 6,
+                    "accepted": false,
+                    "new_loss": 0.3546576879910213,
+                    "new_acc": 0.6453423120089786,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 7,
+                    "accepted": false,
+                    "new_loss": 0.43209876543209874,
+                    "new_acc": 0.5679012345679012,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 8,
+                    "accepted": false,
+                    "new_loss": 0.3771043771043771,
+                    "new_acc": 0.622895622895623,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 9,
+                    "accepted": false,
+                    "new_loss": 0.3445566778900112,
+                    "new_acc": 0.6554433221099888,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 10,
+                    "accepted": false,
+                    "new_loss": 0.372615039281706,
+                    "new_acc": 0.6273849607182941,
+                    "status": "rejected"
+                }
+            ]
+        },
+        {
+            "layer": 19,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.38496071829405165,
+                    "new_acc": 0.6150392817059483,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": false,
+                    "new_loss": 0.4264870931537598,
+                    "new_acc": 0.5735129068462402,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 3,
+                    "accepted": false,
+                    "new_loss": 0.5420875420875421,
+                    "new_acc": 0.45791245791245794,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 4,
+                    "accepted": false,
+                    "new_loss": 0.5375982042648709,
+                    "new_acc": 0.4624017957351291,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 5,
+                    "accepted": true,
+                    "new_loss": 0.35353535353535354,
+                    "new_acc": 0.6464646464646465,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 20,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.3613916947250281,
+                    "new_acc": 0.6386083052749719,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": false,
+                    "new_loss": 0.48597081930415265,
+                    "new_acc": 0.5140291806958474,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 3,
+                    "accepted": false,
+                    "new_loss": 0.5858585858585859,
+                    "new_acc": 0.41414141414141414,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 4,
+                    "accepted": true,
+                    "new_loss": 0.3479236812570146,
+                    "new_acc": 0.6520763187429854,
+                    "status": "accepted"
+                }
+            ]
+        }
+    ],
+    "total_growth_attempts": 44,
+    "rollback_count": 12,
+    "rollback_events": [
+        {
+            "at_layer": 7,
+            "rollback_layers": 2,
+            "success_count": 2,
+            "failed_count": 0,
+            "reason": "retry_exhausted"
+        },
+        {
+            "at_layer": 9,
+            "rollback_layers": 2,
+            "success_count": 2,
+            "failed_count": 0,
+            "reason": "retry_exhausted"
+        },
+        {
+            "at_layer": 10,
+            "rollback_layers": 2,
+            "success_count": 2,
+            "failed_count": 0,
+            "reason": "retry_exhausted"
+        },
+        {
+            "at_layer": 13,
+            "rollback_layers": 2,
+            "success_count": 2,
+            "failed_count": 0,
+            "reason": "retry_exhausted"
+        },
+        {
+            "at_layer": 18,
+            "rollback_layers": 2,
+            "success_count": 2,
+            "failed_count": 0,
+            "reason": "retry_exhausted"
+        },
+        {
+            "at_layer": 18,
+            "rollback_layers": 2,
+            "success_count": 2,
+            "failed_count": 0,
+            "reason": "retry_exhausted"
+        },
+        {
+            "at_layer": 18,
+            "rollback_layers": 2,
+            "success_count": 2,
+            "failed_count": 0,
+            "reason": "retry_exhausted"
+        },
+        {
+            "at_layer": 17,
+            "rollback_layers": 2,
+            "success_count": 2,
+            "failed_count": 0,
+            "reason": "retry_exhausted"
+        },
+        {
+            "at_layer": 16,
+            "rollback_layers": 2,
+            "success_count": 2,
+            "failed_count": 0,
+            "reason": "retry_exhausted"
+        },
+        {
+            "at_layer": 15,
+            "rollback_layers": 2,
+            "success_count": 2,
+            "failed_count": 0,
+            "reason": "retry_exhausted"
+        },
+        {
+            "at_layer": 16,
+            "rollback_layers": 2,
+            "success_count": 2,
+            "failed_count": 0,
+            "reason": "retry_exhausted"
+        },
+        {
+            "at_layer": 19,
+            "rollback_layers": 2,
+            "success_count": 2,
+            "failed_count": 0,
+            "reason": "retry_exhausted"
+        }
+    ],
+    "final_model_saved": "models\\final",
+    "best_model_saved": "models\\best",
+    "best_model_accuracy": 0.712682379349046,
+    "best_model_layers": 18
+}

@@ -6,6 +6,7 @@ import random
 import copy
 from typing import Optional
 import os
+import json
 from ...PathGenerator.path_generator import PathGenerator
 from ...GraphManager.graph_processor import GraphProcessor
 
@@ -137,6 +138,7 @@ class LayerGrowTrainer(ModelTrainer):
         :param kwargs: 其他可选参数
         :return: 一个包含训练过程信息的字典
         """
+
         best_acc = -1.0
         best_graph_snapshot = None
         best_layer_count = 0
@@ -148,6 +150,7 @@ class LayerGrowTrainer(ModelTrainer):
             "layers_added": 0,
             "attempt_history": [],
             "total_growth_attempts": 0,
+            "total_candidate_attempts": 0,
             "rollback_count": 0,
             "rollback_events": []
         }
@@ -177,6 +180,7 @@ class LayerGrowTrainer(ModelTrainer):
 
             # 尝试循环
             for attempt in range(1, self.max_attempts + 1):
+                results["total_candidate_attempts"] += 1  # 每次尝试都算一次候选生成
                 attempt_info = {"attempt": attempt, "accepted": False, "new_loss": None}
                 if self.verbose:
                     logger.info(f"  Attempt {attempt}/{self.max_attempts}")
@@ -333,6 +337,8 @@ class LayerGrowTrainer(ModelTrainer):
                 if self.verbose:
                     logger.info(f"Final model saved to '{final_path}'")
 
+                
+
                 # === 保存最佳模型 ===
                 if save_best_model and best_graph_snapshot is not None:
                     best_path = os.path.join(base_save_path, best_model_subfolder)
@@ -358,8 +364,17 @@ class LayerGrowTrainer(ModelTrainer):
                     results["best_model_saved"] = best_path
                     results["best_model_accuracy"] = best_acc
                     results["best_model_layers"] = best_layer_count
+                
+                # 自动保存训练日志为 JSON
+                log_filename = kwargs.get("log_filename", "training_log.json")
+                log_path = os.path.join(base_save_path, log_filename)
+                with open(log_path, 'w', encoding='utf-8') as f:
+                    json.dump(results, f, indent=4, default=str)
+                results["training_log_saved"] = log_path
 
             except Exception as e:
                 logger.error(f"Failed to save model(s): {e}")
                 import traceback
                 logger.error(traceback.format_exc())
+
+        return results

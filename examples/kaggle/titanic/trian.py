@@ -71,17 +71,22 @@ trainer = LayerGrowTrainer(
             verbose=True
         )
 
-trainer.train(
+result = trainer.train(
     input_data=model.values,
     target=model.labels,
-    max_layers=20,  # 设置最大层数
-    save_model=True,  # 保存模型
-    on_retry_exhausted = "rollback",
-    rollback_layers = 2,
-    max_total_attempts = 3000
+    max_layers=20,
+    save_model=True,
+    on_retry_exhausted="rollback",
+    rollback_layers=2,
+    max_total_attempts=3000
 )
 
+import json
 
+with open('training_result.json', 'w', encoding='utf-8') as f:
+    json.dump(result, f, indent=4, ensure_ascii=False)
+
+print("已保存为 training_result.json")
 
 
 

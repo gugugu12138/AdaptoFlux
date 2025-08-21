@@ -1,4 +1,5 @@
 [English](README_en.md) | 中文 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/gugugu12138/AdaptoFlux)
 # AdaptoFlux 项目简介（简洁版）
 
 AdaptoFlux 是一种基于“方法池 + 路径搜索”的智能算法框架，核心思路是通过组合基础函数构造动态计算路径，以类似DFG的图结构进行组织，并支持路径可解释性与结构优化。

@@ -119,11 +119,11 @@ class ModelGenerator:
             })
         return model_candidates
 
-    def _evaluate_model_accuracy(self, graph):
+    def _evaluate_model_accuracy(self, graph, use_pipeline=False, num_workers=4):
         """
         使用当前数据对指定图结构模型进行推理，并计算其分类准确率。
 
-        该方法调用 `self.adaptoflux.infer_with_graph()` 对传入的图结构模型执行前向推理，
+        该方法根据参数选择使用普通图推理或并行流水线推理方式执行前向传播，
         得到预测结果后与真实标签进行比较，返回模型在当前数据集上的准确率。
 
         Parameters:
@@ -131,6 +131,13 @@ class ModelGenerator:
         graph : networkx.MultiDiGraph
             表示模型结构的有向多重图对象。图中每个节点应包含可调用的操作函数，
             边表示数据流动路径。
+
+        use_pipeline : bool, optional, default=False
+            是否使用并行流水线方式进行推理。设置为 True 可利用多核加速推理过程，
+            尤其适用于节点较多的复杂图结构。
+
+        num_workers : int, optional, default=4
+            推理时使用的线程数量。仅在 use_pipeline=True 时生效。
 
         Returns:
         --------
@@ -142,22 +149,39 @@ class ModelGenerator:
         -------
         ValueError
             如果推理结果与标签的形状不一致，或推理失败，可能抛出异常。
-        
+
         Notes:
         ------
         - 该方法假设 `self.adaptoflux.values` 是输入特征数据（ndarray 或 DataFrame）。
         - 该方法假设 `self.adaptoflux.labels` 是真实标签数据（一维数组）。
         - 准确率是通过 `np.mean(predictions == labels)` 计算得到的。
+        - 使用流水线时需确保图结构和方法函数是线程安全的。
 
         Example:
         --------
         >>> model_generator = ModelGenerator(adaptoflux_instance)
         >>> graph = model_generator.generate_single_model()
-        >>> accuracy = model_generator._evaluate_model_accuracy(graph)
+        >>> accuracy = model_generator._evaluate_model_accuracy(graph, use_pipeline=True, num_workers=8)
         >>> print(f"模型准确率为: {accuracy:.4f}")
         """
-        predictions = self.adaptoflux.infer_with_graph(self.adaptoflux.values, graph=graph)
-        return float(np.mean(predictions == self.adaptoflux.labels))
+        # 选择推理方法
+        if use_pipeline:
+            predictions = self.adaptoflux.infer_with_graph_pipeline(
+                values=self.adaptoflux.values,
+                num_workers=num_workers
+            )
+        else:
+            predictions = self.adaptoflux.infer_with_graph(
+                values=self.adaptoflux.values,
+            )
+
+        # 确保 predictions 是一维或可比较的形状
+        if predictions.ndim > 1:
+            predictions = predictions.flatten()  # 假设输出是 (N, 1) 或类似
+
+        # 计算准确率
+        accuracy = float(np.mean(predictions == self.adaptoflux.labels))
+        return accuracy
 
     def evolve_subgraph(self, subgraph):
         """

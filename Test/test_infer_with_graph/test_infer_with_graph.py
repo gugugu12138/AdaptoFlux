@@ -43,6 +43,10 @@ model.collapse_method = CollapseMethod.SUM
 
 # 执行推理
 result = model.infer_with_graph(values)
+result_pipeline = model.infer_with_graph_pipeline(values, num_workers=2)
+
+print("推理结果(流水线):")
+print(result_pipeline)
 
 print("推理结果：")
 print(result)
@@ -51,9 +55,12 @@ print(result)
 # 7. 测试单样本推理
 # ========================
 
-sample1 = [1, 2]
-sample2 = [3, 4]
+sample1 = np.array([1, 2])
+sample2 = np.array([3, 4])
 
 print("\n单样本推理结果：")
 print(f"Sample {sample1}: {model.infer_with_graph_single(sample1)}")
 print(f"Sample {sample2}: {model.infer_with_graph_single(sample2)}")
+print("\n单样本流水线推理结果：")
+print(f"Sample {sample1}: {model.infer_with_graph_single(sample1, use_pipeline=True, num_workers=1)}")
+print(f"Sample {sample2}: {model.infer_with_graph_single(sample2, use_pipeline=True, num_workers=1)}")

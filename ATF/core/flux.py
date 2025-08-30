@@ -295,7 +295,7 @@ class AdaptoFlux:
         """
         return self.graph_processor.infer_with_graph(values)
 
-    def infer_with_graph_single(self, sample):
+    def infer_with_graph_single(self, sample, use_pipeline=False, num_workers=4):
         """
         使用图结构对单个样本进行推理计算。
         
@@ -305,7 +305,12 @@ class AdaptoFlux:
         返回:
             float or np.ndarray: 经过图结构处理后的结果（通过 collapse 输出）
         """
-        return self.graph_processor.infer_with_graph_single(sample)
+        return self.graph_processor.infer_with_graph_single(sample, use_pipeline=False, num_workers=4)
+
+    def infer_with_graph_pipeline(self, values, num_workers=4):
+
+        return self.graph_processor.infer_with_graph_pipeline(values, num_workers=num_workers)
+
 
     def save_model(self, folder="models"):
         """

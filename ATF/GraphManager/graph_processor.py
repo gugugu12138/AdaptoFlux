@@ -238,13 +238,117 @@ class GraphProcessor:
         collapsed_output = np.apply_along_axis(self.collapse_manager.collapse, axis=1, arr=raw_output)
         return collapsed_output
     
-    def infer_with_graph_single(self, sample):
+    def infer_with_graph_pipeline(self, values, num_workers=4):
+        from concurrent.futures import ThreadPoolExecutor
+        import threading
+        import queue
+
+        # 初始化
+        node_outputs = {"root": values}
+        lock = threading.Lock()
+        in_degree_remaining = {}
+        ready_queue = queue.Queue()
+
+        # 构建拓扑依赖图，并初始化每个节点的待完成前驱数
+        for node in self.graph.nodes:
+            if node in ["root", "collapse"]:
+                continue
+            preds = list(self.graph.predecessors(node))
+            in_degree_remaining[node] = len(preds)
+            if len(preds) == 0:
+                ready_queue.put(node)
+
+        for succ in self.graph.successors("root"):
+            # 对每个从 root 指向的节点，减少一个依赖（因为 root 已完成）
+            if succ in in_degree_remaining:
+                in_degree_remaining[succ] -= 1
+                if in_degree_remaining[succ] == 0:
+                    ready_queue.put(succ)
+
+        # collapse 特殊处理：所有指向它的节点完成后才可执行
+        collapse_in_edges = list(self.graph.in_edges("collapse"))
+        collapse_deps = len(collapse_in_edges)
+        if collapse_deps == 0:
+            return np.array([])
+
+        # 工作函数
+        def process_node(node):
+            with lock:
+                predecessors = list(self.graph.predecessors(node))
+                inputs = []
+                for src in predecessors:
+                    edge_data = self.graph[src][node][0]  # 简化：假设单边
+                    output_idx = edge_data.get("output_index")
+                    src_output = node_outputs[src]
+                    if output_idx is not None:
+                        col = src_output[:, output_idx:output_idx+1]
+                    else:
+                        col = src_output
+                    inputs.append(col)
+                # 合并输入
+                flat_input = np.hstack(inputs) if len(inputs) > 1 else inputs[0]
+
+            # 执行函数
+            method_name = self.graph.nodes[node].get("method_name")
+            func = self.methods[method_name]["function"]
+            outputs = []
+            for row in flat_input:
+                res = func(*row)
+                if isinstance(res, (int, float)): res = [res]
+                elif isinstance(res, np.ndarray): res = res.tolist()
+                outputs.append(res)
+            output_array = np.array(outputs)
+
+            # 写回输出（需加锁）
+            with lock:
+                node_outputs[node] = output_array
+                # 触发后继节点检查
+                for succ in self.graph.successors(node):
+                    if succ == "collapse":
+                        continue
+                    in_degree_remaining[succ] -= 1
+                    if in_degree_remaining[succ] == 0:
+                        ready_queue.put(succ)
+
+        # 启动线程池
+        with ThreadPoolExecutor(max_workers=num_workers) as executor:
+            futures = []
+            while True:
+                try:
+                    node = ready_queue.get(timeout=1)
+                    futures.append(executor.submit(process_node, node))
+                except queue.Empty:
+                    if len(futures) == 0:
+                        break  # 所有任务提交完毕
+                    else:
+                        continue
+
+            # 等待全部完成
+            for f in futures:
+                f.result()
+
+        # 最后处理 collapse 节点
+        collapse_inputs = []
+        for u, v, data in self.graph.in_edges("collapse", data=True):
+            local_idx = data["output_index"]
+            global_coord = data["data_coord"]
+            col_data = node_outputs[u][:, local_idx]
+            collapse_inputs.append((global_coord, col_data))
+
+        collapse_inputs.sort(key=lambda x: x[0])
+        raw_output = np.column_stack([col for _, col in collapse_inputs])
+        result = np.apply_along_axis(self.collapse_manager.collapse, axis=1, arr=raw_output)
+        return result
+
+    def infer_with_graph_single(self, sample, use_pipeline=False, num_workers=4):
         """
-        使用图结构对单个样本进行推理计算。
-        
+        使用图结构对单个样本进行推理计算，可选择是否使用并行流水线。
+
         参数:
             sample (np.ndarray or list): 单个样本，形状为 [特征维度]
-        
+            use_pipeline (bool): 是否使用多线程流水线推理
+            num_workers (int): 流水线使用的线程数（仅当 use_pipeline=True 时有效）
+
         返回:
             float or np.ndarray: 经过图结构处理后的结果（通过 collapse 输出）
         """
@@ -252,15 +356,14 @@ class GraphProcessor:
         sample = np.array(sample)
         assert len(sample.shape) == 1, "输入必须是一维数组"
 
-        # 扩展为二维 (1, 特征维度)
+        # 扩展为二维 (1, 特征维度)，适配批量接口
         values = sample.reshape(1, -1)
 
-        # 调用批量推理方法
-        result = self.infer_with_graph(values)
+        # 选择推理方式
+        if use_pipeline:
+            result = self.infer_with_pipeline(values, num_workers=num_workers)
+        else:
+            result = self.infer_with_graph(values)
 
-        # 返回单个样本的结果
+        # 返回单个样本的结果（已经是 (1,) 或标量）
         return result[0]
-
-    def infer_with_pipeline(self, input_batches, max_timesteps=3, num_stages=3):
-        # 多线程并行加速占位
-        pass

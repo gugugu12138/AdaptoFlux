@@ -3,3 +3,5 @@ numpy
 scikit-learn
 networkx
 logging
+pandas
+scipy

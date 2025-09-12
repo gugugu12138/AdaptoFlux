@@ -26,6 +26,7 @@ def add_values(x, y):
 def calculate_difference(a, b):
     return [a - b]
 
+
 @method_profile(1)
 def multiply_values(x, y):
     """

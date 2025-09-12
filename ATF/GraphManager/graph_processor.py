@@ -272,62 +272,155 @@ class GraphProcessor:
             return np.array([])
 
         # 工作函数
+        import traceback  # 👈 确保文件顶部已导入
+
         def process_node(node):
-            with lock:
-                predecessors = list(self.graph.predecessors(node))
-                inputs = []
-                for src in predecessors:
-                    edge_data = self.graph[src][node][0]  # 简化：假设单边
-                    output_idx = edge_data.get("output_index")
-                    src_output = node_outputs[src]
-                    if output_idx is not None:
-                        col = src_output[:, output_idx:output_idx+1]
-                    else:
-                        col = src_output
-                    inputs.append(col)
-                # 合并输入
-                flat_input = np.hstack(inputs) if len(inputs) > 1 else inputs[0]
+            try:
+                with lock:
+                    predecessors = list(self.graph.predecessors(node))
+                    inputs = []
+                    for src in predecessors:
+                        try:
+                            # ✅ 修复：遍历所有从 src 到 node 的边
+                            edges_from_src = self.graph[src][node]  # {key: edge_data}
+                            for edge_key in edges_from_src:
+                                edge_data = edges_from_src[edge_key]
+                                output_idx = edge_data.get("output_index")
+                                if src not in node_outputs:
+                                    raise KeyError(f"前置节点 '{src}' 的输出尚未计算")
+                                src_output = node_outputs[src]
+                                if output_idx is not None:
+                                    col = src_output[:, output_idx:output_idx+1]
+                                else:
+                                    col = src_output
+                                inputs.append(col)
+                        except Exception as e:
+                            raise RuntimeError(f"构建节点 '{node}' 的输入时出错（来自前置节点 '{src}'）: {e}") from e
 
-            # 执行函数
-            method_name = self.graph.nodes[node].get("method_name")
-            func = self.methods[method_name]["function"]
-            outputs = []
-            for row in flat_input:
-                res = func(*row)
-                if isinstance(res, (int, float)): res = [res]
-                elif isinstance(res, np.ndarray): res = res.tolist()
-                outputs.append(res)
-            output_array = np.array(outputs)
+                    if len(inputs) == 0:
+                        raise ValueError(f"节点 '{node}' 没有输入数据")
+                    flat_input = np.hstack(inputs) if len(inputs) > 1 else inputs[0]
 
-            # 写回输出（需加锁）
-            with lock:
-                node_outputs[node] = output_array
-                # 触发后继节点检查
-                for succ in self.graph.successors(node):
-                    if succ == "collapse":
-                        continue
-                    in_degree_remaining[succ] -= 1
-                    if in_degree_remaining[succ] == 0:
-                        ready_queue.put(succ)
+                # 执行函数
+                method_name = self.graph.nodes[node].get("method_name")
+
+                # ✅ 新增：处理 null 方法节点
+                if method_name == "null":
+                    with lock:
+                        predecessors = list(self.graph.predecessors(node))
+                        if len(predecessors) > 1:
+                            raise ValueError(f"节点 {node} 使用了 'null' 方法，但有多个前驱节点。")
+                        if predecessors:
+                            src = predecessors[0]
+                            if src not in node_outputs:
+                                raise KeyError(f"前置节点 '{src}' 输出未就绪")
+                            node_outputs[node] = node_outputs[src].copy()
+                        else:
+                            # 无前驱，生成默认输出
+                            sample_count = flat_input.shape[0] if 'flat_input' in locals() else 100
+                            output_count = 1
+                            node_outputs[node] = np.zeros((sample_count, output_count))
+                        
+                        # 触发后继节点
+                        for succ in self.graph.successors(node):
+                            if succ == "collapse": continue
+                            if succ in in_degree_remaining:
+                                in_degree_remaining[succ] -= 1
+                                if in_degree_remaining[succ] == 0:
+                                    ready_queue.put(succ)
+                    
+                    output_shape = node_outputs[node].shape
+                    # print(f"[✅ SUCCESS] 节点 {node} (method=null) 执行完成，输出形状: {output_shape}")
+                    return  # ⚠️ 直接返回，跳过函数执行逻辑
+
+                # ========== 原有函数执行逻辑 ==========
+                if not method_name:
+                    raise ValueError(f"节点 '{node}' 未指定 method_name")
+
+                if method_name not in self.methods:
+                    raise KeyError(f"方法 '{method_name}' 未在 self.methods 中注册")
+
+                func = self.methods[method_name]["function"]
+                if not callable(func):
+                    raise TypeError(f"方法 '{method_name}' 不是可调用对象")
+
+                outputs = []
+                for i, row in enumerate(flat_input):
+                    try:
+                        res = func(*row)
+                        if isinstance(res, (int, float)):
+                            res = [res]
+                        elif isinstance(res, np.ndarray):
+                            res = res.tolist()
+                        outputs.append(res)
+                    except Exception as e:
+                        raise RuntimeError(f"在节点 '{node}' 执行第 {i} 行输入时出错: {e} | 输入数据: {row}") from e
+
+                output_array = np.array(outputs)
+
+                # 写回输出（需加锁）
+                with lock:
+                    node_outputs[node] = output_array
+                    # 触发后继节点检查
+                    for succ in self.graph.successors(node):
+                        if succ == "collapse":
+                            continue
+                        if succ not in in_degree_remaining:
+                            print(f"[WARNING] 后继节点 '{succ}' 不在 in_degree_remaining 中，跳过依赖更新。")
+                            continue
+                        in_degree_remaining[succ] -= 1
+                        if in_degree_remaining[succ] == 0:
+                            ready_queue.put(succ)
+
+                # print(f"[✅ SUCCESS] 节点 {node} 执行完成，输出形状: {output_array.shape}")
+                # print(f"[🧵 THREAD DONE] 节点 {node} 线程已完全退出")
+                return  # 确保显式返回
+
+            except Exception as e:
+                error_msg = f"[🔥 CRITICAL ERROR in process_node] 节点 '{node}' 执行失败: {e}"
+                print(error_msg)
+                traceback.print_exc()
+                # 可选：将错误节点放入特殊队列 or 设置全局错误标志
+                # 例如：
+                # with lock:
+                #     global_error_flag.set()
+                #     error_queue.put((node, str(e)))
+                raise  # 重新抛出，让外层捕获（如 ThreadPoolExecutor 会标记 future 为失败）
 
         # 启动线程池
         with ThreadPoolExecutor(max_workers=num_workers) as executor:
             futures = []
-            while True:
+            # 👇 计算总节点数（排除 root 和 collapse）
+            total_nodes_to_execute = len([
+                n for n in self.graph.nodes 
+                if n not in ["root", "collapse"]
+            ])
+            submitted_nodes = set()  # 用于去重和计数
+
+            # print(f"[🎯 总共需要执行 {total_nodes_to_execute} 个节点]")
+
+            while len(submitted_nodes) < total_nodes_to_execute:
                 try:
                     node = ready_queue.get(timeout=1)
+                    if node in submitted_nodes:
+                        continue  # 防止重复提交（虽然理论上不会，但安全第一）
+                    submitted_nodes.add(node)
                     futures.append(executor.submit(process_node, node))
+                    # print(f"[📤 已提交节点 {len(submitted_nodes)}/{total_nodes_to_execute}]: {node}")
                 except queue.Empty:
-                    if len(futures) == 0:
-                        break  # 所有任务提交完毕
-                    else:
-                        continue
+                    # 队列暂时空，但还没提交完所有节点 → 等待子线程生成新节点
+                    # print(f"[⏳ 队列空，等待中... 已提交 {len(submitted_nodes)}/{total_nodes_to_execute}]")
+                    # time.sleep(0.1)  # 避免忙等，节省 CPU 实际工程中可以使用，这里追求实验精度没写，可以取消注释
+                    continue
+
+            # print(f"[✅ 所有 {total_nodes_to_execute} 个节点已提交，共 {len(futures)} 个任务，开始等待执行完成...]")
 
             # 等待全部完成
             for f in futures:
                 f.result()
 
         # 最后处理 collapse 节点
+        # print('正在聚合 collapse 节点...')
         collapse_inputs = []
         for u, v, data in self.graph.in_edges("collapse", data=True):
             local_idx = data["output_index"]
@@ -338,6 +431,7 @@ class GraphProcessor:
         collapse_inputs.sort(key=lambda x: x[0])
         raw_output = np.column_stack([col for _, col in collapse_inputs])
         result = np.apply_along_axis(self.collapse_manager.collapse, axis=1, arr=raw_output)
+        # print('完成')
         return result
 
     def infer_with_graph_single(self, sample, use_pipeline=False, num_workers=4):

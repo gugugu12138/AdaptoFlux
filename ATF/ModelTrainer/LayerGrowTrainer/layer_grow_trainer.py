@@ -319,9 +319,6 @@ class LayerGrowTrainer(ModelTrainer):
                             logger.error(f"Rollback failed: {e}")
                             rolled_back_fail += 1
 
-                    # results["layers_added"] += 1
-                    # layer_idx += 1
-
                     # 记录事件
                     results["rollback_events"].append({
                         "at_layer": layer_idx + 1,

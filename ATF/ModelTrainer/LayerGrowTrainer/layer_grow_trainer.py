@@ -341,6 +341,16 @@ class LayerGrowTrainer(ModelTrainer):
                     logger.warning(f"Invalid on_retry_exhausted='{on_retry_exhausted}'. Must be 'stop' or 'rollback'. Stopping.")
                     break
 
+        # 循环结束后，判断终止原因
+        if iteration_count >= max_total_attempts:
+            if self.verbose:
+                logger.info(f"--- Training stopped: reached global maximum attempts ({max_total_attempts}) ---")
+        elif layer_idx >= max_layers:
+            if self.verbose:
+                logger.info(f"--- Training stopped: reached maximum layers ({max_layers}) ---")
+        else:
+            if self.verbose:
+                logger.info("--- Training stopped: unknown reason ---")
         if self.verbose:
             logger.info(f"LayerGrowTrainer finished. Successfully added {results['layers_added']} layers.")
 
@@ -377,6 +387,8 @@ class LayerGrowTrainer(ModelTrainer):
 
                 # 添加到 results
                 results["final_model_saved"] = final_path
+                results["final_model_accuracy"] = self._evaluate_accuracy(input_data, target)
+                results["final_model_layers"] = results["layers_added"]
                 if save_best_model and best_graph_snapshot is not None:
                     results["best_model_saved"] = best_path
                     results["best_model_accuracy"] = best_acc

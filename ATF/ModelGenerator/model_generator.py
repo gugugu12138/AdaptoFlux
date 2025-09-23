@@ -166,7 +166,7 @@ class ModelGenerator:
         """
         # 选择推理方法
         if use_pipeline:
-            predictions = self.adaptoflux.infer_with_graph_pipeline(
+            predictions = self.adaptoflux.infer_with_task_parallel(
                 values=self.adaptoflux.values,
                 num_workers=num_workers
             )

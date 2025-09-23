@@ -57,7 +57,7 @@ class LayerGrowTrainer(ModelTrainer):
             # 选择推理方式
             gp = self.adaptoflux.graph_processor
             if use_pipeline:
-                output = gp.infer_with_graph_pipeline(values=input_data, num_workers=num_workers)
+                output = gp.infer_with_task_parallel(values=input_data, num_workers=num_workers)
             else:
                 output = gp.infer_with_graph(values=input_data)
 
@@ -87,7 +87,7 @@ class LayerGrowTrainer(ModelTrainer):
             # 选择推理方式
             gp = self.adaptoflux.graph_processor
             if use_pipeline:
-                output = gp.infer_with_graph_pipeline(values=input_data, num_workers=num_workers)
+                output = gp.infer_with_task_parallel(values=input_data, num_workers=num_workers)
             else:
                 output = gp.infer_with_graph(values=input_data)
 

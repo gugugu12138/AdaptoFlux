@@ -43,7 +43,7 @@ model.collapse_method = CollapseMethod.SUM
 
 # 执行推理
 result = model.infer_with_graph(values)
-result_pipeline = model.infer_with_graph_pipeline(values, num_workers=4)
+result_pipeline = model.infer_with_task_parallel(values, num_workers=4)
 
 
 print("推理结果(流水线):")

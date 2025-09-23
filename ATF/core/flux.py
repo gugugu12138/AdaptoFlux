@@ -307,9 +307,9 @@ class AdaptoFlux:
         """
         return self.graph_processor.infer_with_graph_single(sample, use_pipeline=False, num_workers=4)
 
-    def infer_with_graph_pipeline(self, values, num_workers=4):
+    def infer_with_task_parallel(self, values, num_workers=4):
 
-        return self.graph_processor.infer_with_graph_pipeline(values, num_workers=num_workers)
+        return self.graph_processor.infer_with_task_parallel(values, num_workers=num_workers)
 
 
     def save_model(self, folder="models"):

@@ -238,7 +238,7 @@ class GraphProcessor:
         collapsed_output = np.apply_along_axis(self.collapse_manager.collapse, axis=1, arr=raw_output)
         return collapsed_output
     
-    def infer_with_graph_pipeline(self, values, num_workers=4):
+    def infer_with_task_parallel(self, values, num_workers=4):
         from concurrent.futures import ThreadPoolExecutor
         import threading
         import queue

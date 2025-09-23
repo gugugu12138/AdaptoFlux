@@ -28,6 +28,12 @@ class GraphEvoTrainer(ModelTrainer):
         max_refinement_steps: int = 100,
         compression_threshold: float = 0.95,
         evolution_frequency: int = 3,
+        max_init_layers: int = 3,
+        init_mode: str = "fixed",           # <-- 新增：初始化模式
+        init_layers_list: Optional[List[int]] = None,  # <-- 新增：自定义层数列表
+        frozen_nodes: Optional[List[str]] = None,  # 冻结节点的方法名
+        frozen_methods: Optional[List[str]] = None,  # <-- 新增参数
+        refinement_strategy: str = "random_single",  # 支持 "random_single", "full_sweep"
         verbose: bool = True
     ):
         """
@@ -38,6 +44,9 @@ class GraphEvoTrainer(ModelTrainer):
         :param max_refinement_steps: 在“逐节点精炼”阶段，单次优化的最大步数
         :param compression_threshold: 在“模块化压缩”阶段，子图等效性判定的相似度阈值 (0~1)
         :param evolution_frequency: 每进行多少次完整的“精炼-压缩”循环后，执行一次“方法池进化”
+        :param max_init_layers: 在“多样初始化”阶段，每个候选模型最多随机添加的层数（仅在 fixed 模式生效）
+        :param init_mode: 初始化模式，"fixed"=所有模型添加固定 max_init_layers 层数，"list"=按 init_layers_list 指定层数
+        :param init_layers_list: 当 init_mode="list" 时，指定每个候选模型的层数列表，长度应 >= num_initial_models
         :param verbose: 是否打印详细日志
         """
         super().__init__(adaptoflux_instance)
@@ -45,10 +54,32 @@ class GraphEvoTrainer(ModelTrainer):
         self.max_refinement_steps = max_refinement_steps
         self.compression_threshold = compression_threshold
         self.evolution_frequency = evolution_frequency
+        self.max_init_layers = max_init_layers
+        self.init_mode = init_mode
+        self.init_layers_list = init_layers_list
+        self.frozen_nodes = set(frozen_nodes) if frozen_nodes else set()
+        self.frozen_methods = set(frozen_methods) if frozen_methods else set()  # <-- 保存为集合
         self.verbose = verbose
+
+        # 校验参数
+        if self.init_mode == "list":
+            if self.init_layers_list is None:
+                raise ValueError("init_mode='list' requires init_layers_list to be provided.")
+            if len(self.init_layers_list) < self.num_initial_models:
+                raise ValueError(f"init_layers_list length ({len(self.init_layers_list)}) must be >= num_initial_models ({self.num_initial_models})")
 
         # 用于记录高性能子图，供“方法池进化”阶段使用
         self.high_performance_subgraphs: List[Dict[str, Any]] = []
+
+        self.refinement_strategy = refinement_strategy
+        self._strategy_map = {
+            "random_single": self._refine_random_single_step,
+            "full_sweep": self._refine_full_sweep_step,
+            # 未来可加："weighted_sample": self._refine_weighted_sample_step,
+        }
+        if self.refinement_strategy not in self._strategy_map:
+            raise ValueError(f"Unknown refinement_strategy: {self.refinement_strategy}. "
+                            f"Available: {list(self._strategy_map.keys())}")
 
     def _phase_diverse_initialization(self, input_data: np.ndarray, target: np.ndarray) -> Dict[str, Any]:
         """
@@ -76,9 +107,16 @@ class GraphEvoTrainer(ModelTrainer):
                 candidate_af.graph_processor.graph = copy.deepcopy(self.adaptoflux.graph_processor.graph)
                 candidate_af.methods = copy.deepcopy(self.adaptoflux.methods)
 
-            # 对候选模型进行随机初始化（例如，随机添加1-3层）
-            # 这里调用一个假设存在的内部方法 `_randomly_initialize_graph`
-            self._randomly_initialize_graph(candidate_af, max_layers=3)
+            # 根据初始化模式决定添加层数
+            if self.init_mode == "fixed":
+                layers_to_add = self.max_init_layers
+            elif self.init_mode == "list":
+                layers_to_add = self.init_layers_list[i]  # 第 i 个候选模型使用列表中第 i 项
+            else:
+                raise ValueError(f"Unsupported init_mode: {self.init_mode}")
+
+            # 对候选模型进行随机初始化
+            self._randomly_initialize_graph(candidate_af, num_layers_to_add=layers_to_add)
 
             # 评估候选模型
             loss = self._evaluate_loss_with_instance(candidate_af, input_data, target)
@@ -106,15 +144,14 @@ class GraphEvoTrainer(ModelTrainer):
             'best_accuracy': best_candidate['accuracy']
         }
 
-    def _randomly_initialize_graph(self, adaptoflux_instance, max_layers: int = 3):
+    def _randomly_initialize_graph(self, adaptoflux_instance, num_layers_to_add: int = 3):
         """
         一个辅助方法，用于对给定的 AdaptoFlux 实例进行随机的图结构初始化。
         通过调用其 `append_nx_layer` 方法随机添加几层。
 
         :param adaptoflux_instance: 要初始化的 AdaptoFlux 实例
-        :param max_layers: 最多随机添加的层数
+        :param num_layers_to_add: 要添加的层数
         """
-        num_layers_to_add = random.randint(1, max_layers)
         for _ in range(num_layers_to_add):
             candidate_plan = adaptoflux_instance.process_random_method()
             if candidate_plan["valid_groups"]:
@@ -129,17 +166,8 @@ class GraphEvoTrainer(ModelTrainer):
                     # 如果添加失败，跳过，不影响整体流程
 
     def _phase_node_refinement(self, adaptoflux_instance, input_data: np.ndarray, target: np.ndarray) -> Dict[str, Any]:
-        """
-        阶段二：逐节点精炼 (Node-wise Refinement)
-        在固定图结构上，逐个遍历并尝试替换处理节点，采用贪心策略进行局部优化。
-
-        :param adaptoflux_instance: 待优化的 AdaptoFlux 实例
-        :param input_data: 用于评估的输入数据
-        :param target: 对应的标签
-        :return: 包含优化后模型信息和改进情况的字典
-        """
         if self.verbose:
-            logger.info(f"[Phase 2] Node-wise Refinement: Starting refinement on current graph...")
+            logger.info(f"[Phase 2] Node-wise Refinement: Starting refinement with strategy '{self.refinement_strategy}'...")
 
         gp = adaptoflux_instance.graph_processor
         current_loss = self._evaluate_loss_with_instance(adaptoflux_instance, input_data, target)
@@ -148,67 +176,51 @@ class GraphEvoTrainer(ModelTrainer):
         improvement_made = False
         steps_taken = 0
 
-        # 获取图中所有处理节点 (Vproc)
+        # 获取并过滤处理节点
         processing_nodes = [node for node in gp.graph.nodes() if gp._is_processing_node(node)]
+        final_frozen_nodes = set(self.frozen_nodes)
+        if self.frozen_methods:
+            method_frozen_nodes = {
+                node for node in processing_nodes
+                if gp.graph.nodes[node].get('method_name') in self.frozen_methods
+            }
+            final_frozen_nodes.update(method_frozen_nodes)
+        if final_frozen_nodes:
+            processing_nodes = [node for node in processing_nodes if node not in final_frozen_nodes]
 
         if self.verbose:
-            logger.info(f"  Found {len(processing_nodes)} processing nodes to refine.")
+            logger.info(f"  Found {len(processing_nodes)} processing nodes to refine "
+                        f"(excluding {len(final_frozen_nodes)} frozen nodes).")
 
+        # 获取策略函数
+        strategy_func = self._strategy_map[self.refinement_strategy]
+
+        # 主循环
         for step in range(self.max_refinement_steps):
             if steps_taken >= self.max_refinement_steps:
                 break
 
-            # 随机选择一个处理节点进行优化
             if not processing_nodes:
                 break
-            target_node = random.choice(processing_nodes)
-            original_method_name = gp.graph.nodes[target_node]['method_name']
 
-            # 获取该节点当前的输入/输出类型，用于筛选兼容的候选方法
-            # 假设图节点存储了 'input_types' 和 'output_types' 信息，或者可以从边推断
-            # 这里简化处理，直接从方法池中按组或随机选取候选
-            candidate_methods = self._get_compatible_methods_for_node(adaptoflux_instance, target_node)
+            # 调用策略函数
+            imp, new_loss, new_acc, step_inc, updated_nodes = strategy_func(
+                adaptoflux_instance, input_data, target, processing_nodes, current_loss, gp
+            )
 
-            best_candidate = None
-            best_loss = current_loss
-
-            # 评估每个候选方法
-            for candidate_method_name in candidate_methods:
-                if candidate_method_name == original_method_name:
-                    continue  # 跳过原方法
-
-                # 创建图的临时副本进行评估
-                temp_af = copy.deepcopy(adaptoflux_instance)
-                temp_gp = temp_af.graph_processor
-
-                # 替换目标节点的方法
-                temp_gp.graph.nodes[target_node]['method_name'] = candidate_method_name
-
-                # 评估新图
-                new_loss = self._evaluate_loss_with_instance(temp_af, input_data, target)
-
-                if new_loss < best_loss:  # 贪心策略：只接受能降低损失的改动
-                    best_loss = new_loss
-                    best_candidate = candidate_method_name
-
-            # 应用最佳候选（如果存在且优于当前）
-            if best_candidate and best_loss < current_loss:
-                gp.graph.nodes[target_node]['method_name'] = best_candidate
-                current_loss = best_loss
-                current_acc = self._evaluate_accuracy_with_instance(adaptoflux_instance, input_data, target)  # 更新准确率
+            if imp:
                 improvement_made = True
-                steps_taken += 1
+                current_loss = new_loss
+                current_acc = new_acc
+                steps_taken += step_inc
+                processing_nodes = updated_nodes
 
-                if self.verbose:
-                    logger.info(f"  Step {steps_taken}: Replaced node '{target_node}' "
-                                f"from '{original_method_name}' to '{best_candidate}'. "
-                                f"New Loss: {current_loss:.6f}, Acc: {current_acc:.4f}")
-
-                # 由于图结构已改变，重新获取节点列表（以防万一）
-                processing_nodes = [node for node in gp.graph.nodes() if gp._is_processing_node(node)]
+                if self.verbose and self.refinement_strategy == "random_single":
+                    # full_sweep 已在内部打印，避免重复
+                    pass  # 日志已在策略函数内打印
             else:
-                # 如果没有找到更好的候选，可以提前结束或继续尝试其他节点
-                # 这里选择继续，直到达到最大步数
+                # 无改进，继续或提前终止（可选）
+                # 当前不提前终止，继续尝试
                 pass
 
         if self.verbose:
@@ -356,7 +368,7 @@ class GraphEvoTrainer(ModelTrainer):
         辅助方法：使用指定的 AdaptoFlux 实例计算损失。
         """
         try:
-            output = adaptoflux_instance.graph_processor.infer_with_graph(values=input_data)
+            output = adaptoflux_instance.infer_with_graph(values=input_data)
             loss = self.loss_fn(output, target)
             return float(loss)
         except Exception as e:
@@ -540,3 +552,108 @@ class GraphEvoTrainer(ModelTrainer):
                 logger.error(traceback.format_exc())
 
         return results
+    
+    def _refine_random_single_step(
+        self,
+        adaptoflux_instance,
+        input_data: np.ndarray,
+        target: np.ndarray,
+        processing_nodes: List[str],
+        current_loss: float,
+        gp: Any  # GraphProcessor 实例
+    ) -> Tuple[bool, float, float, int, List[str]]:
+        """
+        执行一步随机单点优化。
+        返回：(是否改进, 新loss, 新acc, 本次步数增量(0或1), 更新后的processing_nodes)
+        """
+        if not processing_nodes:
+            return False, current_loss, 0.0, 0, processing_nodes
+
+        target_node = random.choice(processing_nodes)
+        original_method_name = gp.graph.nodes[target_node]['method_name']
+        candidate_methods = self._get_compatible_methods_for_node(adaptoflux_instance, target_node)
+
+        best_candidate = None
+        best_loss = current_loss
+
+        for candidate_method_name in candidate_methods:
+            if candidate_method_name == original_method_name:
+                continue
+
+            temp_af = copy.deepcopy(adaptoflux_instance)
+            temp_gp = temp_af.graph_processor
+            temp_gp.graph.nodes[target_node]['method_name'] = candidate_method_name
+
+            new_loss = self._evaluate_loss_with_instance(temp_af, input_data, target)
+
+            if new_loss < best_loss:
+                best_loss = new_loss
+                best_candidate = candidate_method_name
+
+        if best_candidate and best_loss < current_loss:
+            gp.graph.nodes[target_node]['method_name'] = best_candidate
+            new_acc = self._evaluate_accuracy_with_instance(adaptoflux_instance, input_data, target)
+            updated_nodes = [node for node in gp.graph.nodes() if gp._is_processing_node(node)]
+            return True, best_loss, new_acc, 1, updated_nodes
+        else:
+            return False, current_loss, 0.0, 0, processing_nodes
+
+    def _refine_full_sweep_step(
+        self,
+        adaptoflux_instance,
+        input_data: np.ndarray,
+        target: np.ndarray,
+        processing_nodes: List[str],
+        current_loss: float,
+        gp: Any
+    ) -> Tuple[bool, float, float, int, List[str]]:
+        """
+        执行一轮完整遍历所有节点。
+        返回：(本轮是否至少有一次改进, 最终loss, 最终acc, 本轮总替换次数, 最终processing_nodes)
+        """
+        if not processing_nodes:
+            return False, current_loss, 0.0, 0, processing_nodes
+
+        nodes_to_try = random.sample(processing_nodes, len(processing_nodes))  # 随机打乱
+        improvement_made = False
+        total_replacements = 0
+        current_acc = 0.0
+
+        for target_node in nodes_to_try:
+            original_method_name = gp.graph.nodes[target_node]['method_name']
+            candidate_methods = self._get_compatible_methods_for_node(adaptoflux_instance, target_node)
+
+            best_candidate = None
+            best_loss = current_loss
+
+            for candidate_method_name in candidate_methods:
+                if candidate_method_name == original_method_name:
+                    continue
+
+                temp_af = copy.deepcopy(adaptoflux_instance)
+                temp_gp = temp_af.graph_processor
+                temp_gp.graph.nodes[target_node]['method_name'] = candidate_method_name
+
+                new_loss = self._evaluate_loss_with_instance(temp_af, input_data, target)
+
+                if new_loss < best_loss:
+                    best_loss = new_loss
+                    best_candidate = candidate_method_name
+
+            if best_candidate and best_loss < current_loss:
+                gp.graph.nodes[target_node]['method_name'] = best_candidate
+                current_loss = best_loss
+                current_acc = self._evaluate_accuracy_with_instance(adaptoflux_instance, input_data, target)
+                improvement_made = True
+                total_replacements += 1
+
+                if self.verbose:
+                    logger.info(f"  Replacement {total_replacements}: Node '{target_node}' "
+                                f"{original_method_name} → {best_candidate}, Loss: {current_loss:.6f}")
+
+                # 重要：更新节点列表（方法变更可能影响节点性质）
+                processing_nodes = [node for node in gp.graph.nodes() if gp._is_processing_node(node)]
+                # 注意：nodes_to_try 是旧列表，但我们继续用它遍历（安全，因为只是名字列表）
+                # 如果想更严谨，可 break 并重启本轮，但当前设计允许“本轮内动态更新”
+
+        return improvement_made, current_loss, current_acc, total_replacements, processing_nodes

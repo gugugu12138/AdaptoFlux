@@ -461,3 +461,81 @@ class GraphProcessor:
 
         # 返回单个样本的结果（已经是 (1,) 或标量）
         return result[0]
+    
+    # 在 GraphProcessor 类中
+    def replace_node_method(
+        self,
+        old_node_id: str,
+        new_method_name: str
+    ) -> str:
+        """
+        安全地替换图中一个节点的方法，并更新其 ID 和所有相连的边。
+        不做图全节点刷新（全节点刷新耗能高并且推理不依赖具体id，可能后续做个单独方法）
+        
+        :param old_node_id: 要替换的旧节点 ID（如 "2_3_return_value"）
+        :param new_method_name: 新的方法名（如 "add_values"）
+        :return: 新节点的 ID（如 "2_0_add_values"）
+        """
+        if new_method_name not in self.methods:
+            raise ValueError(f"Method '{new_method_name}' not registered in methods.")
+        graph = self.graph
+
+        # === 1. 获取旧节点信息 ===
+        if old_node_id not in graph:
+            raise ValueError(f"Node '{old_node_id}' not found in graph.")
+        
+        old_data = graph.nodes[old_node_id]
+        old_method = old_data.get("method_name")
+        if old_method is None:
+            raise ValueError(f"Node '{old_node_id}' has no 'method_name' attribute.")
+
+        # === 2. 解析旧 ID 获取 layer 和 index 前缀 ===
+        # 旧 ID 格式: {layer}_{index}_{method_name} 或 {layer}_{index}_unmatched
+        id_parts = old_node_id.split('_', 2)  # 最多 split 成 3 部分
+        if len(id_parts) < 3:
+            raise ValueError(f"Invalid node ID format: '{old_node_id}'")
+        
+        layer_str, index_str, _ = id_parts
+        try:
+            layer = int(layer_str)
+        except ValueError:
+            raise ValueError(f"Invalid layer in node ID: '{old_node_id}'")
+
+        # === 3. 生成新 ID ===
+        if new_method_name == "null":
+            new_base_name = "unmatched"
+        else:
+            new_base_name = new_method_name
+
+        # 查找该层中已存在的同方法节点数量，确定新 index
+        existing_same_method = [
+            nid for nid in graph.nodes
+            if nid.startswith(f"{layer}_") and nid.endswith(f"_{new_base_name}")
+        ]
+        new_index = len(existing_same_method)
+        new_node_id = f"{layer}_{new_index}_{new_base_name}"
+
+        # === 4. 保存旧节点的入边和出边 ===
+        in_edges = list(graph.in_edges(old_node_id, keys=True, data=True))
+        out_edges = list(graph.out_edges(old_node_id, keys=True, data=True))
+
+        # === 5. 删除旧节点 ===
+        graph.remove_node(old_node_id)
+
+        # === 6. 添加新节点 ===
+        graph.add_node(new_node_id, method_name=new_method_name)
+
+        # === 7. 重连入边（source -> new_node_id）===
+        for src, _, key, data in in_edges:
+            graph.add_edge(src, new_node_id, key=key, **data)
+
+        # === 8. 重连出边（new_node_id -> target）===
+        for _, dst, key, data in out_edges:
+            graph.add_edge(new_node_id, dst, key=key, **data)
+
+        logger.debug(
+            "Replaced node '%s' (%s) with '%s' (%s)",
+            old_node_id, old_method, new_node_id, new_method_name
+        )
+        
+        return new_node_id

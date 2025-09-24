@@ -29,11 +29,12 @@ class GraphEvoTrainer(ModelTrainer):
         compression_threshold: float = 0.95,
         evolution_frequency: int = 3,
         max_init_layers: int = 3,
-        init_mode: str = "fixed",           # <-- 新增：初始化模式
-        init_layers_list: Optional[List[int]] = None,  # <-- 新增：自定义层数列表
-        frozen_nodes: Optional[List[str]] = None,  # 冻结节点的方法名
-        frozen_methods: Optional[List[str]] = None,  # <-- 新增参数
-        refinement_strategy: str = "random_single",  # 支持 "random_single", "full_sweep"
+        init_mode: str = "fixed",
+        init_layers_list: Optional[List[int]] = None,
+        frozen_nodes: Optional[List[str]] = None,
+        frozen_methods: Optional[List[str]] = None,
+        refinement_strategy: str = "random_single",
+        compatibility_mode: str = "group_with_fallback",  # <-- 新增
         verbose: bool = True
     ):
         """
@@ -59,6 +60,8 @@ class GraphEvoTrainer(ModelTrainer):
         self.init_layers_list = init_layers_list
         self.frozen_nodes = set(frozen_nodes) if frozen_nodes else set()
         self.frozen_methods = set(frozen_methods) if frozen_methods else set()  # <-- 保存为集合
+        self.compatibility_mode = compatibility_mode
+        self.refinement_strategy = refinement_strategy
         self.verbose = verbose
 
         # 校验参数
@@ -71,7 +74,7 @@ class GraphEvoTrainer(ModelTrainer):
         # 用于记录高性能子图，供“方法池进化”阶段使用
         self.high_performance_subgraphs: List[Dict[str, Any]] = []
 
-        self.refinement_strategy = refinement_strategy
+        
         self._strategy_map = {
             "random_single": self._refine_random_single_step,
             "full_sweep": self._refine_full_sweep_step,
@@ -80,6 +83,9 @@ class GraphEvoTrainer(ModelTrainer):
         if self.refinement_strategy not in self._strategy_map:
             raise ValueError(f"Unknown refinement_strategy: {self.refinement_strategy}. "
                             f"Available: {list(self._strategy_map.keys())}")
+
+        if self.compatibility_mode not in {"group_only", "group_with_fallback", "all"}:
+            raise ValueError(f"Invalid compatibility_mode: {self.compatibility_mode}")
 
     def _phase_diverse_initialization(self, input_data: np.ndarray, target: np.ndarray) -> Dict[str, Any]:
         """
@@ -166,102 +172,229 @@ class GraphEvoTrainer(ModelTrainer):
                     # 如果添加失败，跳过，不影响整体流程
 
     def _phase_node_refinement(self, adaptoflux_instance, input_data: np.ndarray, target: np.ndarray) -> Dict[str, Any]:
+        """
+        阶段二：逐节点精炼 (Node-wise Refinement)
+        
+        目标：
+            对图中每个“可处理节点”（processing node），尝试用兼容的替代方法进行替换，
+            以降低损失（或提升准确率）。这是一个**局部搜索优化过程**。
+        
+        策略：
+            支持多种优化策略（如随机单点、完整遍历），由 `self.refinement_strategy` 控制。
+            每次替换都基于小批量数据快速评估，避免全量计算开销。
+        
+        冻结机制：
+            - `frozen_nodes`: 显式冻结的节点名列表（如 "root", "collapse"）
+            - `frozen_methods`: 显式冻结的方法名列表（如 ["return_value"]），自动冻结使用这些方法的节点
+        
+        返回：
+            包含最终模型、性能指标、步数等信息的字典。
+        """
+        # 打印日志：开始精炼阶段
         if self.verbose:
             logger.info(f"[Phase 2] Node-wise Refinement: Starting refinement with strategy '{self.refinement_strategy}'...")
 
+        # 获取图处理器和当前性能指标
         gp = adaptoflux_instance.graph_processor
         current_loss = self._evaluate_loss_with_instance(adaptoflux_instance, input_data, target)
         current_acc = self._evaluate_accuracy_with_instance(adaptoflux_instance, input_data, target)
 
-        improvement_made = False
-        steps_taken = 0
+        # 初始化状态变量
+        improvement_made = False  # 标记本轮是否发生过改进
+        steps_taken = 0           # 实际执行的“优化步数”（注意：不同策略步数定义不同）
 
-        # 获取并过滤处理节点
+        # === 1. 获取所有“可处理节点”并应用冻结规则 ===
+        # `_is_processing_node(node)` 是 GraphProcessor 的方法，用于判断节点是否是“中间计算节点”
+        # （通常排除 "root"、"collapse" 等特殊节点）
         processing_nodes = [node for node in gp.graph.nodes() if gp._is_processing_node(node)]
-        final_frozen_nodes = set(self.frozen_nodes)
+
+        # 合并显式冻结的节点和基于方法名冻结的节点
+        final_frozen_nodes = set(self.frozen_nodes)  # 显式冻结的节点名集合
+
+        # 如果用户指定了冻结的方法名（如 ["return_value"]），则自动冻结所有使用这些方法的节点
         if self.frozen_methods:
             method_frozen_nodes = {
                 node for node in processing_nodes
                 if gp.graph.nodes[node].get('method_name') in self.frozen_methods
             }
-            final_frozen_nodes.update(method_frozen_nodes)
+            final_frozen_nodes.update(method_frozen_nodes)  # 合并到冻结集合
+
+        # 从可处理节点中移除所有冻结节点
         if final_frozen_nodes:
             processing_nodes = [node for node in processing_nodes if node not in final_frozen_nodes]
 
+        # 打印日志：报告可优化节点数量
         if self.verbose:
             logger.info(f"  Found {len(processing_nodes)} processing nodes to refine "
                         f"(excluding {len(final_frozen_nodes)} frozen nodes).")
 
-        # 获取策略函数
+        # === 2. 获取优化策略函数 ===
+        # `_strategy_map` 将字符串策略名映射到具体实现函数
         strategy_func = self._strategy_map[self.refinement_strategy]
 
-        # 主循环
+        # === 3. 主优化循环 ===
         for step in range(self.max_refinement_steps):
+            # 安全退出：防止超过最大步数（虽然策略函数可能一次执行多步）
             if steps_taken >= self.max_refinement_steps:
                 break
 
+            # 若无可优化节点，提前退出
             if not processing_nodes:
                 break
 
-            # 调用策略函数
+            # 调用具体策略函数执行一次优化尝试
+            # 返回值说明（见策略函数文档）：
+            #   imp: bool → 是否发生改进
+            #   new_loss, new_acc: 改进后的指标
+            #   step_inc: int → 本次实际消耗的“步数”（如 full_sweep 一次可能替换多个节点）
+            #   updated_nodes: List[str] → 更新后的可处理节点列表（图结构可能变化）
             imp, new_loss, new_acc, step_inc, updated_nodes = strategy_func(
                 adaptoflux_instance, input_data, target, processing_nodes, current_loss, gp
             )
 
             if imp:
+                # 如果发生改进，更新全局状态
                 improvement_made = True
                 current_loss = new_loss
                 current_acc = new_acc
                 steps_taken += step_inc
-                processing_nodes = updated_nodes
+                processing_nodes = updated_nodes  # 使用最新节点列表
 
-                if self.verbose and self.refinement_strategy == "random_single":
-                    # full_sweep 已在内部打印，避免重复
-                    pass  # 日志已在策略函数内打印
+                # 注意：日志已在策略函数内部打印（避免重复），所以这里不做额外输出
             else:
-                # 无改进，继续或提前终止（可选）
-                # 当前不提前终止，继续尝试
+                # 无改进：继续下一轮尝试（不提前终止，因为后续可能有改进）
+                # 也可在此处加入“早停”逻辑（如连续 N 次无改进则退出）
                 pass
 
+        # === 4. 打印最终结果日志 ===
         if self.verbose:
             if improvement_made:
                 logger.info(f"[Phase 2] Refinement completed in {steps_taken} steps. Final Loss: {current_loss:.6f}, Acc: {current_acc:.4f}")
             else:
                 logger.info(f"[Phase 2] Refinement completed. No improvements found within {self.max_refinement_steps} steps.")
 
+        # === 5. 返回结果 ===
         return {
-            'final_model': adaptoflux_instance,
-            'final_loss': current_loss,
-            'final_accuracy': current_acc,
-            'steps_taken': steps_taken,
-            'improvement_made': improvement_made
+            'final_model': adaptoflux_instance,      # 优化后的模型（原地修改）
+            'final_loss': current_loss,              # 最终损失
+            'final_accuracy': current_acc,           # 最终准确率
+            'steps_taken': steps_taken,              # 实际执行步数
+            'improvement_made': improvement_made     # 是否有改进
         }
 
-    def _get_compatible_methods_for_node(self, adaptoflux_instance, node_name: str) -> List[str]:
+    def _get_compatible_methods_for_node(
+        self, 
+        adaptoflux_instance, 
+        node_name: str, 
+        compatibility_mode: str = "group_with_fallback",
+        allow_fallback_on_empty: bool = True
+    ) -> List[str]:
         """
-        一个辅助方法，用于获取与指定节点兼容的候选方法列表。
-        兼容性基于输入/输出数据类型匹配。
+        获取与图中指定节点兼容的候选方法列表。
 
-        :param adaptoflux_instance: AdaptoFlux 实例
-        :param node_name: 图中节点的名称
-        :return: 兼容的方法名称列表
+        新增参数:
+            allow_fallback_on_empty (bool): 
+                当类型兼容方法为空时，是否允许回退到非类型安全的兜底策略。
+                - True（默认）：启用兜底，保证返回非空列表；
+                - False：若无类型兼容方法，直接抛出 RuntimeError。
+
+        其余参数说明见原注释。
         """
+        supported_modes = {"group_only", "group_with_fallback", "all"}
+        if compatibility_mode not in supported_modes:
+            raise ValueError(
+                f"Unsupported compatibility_mode: '{compatibility_mode}'. "
+                f"Supported modes: {sorted(supported_modes)}"
+            )
+
         gp = adaptoflux_instance.graph_processor
         methods = adaptoflux_instance.methods
+        all_method_names = list(methods.keys())
 
-        # 简化实现：返回同一组（group）的所有方法，或随机返回方法池中的一部分
-        # 理想情况下，应根据节点的输入/输出边的 data_type 进行精确匹配
+        if not all_method_names:
+            return []
+
+        # === 1. 获取原始方法 ===
         node_data = gp.graph.nodes[node_name]
-        node_group = node_data.get('group', 'default')  # 假设节点存储了组信息
+        original_method_name = node_data.get("method_name")
+        if original_method_name is None or original_method_name not in methods:
+            logger.warning(
+                "Node '%s' has no valid 'method_name'; falling back to all methods.",
+                node_name
+            )
+            return all_method_names
 
-        compatible_methods = [
-            method_name for method_name, method_info in methods.items()
-            if method_info.get('group') == node_group
-        ]
+        # === 2. 提取原始类型 ===
+        orig_info = methods[original_method_name]
+        orig_input_types = orig_info.get("input_types", []) or []
+        orig_output_types = orig_info.get("output_types", []) or []
 
-        # 如果没有同组的，或者为了增加多样性，可以返回所有方法
-        if len(compatible_methods) < 2:
-            compatible_methods = list(methods.keys())
+        def is_type_compatible(method_name: str) -> bool:
+            info = methods[method_name]
+            m_input = info.get("input_types", []) or []
+            m_output = info.get("output_types", []) or []
+            return m_input == orig_input_types and m_output == orig_output_types
+
+        # === 3. 构建候选池 ===
+        if compatibility_mode == "all":
+            candidate_pool = all_method_names
+        else:
+            node_group = node_data.get("group", "default")
+            group_methods = [
+                name for name, info in methods.items()
+                if info.get("group", "default") == node_group
+            ]
+            if compatibility_mode == "group_only":
+                candidate_pool = group_methods if group_methods else all_method_names[:1]
+            else:  # group_with_fallback
+                candidate_pool = group_methods if len(group_methods) >= 2 else all_method_names
+
+        # === 4. 筛选类型兼容方法 ===
+        compatible_methods = [name for name in candidate_pool if is_type_compatible(name)]
+
+        # === 5. 处理空结果 ===
+        if not compatible_methods:
+            log_msg = (
+                f"No type-compatible methods found for node '{node_name}' "
+                f"(original method: {original_method_name}, "
+                f"input_types={orig_input_types}, output_types={orig_output_types}). "
+                f"Candidate pool ({len(candidate_pool)}): {candidate_pool}"
+            )
+            logger.debug(log_msg)
+
+            # 可选：打印每个候选的实际类型（仅在调试级别）
+            if logger.isEnabledFor(logging.DEBUG):
+                for name in candidate_pool:
+                    info = methods[name]
+                    inp = info.get("input_types", []) or []
+                    out = info.get("output_types", []) or []
+                    logger.debug("  %s: input=%s, output=%s", name, inp, out)
+
+            if not allow_fallback_on_empty:
+                raise RuntimeError(
+                    f"Strict mode: no type-compatible methods for node '{node_name}'. "
+                    f"Expected input={orig_input_types}, output={orig_output_types}."
+                )
+
+            # === 执行兜底回退 ===
+            if compatibility_mode == "all":
+                result = all_method_names
+            elif compatibility_mode == "group_only":
+                node_group = node_data.get("group", "default")
+                group_methods = [
+                    name for name, info in methods.items()
+                    if info.get("group", "default") == node_group
+                ]
+                result = group_methods[:1] if group_methods else all_method_names[:1]
+            else:  # group_with_fallback
+                result = all_method_names
+
+            logger.warning(
+                "Falling back to non-type-safe methods for node '%s' due to empty compatible set. "
+                "Returned %d methods: %s",
+                node_name, len(result), result[:3]  # 只显示前3个避免日志过长
+            )
+            return result
 
         return compatible_methods
 
@@ -563,39 +696,79 @@ class GraphEvoTrainer(ModelTrainer):
         gp: Any  # GraphProcessor 实例
     ) -> Tuple[bool, float, float, int, List[str]]:
         """
-        执行一步随机单点优化。
-        返回：(是否改进, 新loss, 新acc, 本次步数增量(0或1), 更新后的processing_nodes)
+        【策略：随机单点优化】
+        在当前图中随机选择一个可优化的处理节点，尝试将其方法替换为所有兼容方法中的最优者（基于损失下降）。
+        仅执行一次替换尝试（即一个节点的一次优化），适用于轻量级、低开销的局部搜索。
+
+        返回值说明：
+        - bool: 本轮是否成功改进（即找到更优方法）
+        - float: 改进后的损失值（若未改进则返回原损失）
+        - float: 改进后的准确率（若未改进则返回 0.0，调用方应忽略）
+        - int: 本次实际执行的优化步数（0 或 1）
+        - List[str]: 更新后的可处理节点列表（因图结构可能变化，需重新获取）
+
+        :param adaptoflux_instance: 当前待优化的 AdaptoFlux 实例
+        :param input_data: 用于评估的小批量输入数据
+        :param target: 对应的真实标签
+        :param processing_nodes: 当前图中所有可被优化的处理节点名称列表（已排除冻结节点）
+        :param current_loss: 当前模型的损失值（用于比较）
+        :param gp: 图处理器实例，用于访问和修改图结构
+        :return: (是否改进, 新损失, 新准确率, 步数增量, 更新后的节点列表)
         """
+        # 若无可优化节点，直接返回无改进
         if not processing_nodes:
             return False, current_loss, 0.0, 0, processing_nodes
 
+        # 随机选择一个待优化节点
         target_node = random.choice(processing_nodes)
         original_method_name = gp.graph.nodes[target_node]['method_name']
-        candidate_methods = self._get_compatible_methods_for_node(adaptoflux_instance, target_node)
+        
+        # 获取与该节点兼容的候选方法列表（基于组别或类型匹配）
+        candidate_methods = self._get_compatible_methods_for_node(
+            adaptoflux_instance, 
+            target_node, 
+            compatibility_mode=self.compatibility_mode
+        )
 
         best_candidate = None
-        best_loss = current_loss
+        best_loss = current_loss  # 初始化为当前损失，用于比较
 
+        # 遍历所有候选方法（跳过当前方法）
         for candidate_method_name in candidate_methods:
             if candidate_method_name == original_method_name:
                 continue
 
+            # 创建临时副本，避免污染原模型
             temp_af = copy.deepcopy(adaptoflux_instance)
             temp_gp = temp_af.graph_processor
+            # 尝试替换节点方法
             temp_gp.graph.nodes[target_node]['method_name'] = candidate_method_name
 
+            # 评估替换后的损失
             new_loss = self._evaluate_loss_with_instance(temp_af, input_data, target)
 
+            # 记录损失更低的最优候选
             if new_loss < best_loss:
                 best_loss = new_loss
                 best_candidate = candidate_method_name
 
+        # 如果找到更优方法，则应用到原图
         if best_candidate and best_loss < current_loss:
-            gp.graph.nodes[target_node]['method_name'] = best_candidate
+            # === 替换节点（自动更新 ID 和边） ===
+            new_node_id = gp.replace_node_method(target_node, best_candidate)
+            
+            # 注意：target_node 已被删除，后续操作应使用 new_node_id（但本策略不需要）
+            # 如果作者有空而且没忘记可能会在gp里面加一个刷新图节点id的方法提升可读性
+            
+            # 重新评估准确率
             new_acc = self._evaluate_accuracy_with_instance(adaptoflux_instance, input_data, target)
+            
+            # 重新获取处理节点列表（因为节点 ID 已变）
             updated_nodes = [node for node in gp.graph.nodes() if gp._is_processing_node(node)]
+            
             return True, best_loss, new_acc, 1, updated_nodes
         else:
+            # 无改进，返回原始状态
             return False, current_loss, 0.0, 0, processing_nodes
 
     def _refine_full_sweep_step(
@@ -608,28 +781,53 @@ class GraphEvoTrainer(ModelTrainer):
         gp: Any
     ) -> Tuple[bool, float, float, int, List[str]]:
         """
-        执行一轮完整遍历所有节点。
-        返回：(本轮是否至少有一次改进, 最终loss, 最终acc, 本轮总替换次数, 最终processing_nodes)
+        【策略：完整遍历优化】
+        对当前图中所有可优化的处理节点进行一轮完整遍历。
+        对每个节点，尝试所有兼容方法，若发现能降低损失的替换，则立即应用（贪心策略）。
+        一轮中可能多次修改图结构，适用于更彻底的局部优化，但计算开销较大。
+
+        返回值说明：
+        - bool: 本轮是否至少有一次成功改进
+        - float: 本轮结束后的最终损失值
+        - float: 本轮结束后的最终准确率
+        - int: 本轮总共执行的方法替换次数
+        - List[str]: 最终的可处理节点列表（可能因方法变更而动态变化）
+
+        :param adaptoflux_instance: 当前待优化的 AdaptoFlux 实例
+        :param input_data: 用于评估的小批量输入数据
+        :param target: 对应的真实标签
+        :param processing_nodes: 初始的可优化节点列表
+        :param current_loss: 当前损失（作为起点）
+        :param gp: 图处理器实例
+        :return: (是否改进, 最终损失, 最终准确率, 替换次数, 最终节点列表)
         """
         if not processing_nodes:
             return False, current_loss, 0.0, 0, processing_nodes
 
-        nodes_to_try = random.sample(processing_nodes, len(processing_nodes))  # 随机打乱
+        # 随机打乱节点顺序，避免顺序偏差
+        nodes_to_try = random.sample(processing_nodes, len(processing_nodes))
         improvement_made = False
         total_replacements = 0
         current_acc = 0.0
 
+        # 遍历每一个待优化节点
         for target_node in nodes_to_try:
             original_method_name = gp.graph.nodes[target_node]['method_name']
-            candidate_methods = self._get_compatible_methods_for_node(adaptoflux_instance, target_node)
+            candidate_methods = self._get_compatible_methods_for_node(
+                adaptoflux_instance, 
+                target_node, 
+                compatibility_mode=self.compatibility_mode
+            )
 
             best_candidate = None
-            best_loss = current_loss
+            best_loss = current_loss  # 注意：current_loss 在本轮中可能已被更新
 
+            # 尝试所有兼容方法
             for candidate_method_name in candidate_methods:
                 if candidate_method_name == original_method_name:
                     continue
 
+                # 创建临时副本进行评估
                 temp_af = copy.deepcopy(adaptoflux_instance)
                 temp_gp = temp_af.graph_processor
                 temp_gp.graph.nodes[target_node]['method_name'] = candidate_method_name
@@ -640,9 +838,10 @@ class GraphEvoTrainer(ModelTrainer):
                     best_loss = new_loss
                     best_candidate = candidate_method_name
 
+            # 如果找到更优方法，立即应用到原图（贪心）
             if best_candidate and best_loss < current_loss:
                 gp.graph.nodes[target_node]['method_name'] = best_candidate
-                current_loss = best_loss
+                current_loss = best_loss  # 更新当前损失，供后续节点使用
                 current_acc = self._evaluate_accuracy_with_instance(adaptoflux_instance, input_data, target)
                 improvement_made = True
                 total_replacements += 1
@@ -651,9 +850,10 @@ class GraphEvoTrainer(ModelTrainer):
                     logger.info(f"  Replacement {total_replacements}: Node '{target_node}' "
                                 f"{original_method_name} → {best_candidate}, Loss: {current_loss:.6f}")
 
-                # 重要：更新节点列表（方法变更可能影响节点性质）
+                # ⚠️ 重要：方法替换可能改变节点的“处理节点”属性（例如输入/输出类型变化），
+                # 因此需要重新获取当前所有处理节点，确保后续操作基于最新图状态。
                 processing_nodes = [node for node in gp.graph.nodes() if gp._is_processing_node(node)]
-                # 注意：nodes_to_try 是旧列表，但我们继续用它遍历（安全，因为只是名字列表）
-                # 如果想更严谨，可 break 并重启本轮，但当前设计允许“本轮内动态更新”
+                # 注意：虽然 `nodes_to_try` 是旧列表，但仅包含节点名，遍历仍安全；
+                # 若需更严格的一致性，可考虑在每次修改后 break 并重启本轮，但会增加开销。
 
         return improvement_made, current_loss, current_acc, total_replacements, processing_nodes

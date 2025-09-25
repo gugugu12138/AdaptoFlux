@@ -699,6 +699,7 @@ class GraphEvoTrainer(ModelTrainer):
         【策略：随机单点优化】
         在当前图中随机选择一个可优化的处理节点，尝试将其方法替换为所有兼容方法中的最优者（基于损失下降）。
         仅执行一次替换尝试（即一个节点的一次优化），适用于轻量级、低开销的局部搜索。
+        注意：本函数会 in-place 修改 adaptoflux_instance 的图结构！
 
         返回值说明：
         - bool: 本轮是否成功改进（即找到更优方法）
@@ -785,6 +786,7 @@ class GraphEvoTrainer(ModelTrainer):
         对当前图中所有可优化的处理节点进行一轮完整遍历。
         对每个节点，尝试所有兼容方法，若发现能降低损失的替换，则立即应用（贪心策略）。
         一轮中可能多次修改图结构，适用于更彻底的局部优化，但计算开销较大。
+        注意：本函数会 in-place 修改 adaptoflux_instance 的图结构！
 
         返回值说明：
         - bool: 本轮是否至少有一次成功改进
@@ -804,56 +806,87 @@ class GraphEvoTrainer(ModelTrainer):
         if not processing_nodes:
             return False, current_loss, 0.0, 0, processing_nodes
 
-        # 随机打乱节点顺序，避免顺序偏差
+        # 随机打乱节点顺序，避免顺序偏差（例如总是先优化靠前的节点）
         nodes_to_try = random.sample(processing_nodes, len(processing_nodes))
         improvement_made = False
         total_replacements = 0
-        current_acc = 0.0
+        current_acc = self._evaluate_accuracy_with_instance(adaptoflux_instance, input_data, target)
 
         # 遍历每一个待优化节点
         for target_node in nodes_to_try:
-            original_method_name = gp.graph.nodes[target_node]['method_name']
+            # 检查节点是否仍然存在于图中（可能被之前的替换操作删除或重命名）
+            if target_node not in gp.graph.nodes:
+                if self.verbose:
+                    logger.debug(f"Node '{target_node}' no longer exists in graph; skipping.")
+                continue
+
+            original_method_name = gp.graph.nodes[target_node].get('method_name')
+            if original_method_name is None:
+                if self.verbose:
+                    logger.warning(f"Node '{target_node}' has no 'method_name'; skipping.")
+                continue
+
+            # 获取与该节点兼容的候选方法列表（考虑组别、类型兼容性及冻结规则）
             candidate_methods = self._get_compatible_methods_for_node(
-                adaptoflux_instance, 
-                target_node, 
+                adaptoflux_instance,
+                target_node,
                 compatibility_mode=self.compatibility_mode
             )
 
             best_candidate = None
-            best_loss = current_loss  # 注意：current_loss 在本轮中可能已被更新
+            best_loss = current_loss  # 以当前全局损失为基准进行比较
 
-            # 尝试所有兼容方法
+            # 尝试所有兼容方法（跳过当前方法）
             for candidate_method_name in candidate_methods:
                 if candidate_method_name == original_method_name:
                     continue
 
-                # 创建临时副本进行评估
-                temp_af = copy.deepcopy(adaptoflux_instance)
-                temp_gp = temp_af.graph_processor
-                temp_gp.graph.nodes[target_node]['method_name'] = candidate_method_name
+                # 创建临时副本进行安全评估，避免污染原模型
+                try:
+                    temp_af = copy.deepcopy(adaptoflux_instance)
+                    temp_gp = temp_af.graph_processor
+                    # 安全替换：使用图处理器的标准方法（会处理输入/输出类型变化）
+                    # 注意：这里我们模拟替换，但不实际调用 replace_node_method（因为只是评估）
+                    # 所以直接修改 method_name 是安全的，前提是不依赖边结构变化
+                    temp_gp.graph.nodes[target_node]['method_name'] = candidate_method_name
 
-                new_loss = self._evaluate_loss_with_instance(temp_af, input_data, target)
+                    new_loss = self._evaluate_loss_with_instance(temp_af, input_data, target)
 
-                if new_loss < best_loss:
-                    best_loss = new_loss
-                    best_candidate = candidate_method_name
+                    if new_loss < best_loss:
+                        best_loss = new_loss
+                        best_candidate = candidate_method_name
+                except Exception as e:
+                    logger.warning(f"Failed to evaluate candidate method '{candidate_method_name}' "
+                                   f"for node '{target_node}': {e}")
+                    continue
 
-            # 如果找到更优方法，立即应用到原图（贪心）
+            # 如果找到更优方法，立即应用到原图（贪心策略）
             if best_candidate and best_loss < current_loss:
-                gp.graph.nodes[target_node]['method_name'] = best_candidate
-                current_loss = best_loss  # 更新当前损失，供后续节点使用
-                current_acc = self._evaluate_accuracy_with_instance(adaptoflux_instance, input_data, target)
-                improvement_made = True
-                total_replacements += 1
+                try:
+                    # 使用图处理器的标准替换方法，确保图结构一致性（如边更新、ID刷新等）
+                    new_node_id = gp.replace_node_method(target_node, best_candidate)
+                    # 更新当前损失和准确率
+                    current_loss = best_loss
+                    current_acc = self._evaluate_accuracy_with_instance(adaptoflux_instance, input_data, target)
+                    improvement_made = True
+                    total_replacements += 1
 
-                if self.verbose:
-                    logger.info(f"  Replacement {total_replacements}: Node '{target_node}' "
-                                f"{original_method_name} → {best_candidate}, Loss: {current_loss:.6f}")
+                    if self.verbose:
+                        logger.info(f"  Replacement {total_replacements}: Node '{target_node}' "
+                                    f"{original_method_name} → {best_candidate}, Loss: {current_loss:.6f}")
 
-                # ⚠️ 重要：方法替换可能改变节点的“处理节点”属性（例如输入/输出类型变化），
-                # 因此需要重新获取当前所有处理节点，确保后续操作基于最新图状态。
-                processing_nodes = [node for node in gp.graph.nodes() if gp._is_processing_node(node)]
-                # 注意：虽然 `nodes_to_try` 是旧列表，但仅包含节点名，遍历仍安全；
-                # 若需更严格的一致性，可考虑在每次修改后 break 并重启本轮，但会增加开销。
+                    # 重要：节点替换后，原 target_node 可能已被删除或重命名（new_node_id）
+                    # 因此需要重新获取当前所有处理节点，确保后续操作基于最新图状态
+                    processing_nodes = [
+                        node for node in gp.graph.nodes()
+                        if gp._is_processing_node(node)
+                    ]
+                    # 注意：nodes_to_try 是旧列表，但仅包含节点名，后续节点若仍存在仍可处理；
+                    # 若需更严格的一致性，可考虑 break 并重启本轮，但会增加开销，此处暂不处理。
+
+                except Exception as e:
+                    logger.error(f"Failed to apply method replacement for node '{target_node}': {e}")
+                    # 替换失败，跳过该节点，继续优化其他节点
+                    continue
 
         return improvement_made, current_loss, current_acc, total_replacements, processing_nodes

@@ -55,11 +55,10 @@ class LayerGrowTrainer(ModelTrainer):
         """
         try:
             # 选择推理方式
-            gp = self.adaptoflux.graph_processor
             if use_pipeline:
-                output = gp.infer_with_task_parallel(values=input_data, num_workers=num_workers)
+                output = self.adaptoflux.infer_with_task_parallel(values=input_data, num_workers=num_workers)
             else:
-                output = gp.infer_with_graph(values=input_data)
+                output = self.adaptoflux.infer_with_graph(values=input_data)
 
             # 确保输出和目标形状兼容
             if output.shape[0] != target.shape[0]:
@@ -85,11 +84,10 @@ class LayerGrowTrainer(ModelTrainer):
         """
         try:
             # 选择推理方式
-            gp = self.adaptoflux.graph_processor
             if use_pipeline:
-                output = gp.infer_with_task_parallel(values=input_data, num_workers=num_workers)
+                output = self.adaptoflux.infer_with_task_parallel(values=input_data, num_workers=num_workers)
             else:
-                output = gp.infer_with_graph(values=input_data)
+                output = self.adaptoflux.infer_with_graph(values=input_data)
 
             # 确保输出是 NumPy 数组
             output = np.array(output)

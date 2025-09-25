@@ -513,7 +513,7 @@ class GraphEvoTrainer(ModelTrainer):
         辅助方法：使用指定的 AdaptoFlux 实例计算准确率。
         """
         try:
-            output = adaptoflux_instance.graph_processor.infer_with_graph(values=input_data)
+            output = adaptoflux_instance.infer_with_graph(values=input_data)
             output = np.array(output)
             if len(output.shape) == 1 or output.shape[1] == 1:
                 pred_classes = (output >= 0.5).astype(int).flatten()

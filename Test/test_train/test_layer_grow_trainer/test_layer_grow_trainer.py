@@ -220,7 +220,7 @@ class TestLayerGrowTrainer(unittest.TestCase):
             target=target,
             max_layers=1,
             save_model=True,  # 不需要保存文件
-            model_save_path="Test/test_train/test_layer_grow_trainer",
+            model_save_path=self.test_dir,
             save_best_model=True
         )
 
@@ -228,6 +228,16 @@ class TestLayerGrowTrainer(unittest.TestCase):
         self.assertEqual(results["layers_added"], 1)  # 确保层被接受
         self.assertIn("best_model_accuracy", results)
         self.assertAlmostEqual(results["best_model_accuracy"], 1.0, places=4)
+
+        # Check files exist
+        final_model_file = os.path.join(self.test_dir, "final", "model.json")
+        best_model_file = os.path.join(self.test_dir, "best", "model.json")
+        log_file = os.path.join(self.test_dir, "training_log.json")
+
+        self.assertTrue(os.path.exists(final_model_file))
+        self.assertTrue(os.path.exists(best_model_file))
+        self.assertTrue(os.path.exists(log_file))
+
 
 if __name__ == '__main__':
     unittest.main()

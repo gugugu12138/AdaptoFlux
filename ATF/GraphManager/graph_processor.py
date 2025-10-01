@@ -3,6 +3,10 @@ import numpy as np
 from collections import Counter
 import math
 from ..CollapseManager.collapse_functions import CollapseFunctionManager, CollapseMethod
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class GraphProcessor:
     def __init__(self, graph: nx.MultiDiGraph, methods: dict, collapse_method=CollapseMethod.SUM):
@@ -14,6 +18,7 @@ class GraphProcessor:
             methods (dict): 可用方法字典 {method_name: {"function": ..., "input_count": int, "output_count": int}}
             collapse_method (callable): 聚合函数，默认为 sum
         """
+        self.discard_node_method_name = "null"
         self.graph = graph.copy() if graph else nx.MultiDiGraph()
         self.methods = methods
         self.layer = 0  # 记录当前层数（可选）
@@ -38,20 +43,27 @@ class GraphProcessor:
         """
         向图中添加一层新节点。
         """
+        self.discard_node_method_name = discard_node_method_name
+
         self.layer += 1
         new_index_edge = 0
         method_counts = {method_name: 0 for method_name in self.methods}
-        method_counts["unmatched"] = 0
+        if discard_node_method_name not in method_counts:
+            method_counts[discard_node_method_name] = 0
         v = "collapse"
         collapse_edges = list(self.graph.in_edges(v, data=True))
 
         # 处理有效分组
         for method_name, groups in result['valid_groups'].items():
-            if method_name == "unmatched":
+            if method_name == discard_node_method_name:
                 continue
             for group in groups:
                 new_target_node = f"{self.layer}_{method_counts[method_name]}_{method_name}"
-                self.graph.add_node(new_target_node, method_name=method_name)
+                self.graph.add_node(
+                    new_target_node,
+                    method_name=method_name,
+                    is_passthrough=False   # ← 关键：显式标记
+                )
 
                 for u, _, data in collapse_edges:
                     if data.get('data_coord') in group:
@@ -78,12 +90,16 @@ class GraphProcessor:
         # 收集所有输入边的 data_type
         input_data_types = []
         
-        # 处理 unmatched
+        # 处理 discard_node_method_name
         unmatched_groups = result.get('unmatched', [])
         if unmatched_groups and discard_unmatched == 'to_discard':
             for group in unmatched_groups:
-                node_name = f"{self.layer}_{method_counts['unmatched']}_unmatched"
-                self.graph.add_node(node_name, method_name=discard_node_method_name)
+                node_name = f"{self.layer}_{method_counts[discard_node_method_name]}_{discard_node_method_name}"
+                self.graph.add_node(
+                    node_name,
+                    method_name=discard_node_method_name,
+                    is_passthrough=True   # ← 关键：显式标记
+                )
 
                 # 收集所有输入边的 data_type，并重定向边
                 input_data_types = []
@@ -103,7 +119,7 @@ class GraphProcessor:
                     )
                     new_index_edge += 1
 
-                method_counts["unmatched"] += 1
+                method_counts[discard_node_method_name] += 1
 
         elif unmatched_groups and discard_unmatched != 'ignore':
             raise ValueError(f"未知的 discard_unmatched 值：{discard_unmatched}")
@@ -143,6 +159,7 @@ class GraphProcessor:
         """
         使用图结构对输入数据进行推理。
         """
+        
         node_outputs = {}
         nodes_in_order = list(nx.topological_sort(self.graph))
         nodes_in_order.remove("collapse")
@@ -155,10 +172,10 @@ class GraphProcessor:
             node_data = self.graph.nodes[node]
             method_name = node_data.get("method_name", None)
 
-            if method_name == "null":
+            if node_data.get("is_passthrough"):
                 predecessors = list(self.graph.predecessors(node))
                 if len(predecessors) > 1:
-                    raise ValueError(f"节点 {node} 使用了 'null' 方法，但有多个前驱节点。")
+                    raise ValueError(f"节点 {node} 使用了 'unmatched' 方法，但有多个前驱节点。")
                 if predecessors:
                     node_outputs[node] = node_outputs.get(predecessors[0], np.array([]))
                 continue
@@ -304,12 +321,12 @@ class GraphProcessor:
                 # 执行函数
                 method_name = self.graph.nodes[node].get("method_name")
 
-                # ✅ 新增：处理 null 方法节点
-                if method_name == "null":
+                # ✅ 新增：处理 passthrough 方法节点
+                if node_data.get("is_passthrough"):
                     with lock:
                         predecessors = list(self.graph.predecessors(node))
                         if len(predecessors) > 1:
-                            raise ValueError(f"节点 {node} 使用了 'null' 方法，但有多个前驱节点。")
+                            raise ValueError(f"节点 {node} 使用了 'passthrough' 方法，但有多个前驱节点。")
                         if predecessors:
                             src = predecessors[0]
                             if src not in node_outputs:
@@ -330,7 +347,7 @@ class GraphProcessor:
                                     ready_queue.put(succ)
                     
                     output_shape = node_outputs[node].shape
-                    # print(f"[✅ SUCCESS] 节点 {node} (method=null) 执行完成，输出形状: {output_shape}")
+                    # print(f"[✅ SUCCESS] 节点 {node} (method=unmatched) 执行完成，输出形状: {output_shape}")
                     return  # ⚠️ 直接返回，跳过函数执行逻辑
 
                 # ========== 原有函数执行逻辑 ==========
@@ -502,10 +519,7 @@ class GraphProcessor:
             raise ValueError(f"Invalid layer in node ID: '{old_node_id}'")
 
         # === 3. 生成新 ID ===
-        if new_method_name == "null":
-            new_base_name = "unmatched"
-        else:
-            new_base_name = new_method_name
+        new_base_name = new_method_name
 
         # 查找该层中已存在的同方法节点数量，确定新 index
         existing_same_method = [
@@ -523,7 +537,8 @@ class GraphProcessor:
         graph.remove_node(old_node_id)
 
         # === 6. 添加新节点 ===
-        graph.add_node(new_node_id, method_name=new_method_name)
+        is_passthrough = (new_method_name == self.discard_node_method_name)
+        graph.add_node(new_node_id, method_name=new_method_name, is_passthrough=is_passthrough)
 
         # === 7. 重连入边（source -> new_node_id）===
         for src, _, key, data in in_edges:
@@ -539,3 +554,18 @@ class GraphProcessor:
         )
         
         return new_node_id
+
+    def _is_processing_node(self, node):
+        """
+        判断一个节点是否是需要执行函数的“处理节点”。
+        排除 root、collapse 和 passthrough（如 discard/unmatched）节点。
+        """
+        if node in {"root", "collapse"}:
+            return False
+        
+        node_data = self.graph.nodes.get(node, {})
+        # 如果是 passthrough 节点（如 discard_node_method_name 对应的节点），不视为处理节点
+        if node_data.get("is_passthrough", False):
+            return False
+        
+        return True

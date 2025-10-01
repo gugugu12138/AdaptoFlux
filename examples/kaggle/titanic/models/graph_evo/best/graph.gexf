@@ -1,0 +1,702 @@
+<?xml version='1.0' encoding='utf-8'?>
+<gexf xmlns="http://www.gexf.net/1.2draft" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.gexf.net/1.2draft http://www.gexf.net/1.2draft/gexf.xsd" version="1.2">
+  <meta lastmodifieddate="2025-10-02">
+    <creator>NetworkX 3.4.2</creator>
+  </meta>
+  <graph defaultedgetype="directed" mode="static" name="">
+    <attributes mode="static" class="edge">
+      <attribute id="2" title="output_index" type="long" />
+      <attribute id="3" title="data_coord" type="long" />
+      <attribute id="4" title="data_type" type="string" />
+      <attribute id="5" title="networkx_key" type="long" />
+    </attributes>
+    <attributes mode="static" class="node">
+      <attribute id="0" title="method_name" type="string" />
+      <attribute id="1" title="is_passthrough" type="boolean" />
+    </attributes>
+    <nodes>
+      <node id="root" label="root" />
+      <node id="collapse" label="collapse" />
+      <node id="1_1_decrement" label="1_1_decrement">
+        <attvalues>
+          <attvalue for="0" value="decrement" />
+          <attvalue for="1" value="false" />
+        </attvalues>
+      </node>
+      <node id="1_0_increment" label="1_0_increment">
+        <attvalues>
+          <attvalue for="0" value="increment" />
+          <attvalue for="1" value="false" />
+        </attvalues>
+      </node>
+      <node id="1_0_return_two_values" label="1_0_return_two_values">
+        <attvalues>
+          <attvalue for="0" value="return_two_values" />
+          <attvalue for="1" value="false" />
+        </attvalues>
+      </node>
+      <node id="1_1_return_two_values" label="1_1_return_two_values">
+        <attvalues>
+          <attvalue for="0" value="return_two_values" />
+          <attvalue for="1" value="false" />
+        </attvalues>
+      </node>
+      <node id="1_0_calculate_difference" label="1_0_calculate_difference">
+        <attvalues>
+          <attvalue for="0" value="calculate_difference" />
+          <attvalue for="1" value="false" />
+        </attvalues>
+      </node>
+      <node id="1_0_return_value" label="1_0_return_value">
+        <attvalues>
+          <attvalue for="0" value="return_value" />
+          <attvalue for="1" value="false" />
+        </attvalues>
+      </node>
+      <node id="1_0_null" label="1_0_null">
+        <attvalues>
+          <attvalue for="0" value="null" />
+          <attvalue for="1" value="true" />
+        </attvalues>
+      </node>
+      <node id="1_1_null" label="1_1_null">
+        <attvalues>
+          <attvalue for="0" value="null" />
+          <attvalue for="1" value="true" />
+        </attvalues>
+      </node>
+      <node id="1_2_null" label="1_2_null">
+        <attvalues>
+          <attvalue for="0" value="null" />
+          <attvalue for="1" value="true" />
+        </attvalues>
+      </node>
+      <node id="1_3_null" label="1_3_null">
+        <attvalues>
+          <attvalue for="0" value="null" />
+          <attvalue for="1" value="true" />
+        </attvalues>
+      </node>
+      <node id="2_0_multiply_values" label="2_0_multiply_values">
+        <attvalues>
+          <attvalue for="0" value="multiply_values" />
+          <attvalue for="1" value="false" />
+        </attvalues>
+      </node>
+      <node id="2_2_negate_value" label="2_2_negate_value">
+        <attvalues>
+          <attvalue for="0" value="negate_value" />
+          <attvalue for="1" value="false" />
+        </attvalues>
+      </node>
+      <node id="2_3_negate_value" label="2_3_negate_value">
+        <attvalues>
+          <attvalue for="0" value="negate_value" />
+          <attvalue for="1" value="false" />
+        </attvalues>
+      </node>
+      <node id="2_4_negate_value" label="2_4_negate_value">
+        <attvalues>
+          <attvalue for="0" value="negate_value" />
+          <attvalue for="1" value="false" />
+        </attvalues>
+      </node>
+      <node id="2_0_decrement" label="2_0_decrement">
+        <attvalues>
+          <attvalue for="0" value="decrement" />
+          <attvalue for="1" value="false" />
+        </attvalues>
+      </node>
+      <node id="2_1_decrement" label="2_1_decrement">
+        <attvalues>
+          <attvalue for="0" value="decrement" />
+          <attvalue for="1" value="false" />
+        </attvalues>
+      </node>
+      <node id="2_2_decrement" label="2_2_decrement">
+        <attvalues>
+          <attvalue for="0" value="decrement" />
+          <attvalue for="1" value="false" />
+        </attvalues>
+      </node>
+      <node id="2_0_increment" label="2_0_increment">
+        <attvalues>
+          <attvalue for="0" value="increment" />
+          <attvalue for="1" value="false" />
+        </attvalues>
+      </node>
+      <node id="2_0_return_two_values" label="2_0_return_two_values">
+        <attvalues>
+          <attvalue for="0" value="return_two_values" />
+          <attvalue for="1" value="false" />
+        </attvalues>
+      </node>
+      <node id="2_0_return_value" label="2_0_return_value">
+        <attvalues>
+          <attvalue for="0" value="return_value" />
+          <attvalue for="1" value="false" />
+        </attvalues>
+      </node>
+      <node id="2_0_null" label="2_0_null">
+        <attvalues>
+          <attvalue for="0" value="null" />
+          <attvalue for="1" value="true" />
+        </attvalues>
+      </node>
+      <node id="3_0_calculate_difference" label="3_0_calculate_difference">
+        <attvalues>
+          <attvalue for="0" value="calculate_difference" />
+          <attvalue for="1" value="false" />
+        </attvalues>
+      </node>
+      <node id="3_1_calculate_difference" label="3_1_calculate_difference">
+        <attvalues>
+          <attvalue for="0" value="calculate_difference" />
+          <attvalue for="1" value="false" />
+        </attvalues>
+      </node>
+      <node id="3_0_return_value" label="3_0_return_value">
+        <attvalues>
+          <attvalue for="0" value="return_value" />
+          <attvalue for="1" value="false" />
+        </attvalues>
+      </node>
+      <node id="3_0_return_two_values" label="3_0_return_two_values">
+        <attvalues>
+          <attvalue for="0" value="return_two_values" />
+          <attvalue for="1" value="false" />
+        </attvalues>
+      </node>
+      <node id="3_0_null" label="3_0_null">
+        <attvalues>
+          <attvalue for="0" value="null" />
+          <attvalue for="1" value="true" />
+        </attvalues>
+      </node>
+      <node id="3_1_null" label="3_1_null">
+        <attvalues>
+          <attvalue for="0" value="null" />
+          <attvalue for="1" value="true" />
+        </attvalues>
+      </node>
+      <node id="1_2_decrement" label="1_2_decrement">
+        <attvalues>
+          <attvalue for="0" value="decrement" />
+          <attvalue for="1" value="false" />
+        </attvalues>
+      </node>
+      <node id="2_1_increment" label="2_1_increment">
+        <attvalues>
+          <attvalue for="0" value="increment" />
+          <attvalue for="1" value="false" />
+        </attvalues>
+      </node>
+      <node id="1_0_negate_value" label="1_0_negate_value">
+        <attvalues>
+          <attvalue for="0" value="negate_value" />
+          <attvalue for="1" value="false" />
+        </attvalues>
+      </node>
+      <node id="2_2_increment" label="2_2_increment">
+        <attvalues>
+          <attvalue for="0" value="increment" />
+          <attvalue for="1" value="false" />
+        </attvalues>
+      </node>
+      <node id="3_0_add_values" label="3_0_add_values">
+        <attvalues>
+          <attvalue for="0" value="add_values" />
+          <attvalue for="1" value="false" />
+        </attvalues>
+      </node>
+      <node id="3_0_multiply_values" label="3_0_multiply_values">
+        <attvalues>
+          <attvalue for="0" value="multiply_values" />
+          <attvalue for="1" value="false" />
+        </attvalues>
+      </node>
+      <node id="3_1_add_values" label="3_1_add_values">
+        <attvalues>
+          <attvalue for="0" value="add_values" />
+          <attvalue for="1" value="false" />
+        </attvalues>
+      </node>
+      <node id="2_0_calculate_difference" label="2_0_calculate_difference">
+        <attvalues>
+          <attvalue for="0" value="calculate_difference" />
+          <attvalue for="1" value="false" />
+        </attvalues>
+      </node>
+      <node id="3_0_negate_value" label="3_0_negate_value">
+        <attvalues>
+          <attvalue for="0" value="negate_value" />
+          <attvalue for="1" value="false" />
+        </attvalues>
+      </node>
+      <node id="1_0_multiply_values" label="1_0_multiply_values">
+        <attvalues>
+          <attvalue for="0" value="multiply_values" />
+          <attvalue for="1" value="false" />
+        </attvalues>
+      </node>
+    </nodes>
+    <edges>
+      <edge source="root" target="1_1_decrement" id="0">
+        <attvalues>
+          <attvalue for="2" value="11" />
+          <attvalue for="3" value="11" />
+          <attvalue for="4" value="float64" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="root" target="1_0_increment" id="1">
+        <attvalues>
+          <attvalue for="2" value="3" />
+          <attvalue for="3" value="3" />
+          <attvalue for="4" value="float64" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="root" target="1_0_return_two_values" id="2">
+        <attvalues>
+          <attvalue for="2" value="4" />
+          <attvalue for="3" value="4" />
+          <attvalue for="4" value="float64" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="root" target="1_1_return_two_values" id="3">
+        <attvalues>
+          <attvalue for="2" value="9" />
+          <attvalue for="3" value="9" />
+          <attvalue for="4" value="float64" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="root" target="1_0_calculate_difference" id="4">
+        <attvalues>
+          <attvalue for="2" value="7" />
+          <attvalue for="3" value="7" />
+          <attvalue for="4" value="float64" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="root" target="1_0_calculate_difference" id="5">
+        <attvalues>
+          <attvalue for="2" value="10" />
+          <attvalue for="3" value="10" />
+          <attvalue for="4" value="float64" />
+          <attvalue for="5" value="1" />
+        </attvalues>
+      </edge>
+      <edge source="root" target="1_0_return_value" id="6">
+        <attvalues>
+          <attvalue for="2" value="15" />
+          <attvalue for="3" value="15" />
+          <attvalue for="4" value="float64" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="root" target="1_0_null" id="7">
+        <attvalues>
+          <attvalue for="2" value="12" />
+          <attvalue for="3" value="12" />
+          <attvalue for="4" value="float64" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="root" target="1_1_null" id="8">
+        <attvalues>
+          <attvalue for="2" value="6" />
+          <attvalue for="3" value="6" />
+          <attvalue for="4" value="float64" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="root" target="1_2_null" id="9">
+        <attvalues>
+          <attvalue for="2" value="14" />
+          <attvalue for="3" value="14" />
+          <attvalue for="4" value="float64" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="root" target="1_3_null" id="10">
+        <attvalues>
+          <attvalue for="2" value="13" />
+          <attvalue for="3" value="13" />
+          <attvalue for="4" value="float64" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="root" target="1_2_decrement" id="11">
+        <attvalues>
+          <attvalue for="2" value="8" />
+          <attvalue for="3" value="8" />
+          <attvalue for="4" value="float64" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="root" target="1_0_negate_value" id="12">
+        <attvalues>
+          <attvalue for="2" value="2" />
+          <attvalue for="3" value="2" />
+          <attvalue for="4" value="float64" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="root" target="1_0_multiply_values" id="13">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="0" />
+          <attvalue for="4" value="float64" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="root" target="1_0_multiply_values" id="14">
+        <attvalues>
+          <attvalue for="2" value="5" />
+          <attvalue for="3" value="5" />
+          <attvalue for="4" value="float64" />
+          <attvalue for="5" value="1" />
+        </attvalues>
+      </edge>
+      <edge source="1_1_decrement" target="2_0_increment" id="15">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="4" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="1_0_increment" target="2_2_decrement" id="16">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="5" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="1_0_return_two_values" target="2_0_null" id="17">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="6" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="1_0_return_two_values" target="2_1_increment" id="18">
+        <attvalues>
+          <attvalue for="2" value="1" />
+          <attvalue for="3" value="7" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="1_1_return_two_values" target="2_4_negate_value" id="19">
+        <attvalues>
+          <attvalue for="2" value="1" />
+          <attvalue for="3" value="9" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="1_1_return_two_values" target="2_0_decrement" id="20">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="8" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="1_0_calculate_difference" target="2_0_return_two_values" id="21">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="10" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="1_0_return_value" target="2_0_multiply_values" id="22">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="11" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="1_0_null" target="2_0_return_value" id="23">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="12" />
+          <attvalue for="4" value="float64" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="1_1_null" target="2_0_calculate_difference" id="24">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="13" />
+          <attvalue for="4" value="float64" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="1_2_null" target="2_3_negate_value" id="25">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="14" />
+          <attvalue for="4" value="float64" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="1_3_null" target="2_2_increment" id="26">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="15" />
+          <attvalue for="4" value="float64" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="2_0_multiply_values" target="3_1_add_values" id="27">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="0" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="2_2_negate_value" target="3_0_return_value" id="28">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="4" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="2_3_negate_value" target="3_1_add_values" id="29">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="5" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="2_4_negate_value" target="3_0_multiply_values" id="30">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="6" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="2_0_decrement" target="3_0_calculate_difference" id="31">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="7" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="2_1_decrement" target="3_0_negate_value" id="32">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="8" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="2_2_decrement" target="3_0_multiply_values" id="33">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="9" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="2_0_increment" target="3_0_add_values" id="34">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="10" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="2_0_return_two_values" target="3_0_null" id="35">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="11" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="2_0_return_two_values" target="3_1_null" id="36">
+        <attvalues>
+          <attvalue for="2" value="1" />
+          <attvalue for="3" value="12" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="2_0_return_value" target="3_1_calculate_difference" id="37">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="13" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="2_0_null" target="3_0_return_two_values" id="38">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="14" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="3_0_calculate_difference" target="collapse" id="39">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="3" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="3_1_calculate_difference" target="collapse" id="40">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="4" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="3_0_return_value" target="collapse" id="41">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="5" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="3_0_return_two_values" target="collapse" id="42">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="7" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="3_0_return_two_values" target="collapse" id="43">
+        <attvalues>
+          <attvalue for="2" value="1" />
+          <attvalue for="3" value="8" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="1" />
+        </attvalues>
+      </edge>
+      <edge source="3_0_null" target="collapse" id="44">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="9" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="3_1_null" target="collapse" id="45">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="10" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="1_2_decrement" target="2_2_negate_value" id="46">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="2" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="1_2_decrement" target="2_0_calculate_difference" id="47">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="1" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="2_1_increment" target="3_0_calculate_difference" id="48">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="2" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="1_0_negate_value" target="2_1_decrement" id="49">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="3" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="2_2_increment" target="3_1_calculate_difference" id="50">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="3" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="3_0_add_values" target="collapse" id="51">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="2" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="3_0_multiply_values" target="collapse" id="52">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="1" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="3_1_add_values" target="collapse" id="53">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="0" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="2_0_calculate_difference" target="3_0_add_values" id="54">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="1" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="3_0_negate_value" target="collapse" id="55">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="6" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="1_0_multiply_values" target="2_0_multiply_values" id="56">
+        <attvalues>
+          <attvalue for="2" value="0" />
+          <attvalue for="3" value="0" />
+          <attvalue for="4" value="scalar" />
+          <attvalue for="5" value="0" />
+        </attvalues>
+      </edge>
+    </edges>
+  </graph>
+</gexf>

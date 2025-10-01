@@ -12,6 +12,7 @@ import os
 import shutil
 import networkx as nx
 import pandas as pd
+import copy
 from ..CollapseManager.collapse_functions import CollapseFunctionManager, CollapseMethod
 from ..GraphManager.graph_processor import GraphProcessor
 from ..PathGenerator.path_generator import PathGenerator
@@ -466,4 +467,50 @@ class AdaptoFlux:
             methods=self.methods,              # 可用的方法集合（如加法、乘法、激活函数等）
             collapse_method=self.collapse_method  # 输出聚合方式（如 sum、mean 等）
         )
+    def clone(self):
+        """
+        创建当前 AdaptoFlux 实例的深拷贝副本。
+        
+        该方法确保：
+        - 图结构（NetworkX MultiDiGraph）被完整复制
+        - 方法字典（self.methods）中的函数引用被保留（函数本身不可 deep copy，但引用安全）
+        - 所有数据（values, labels）、历史记录、配置参数均被深拷贝
+        - graph_processor 和 path_generator 等内部组件被重新初始化以绑定新图和方法池
+        
+        返回:
+            AdaptoFlux: 一个与当前实例完全独立的新实例
+        """
+        # 创建新实例（不调用 __init__，避免重复初始化）
+        cloned = AdaptoFlux.__new__(AdaptoFlux)
 
+        # 深拷贝所有基础属性（除函数和图处理器外）
+        for attr, value in self.__dict__.items():
+            if attr in {'graph_processor', 'path_generator', 'model_trainer'}:
+                continue  # 跳过，后面单独处理
+            if attr == 'methods':
+                # methods 中的 'function' 是函数对象，不能 deepcopy，但可以浅拷贝引用（安全）
+                cloned.methods = {}
+                for name, info in value.items():
+                    cloned.methods[name] = copy.copy(info)  # 浅拷贝 dict，保留 function 引用
+            elif attr == 'graph':
+                # NetworkX 图必须用 copy.deepcopy 才能完全独立
+                cloned.graph = copy.deepcopy(value)
+            else:
+                try:
+                    setattr(cloned, attr, copy.deepcopy(value))
+                except Exception as e:
+                    # 对无法 deepcopy 的对象（如某些闭包），尝试浅拷贝
+                    setattr(cloned, attr, copy.copy(value))
+
+        # 重新初始化 graph_processor，绑定新图和新方法池
+        cloned.graph_processor = GraphProcessor(
+            graph=cloned.graph,
+            methods=cloned.methods,
+            collapse_method=cloned.graph_processor.collapse_manager.collapse_method
+        )
+
+        # 可选：重置 path_generator 和 model_trainer（它们通常是临时对象）
+        cloned.path_generator = None
+        cloned.model_trainer = ModelTrainer(adaptoflux_instance=cloned)
+
+        return cloned

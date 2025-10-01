@@ -34,7 +34,8 @@ class GraphEvoTrainer(ModelTrainer):
         frozen_nodes: Optional[List[str]] = None,
         frozen_methods: Optional[List[str]] = None,
         refinement_strategy: str = "random_single",
-        compatibility_mode: str = "group_with_fallback",  # <-- 新增
+        candidate_pool_mode: str = "group",      # 控制第3步：候选池构建
+        fallback_mode: Optional[str] = None,     # 控制第5步：兜底行为
         verbose: bool = True
     ):
         """
@@ -60,9 +61,11 @@ class GraphEvoTrainer(ModelTrainer):
         self.init_layers_list = init_layers_list
         self.frozen_nodes = set(frozen_nodes) if frozen_nodes else set()
         self.frozen_methods = set(frozen_methods) if frozen_methods else set()  # <-- 保存为集合
-        self.compatibility_mode = compatibility_mode
+        self.candidate_pool_mode = candidate_pool_mode
+        self.fallback_mode = fallback_mode or candidate_pool_mode  # 默认同 pool_mode
         self.refinement_strategy = refinement_strategy
         self.verbose = verbose
+        
 
         # 校验参数
         if self.init_mode == "list":
@@ -84,8 +87,13 @@ class GraphEvoTrainer(ModelTrainer):
             raise ValueError(f"Unknown refinement_strategy: {self.refinement_strategy}. "
                             f"Available: {list(self._strategy_map.keys())}")
 
-        if self.compatibility_mode not in {"group_only", "group_with_fallback", "all"}:
-            raise ValueError(f"Invalid compatibility_mode: {self.compatibility_mode}")
+        # 校验
+        valid_pool_modes = {"all", "group", "self"}
+        valid_fallback_modes = {"all", "group_first", "self", "error"}
+        if self.candidate_pool_mode not in valid_pool_modes:
+            raise ValueError(f"Invalid candidate_pool_mode: {self.candidate_pool_mode}")
+        if self.fallback_mode not in valid_fallback_modes:
+            raise ValueError(f"Invalid fallback_mode: {self.fallback_mode}")
 
     def _phase_diverse_initialization(self, input_data: np.ndarray, target: np.ndarray) -> Dict[str, Any]:
         """
@@ -286,8 +294,6 @@ class GraphEvoTrainer(ModelTrainer):
         self, 
         adaptoflux_instance, 
         node_name: str, 
-        compatibility_mode: str = "group_with_fallback",
-        allow_fallback_on_empty: bool = True
     ) -> List[str]:
         """
         获取与图中指定节点兼容的候选方法列表。
@@ -300,13 +306,7 @@ class GraphEvoTrainer(ModelTrainer):
 
         其余参数说明见原注释。
         """
-        supported_modes = {"group_only", "group_with_fallback", "all"}
-        if compatibility_mode not in supported_modes:
-            raise ValueError(
-                f"Unsupported compatibility_mode: '{compatibility_mode}'. "
-                f"Supported modes: {sorted(supported_modes)}"
-            )
-
+        
         gp = adaptoflux_instance.graph_processor
         methods = adaptoflux_instance.methods
         all_method_names = list(methods.keys())
@@ -336,64 +336,42 @@ class GraphEvoTrainer(ModelTrainer):
             return m_input == orig_input_types and m_output == orig_output_types
 
         # === 3. 构建候选池 ===
-        if compatibility_mode == "all":
+        if self.candidate_pool_mode == "all":
             candidate_pool = all_method_names
-        else:
-            node_group = node_data.get("group", "default")
-            group_methods = [
+        elif self.candidate_pool_mode == "self":
+            candidate_pool = [original_method_name]
+        else:  # "group"
+            node_group = methods[original_method_name].get("group", "default")
+            candidate_pool = [
                 name for name, info in methods.items()
                 if info.get("group", "default") == node_group
             ]
-            if compatibility_mode == "group_only":
-                candidate_pool = group_methods if group_methods else all_method_names[:1]
-            else:  # group_with_fallback
-                candidate_pool = group_methods if len(group_methods) >= 2 else all_method_names
 
         # === 4. 筛选类型兼容方法 ===
         compatible_methods = [name for name in candidate_pool if is_type_compatible(name)]
+        # print(f"Node '{node_name}' compatible methods: {compatible_methods}")
 
         # === 5. 处理空结果 ===
         if not compatible_methods:
-            log_msg = (
-                f"No type-compatible methods found for node '{node_name}' "
-                f"(original method: {original_method_name}, "
-                f"input_types={orig_input_types}, output_types={orig_output_types}). "
-                f"Candidate pool ({len(candidate_pool)}): {candidate_pool}"
-            )
+            log_msg = (f"Node '{node_name}' has no compatible methods.")
             logger.debug(log_msg)
 
-            # 可选：打印每个候选的实际类型（仅在调试级别）
-            if logger.isEnabledFor(logging.DEBUG):
-                for name in candidate_pool:
-                    info = methods[name]
-                    inp = info.get("input_types", []) or []
-                    out = info.get("output_types", []) or []
-                    logger.debug("  %s: input=%s, output=%s", name, inp, out)
-
-            if not allow_fallback_on_empty:
-                raise RuntimeError(
-                    f"Strict mode: no type-compatible methods for node '{node_name}'. "
-                    f"Expected input={orig_input_types}, output={orig_output_types}."
-                )
+            if self.fallback_mode == "error":
+                raise RuntimeError(f"Strict mode: no type-compatible methods for node '{node_name}'...")
 
             # === 执行兜底回退 ===
-            if compatibility_mode == "all":
+            if self.fallback_mode == "all":
                 result = all_method_names
-            elif compatibility_mode == "group_only":
-                node_group = node_data.get("group", "default")
-                group_methods = [
-                    name for name, info in methods.items()
-                    if info.get("group", "default") == node_group
-                ]
+            elif self.fallback_mode == "group_first":
+                node_group = methods[original_method_name].get("group", "default")
+                group_methods = [name for name, info in methods.items() if info.get("group") == node_group]
                 result = group_methods[:1] if group_methods else all_method_names[:1]
-            else:  # group_with_fallback
-                result = all_method_names
+            elif self.fallback_mode == "self":
+                result = [original_method_name]  # 👈 关键：只返回自己
+            else:
+                result = all_method_names  # fallback
 
-            logger.warning(
-                "Falling back to non-type-safe methods for node '%s' due to empty compatible set. "
-                "Returned %d methods: %s",
-                node_name, len(result), result[:3]  # 只显示前3个避免日志过长
-            )
+            logger.warning("Falling back to non-type-safe methods for node '%s'...", node_name)
             return result
 
         return compatible_methods
@@ -727,8 +705,7 @@ class GraphEvoTrainer(ModelTrainer):
         # 获取与该节点兼容的候选方法列表（基于组别或类型匹配）
         candidate_methods = self._get_compatible_methods_for_node(
             adaptoflux_instance, 
-            target_node, 
-            compatibility_mode=self.compatibility_mode
+            target_node
         )
 
         best_candidate = None
@@ -890,3 +867,17 @@ class GraphEvoTrainer(ModelTrainer):
                     continue
 
         return improvement_made, current_loss, current_acc, total_replacements, processing_nodes
+        
+    def build_candidate_pool(compatibility_mode, methods, original_method_name, all_method_names):
+        if compatibility_mode == "all":
+            return all_method_names
+        else:
+            node_group = methods[original_method_name].get("group", "default")
+            group_methods = [
+                name for name, info in methods.items()
+                if info.get("group", "default") == node_group
+            ]
+            if compatibility_mode == "group_only":
+                return group_methods if group_methods else all_method_names[:1]
+            else:  # group_with_fallback
+                return group_methods if len(group_methods) >= 2 else all_method_names

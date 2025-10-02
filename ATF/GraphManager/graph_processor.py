@@ -222,6 +222,11 @@ class GraphProcessor:
             results = []
 
             for row in flat_inputs:
+                if len(row) != input_count:
+                    raise ValueError(
+                        f"Node '{node}' method '{method_name}' expects {input_count} inputs, "
+                        f"but got {len(row)}: {row}. This indicates a graph structure error."
+                    )
                 result = func(*row)
                 if isinstance(result, (int, float)):
                     result = [result]
@@ -486,8 +491,9 @@ class GraphProcessor:
         new_method_name: str
     ) -> str:
         """
-        安全地替换图中一个节点的方法，并更新其 ID 和所有相连的边。
+        替换图中一个节点的方法，并更新其 ID 和所有相连的边。
         不做图全节点刷新（全节点刷新耗能高并且推理不依赖具体id，可能后续做个单独方法）
+        该方法不做类型检测
         
         :param old_node_id: 要替换的旧节点 ID（如 "2_3_return_value"）
         :param new_method_name: 新的方法名（如 "add_values"）
@@ -519,15 +525,24 @@ class GraphProcessor:
             raise ValueError(f"Invalid layer in node ID: '{old_node_id}'")
 
         # === 3. 生成新 ID ===
-        new_base_name = new_method_name
+        new_base_name = new_method_name  # ✅ 关键：定义 new_base_name
+        
+        existing_indices = set()
+        prefix = f"{layer}_"
+        suffix = f"_{new_base_name}"
+        for nid in graph.nodes:
+            if nid.startswith(prefix) and nid.endswith(suffix):
+                idx_part = nid[len(prefix): -len(suffix)]
+                if idx_part.isdigit():
+                    existing_indices.add(int(idx_part))
 
-        # 查找该层中已存在的同方法节点数量，确定新 index
-        existing_same_method = [
-            nid for nid in graph.nodes
-            if nid.startswith(f"{layer}_") and nid.endswith(f"_{new_base_name}")
-        ]
-        new_index = len(existing_same_method)
+        new_index = 0
+        while new_index in existing_indices:
+            new_index += 1
         new_node_id = f"{layer}_{new_index}_{new_base_name}"
+
+        if new_node_id in graph:
+            raise RuntimeError(f"Node ID collision: {new_node_id} already exists!")
 
         # === 4. 保存旧节点的入边和出边 ===
         in_edges = list(graph.in_edges(old_node_id, keys=True, data=True))

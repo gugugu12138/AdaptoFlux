@@ -7,6 +7,7 @@ import copy
 from typing import Optional, List, Dict, Any, Tuple
 import os
 import json
+import traceback
 from ...PathGenerator.path_generator import PathGenerator
 from ...GraphManager.graph_processor import GraphProcessor
 
@@ -328,7 +329,6 @@ class GraphEvoTrainer(ModelTrainer):
         orig_info = methods[original_method_name]
         orig_input_types = orig_info.get("input_types", []) or []
         orig_output_types = orig_info.get("output_types", []) or []
-
         def is_type_compatible(method_name: str) -> bool:
             info = methods[method_name]
             m_input = info.get("input_types", []) or []
@@ -484,7 +484,8 @@ class GraphEvoTrainer(ModelTrainer):
             return float(loss)
         except Exception as e:
             logger.error(f"Evaluation failed for instance: {e}")
-            return float('inf')
+            logger.error(traceback.format_exc())
+            raise RuntimeError("Failed to evaluate loss with the given AdaptoFlux instance.")
 
     def _evaluate_accuracy_with_instance(self, adaptoflux_instance, input_data: np.ndarray, target: np.ndarray) -> float:
         """
@@ -502,7 +503,7 @@ class GraphEvoTrainer(ModelTrainer):
             return accuracy
         except Exception as e:
             logger.error(f"Accuracy evaluation failed for instance: {e}")
-            return 0.0
+            raise RuntimeError("Failed to evaluate loss with the given AdaptoFlux instance.")
 
     def train(
         self,
@@ -710,7 +711,7 @@ class GraphEvoTrainer(ModelTrainer):
 
         best_candidate = None
         best_loss = current_loss  # 初始化为当前损失，用于比较
-
+        
         # 遍历所有候选方法（跳过当前方法）
         for candidate_method_name in candidate_methods:
             if candidate_method_name == original_method_name:
@@ -725,6 +726,7 @@ class GraphEvoTrainer(ModelTrainer):
             # 评估替换后的损失
             new_loss = self._evaluate_loss_with_instance(temp_af, input_data, target)
 
+
             # 记录损失更低的最优候选
             if new_loss < best_loss:
                 best_loss = new_loss
@@ -737,14 +739,15 @@ class GraphEvoTrainer(ModelTrainer):
             
             # 注意：target_node 已被删除，后续操作应使用 new_node_id（但本策略不需要）
             # 如果作者有空而且没忘记可能会在gp里面加一个刷新图节点id的方法提升可读性
-            
+
             # 重新评估准确率
             new_acc = self._evaluate_accuracy_with_instance(adaptoflux_instance, input_data, target)
-            
+
             # 重新获取处理节点列表（因为节点 ID 已变）
             updated_nodes = [node for node in gp.graph.nodes() if gp._is_processing_node(node)]
             
             return True, best_loss, new_acc, 1, updated_nodes
+        
         else:
             # 无改进，返回原始状态
             return False, current_loss, 0.0, 0, processing_nodes

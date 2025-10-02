@@ -37,6 +37,8 @@ class GraphEvoTrainer(ModelTrainer):
         refinement_strategy: str = "random_single",
         candidate_pool_mode: str = "group",      # 控制第3步：候选池构建
         fallback_mode: Optional[str] = None,     # 控制第5步：兜底行为
+        enable_compression: bool = True,   # <-- 新增
+        enable_evolution: bool = True,      # <-- 新增
         verbose: bool = True
     ):
         """
@@ -65,6 +67,8 @@ class GraphEvoTrainer(ModelTrainer):
         self.candidate_pool_mode = candidate_pool_mode
         self.fallback_mode = fallback_mode or candidate_pool_mode  # 默认同 pool_mode
         self.refinement_strategy = refinement_strategy
+        self.enable_compression = enable_compression
+        self.enable_evolution = enable_evolution
         self.verbose = verbose
         
 
@@ -585,23 +589,36 @@ class GraphEvoTrainer(ModelTrainer):
 
             cycle_results['refinement'] = refinement_result
 
-            # 阶段三：模块化压缩
-            compression_result = self._phase_modular_compression(current_af, input_data, target)
-            current_af = compression_result['final_model']
-            current_loss = compression_result['final_loss'] # 更新损失和准确率
-            current_acc = compression_result['final_accuracy']
-            if compression_result['compression_applied']:
-                results['total_compressions'] += compression_result['compressed_subgraphs']
+            # 阶段三：模块化压缩（可选）
+            if self.enable_compression:
+                compression_result = self._phase_modular_compression(current_af, input_data, target)
+                current_af = compression_result['final_model']
+                current_loss = compression_result['final_loss']
+                current_acc = compression_result['final_accuracy']
+                if compression_result['compression_applied']:
+                    results['total_compressions'] += compression_result['compressed_subgraphs']
+            else:
+                # 跳过压缩，直接传递当前状态
+                compression_result = {
+                    'final_model': current_af,
+                    'final_loss': current_loss,
+                    'final_accuracy': current_acc,
+                    'compression_applied': False,
+                    'compressed_subgraphs': 0
+                }
+                if self.verbose:
+                    logger.info("[Phase 3] Modular Compression: SKIPPED (disabled by enable_compression=False)")
 
             cycle_results['compression'] = compression_result
 
-            # 阶段四：方法池进化 (根据频率决定)
-            if cycle % self.evolution_frequency == 0:
+            # 阶段四：方法池进化（可选）
+            if self.enable_evolution and cycle % self.evolution_frequency == 0:
                 evolution_result = self._phase_method_pool_evolution(current_af)
                 results['total_methods_evolved'] += evolution_result['methods_added']
                 cycle_results['evolution'] = evolution_result
             else:
-                cycle_results['evolution'] = {'skipped': True, 'reason': 'frequency'}
+                reason = "disabled" if not self.enable_evolution else "frequency"
+                cycle_results['evolution'] = {'skipped': True, 'reason': reason}
 
             # 更新全局状态
             self.adaptoflux = current_af
@@ -662,7 +679,7 @@ class GraphEvoTrainer(ModelTrainer):
                 logger.error(f"Failed to save model(s): {e}")
                 import traceback
                 logger.error(traceback.format_exc())
-
+        
         return results
     
     def _refine_random_single_step(

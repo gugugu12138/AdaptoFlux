@@ -11,6 +11,13 @@ import traceback
 from ...PathGenerator.path_generator import PathGenerator
 from ...GraphManager.graph_processor import GraphProcessor
 
+from .components import (
+    BFSSubgraphSampler,
+    SubgraphIOExtractor,
+    SubgraphReplacer,
+    MSEEquivalenceChecker
+)
+
 # 设置日志
 logger = logging.getLogger(__name__)
 
@@ -39,7 +46,8 @@ class GraphEvoTrainer(ModelTrainer):
         fallback_mode: Optional[str] = None,     # 控制第5步：兜底行为
         enable_compression: bool = True,   # <-- 新增
         enable_evolution: bool = True,      # <-- 新增
-        verbose: bool = True
+        verbose: bool = True,
+        **kwargs
     ):
         """
         初始化 GraphEvoTrainer。
@@ -70,6 +78,13 @@ class GraphEvoTrainer(ModelTrainer):
         self.enable_compression = enable_compression
         self.enable_evolution = enable_evolution
         self.verbose = verbose
+
+        self.subgraph_sampler = kwargs.get('subgraph_sampler') or BFSSubgraphSampler(max_nodes=4)
+        self.io_extractor = kwargs.get('io_extractor') or SubgraphIOExtractor()
+        self.replacer = kwargs.get('replacer') or SubgraphReplacer()
+        self.equivalence_checker = kwargs.get('equivalence_checker') or MSEEquivalenceChecker(
+            threshold=self.compression_threshold
+        )
         
 
         # 校验参数
@@ -385,45 +400,107 @@ class GraphEvoTrainer(ModelTrainer):
         阶段三：模块化压缩 (Modular Compression)
         识别图中可被替换的高效子图，用更小或更快的等效结构进行替代。
 
+        本阶段执行以下流程：
+        1. **子图采样**：使用配置的采样器（如 BFS）随机选取一个连通子图；
+        2. **I/O 提取**：执行原图，记录该子图的输入与输出数据；
+        3. **替代生成**：（当前简化为）选择一个候选方法（如 "add"）作为替代结构；
+        4. **等效性验证**：比较替代结构与原子图在相同输入下的输出是否足够相似；
+        5. **图结构替换**：若验证通过，则用替代结构（当前为单节点）替换原子图；
+        6. **记录高性能子图**：将被替换的原子图保存至 `high_performance_subgraphs`，供进化阶段使用。
+
+        注意：当前实现中，替代结构为**单个节点**，且候选方法固定为 "add"。
+        后续可扩展为训练一个小型替代子图以实现更优压缩。
+
         :param adaptoflux_instance: 待优化的 AdaptoFlux 实例
-        :param input_data: 用于评估等效性的输入数据
-        :param target: 对应的标签（用于评估性能，非必需）
-        :return: 包含压缩后模型信息和压缩情况的字典
+        :param input_data: 用于评估等效性的输入数据（小批量）
+        :param target: 对应的标签（用于最终性能评估，非等效性验证必需）
+        :return: 包含压缩后模型信息和压缩情况的字典，字段包括：
+                 - 'final_model': 压缩后的 AdaptoFlux 实例（可能未变）
+                 - 'final_loss': 压缩后的损失值
+                 - 'final_accuracy': 压缩后的准确率
+                 - 'compression_applied': bool，是否成功执行了压缩
+                 - 'compressed_subgraphs': int，本次压缩的子图数量（0 或 1）
         """
-        if self.verbose:
-            logger.info(f"[Phase 3] Modular Compression: Searching for compressible subgraphs...")
+        if not self.enable_compression:
+            return self._return_original_result(adaptoflux_instance, input_data, target)
 
         gp = adaptoflux_instance.graph_processor
-        original_loss = self._evaluate_loss_with_instance(adaptoflux_instance, input_data, target)
-        original_acc = self._evaluate_accuracy_with_instance(adaptoflux_instance, input_data, target)
 
-        # 此阶段的实现高度依赖于具体的“子图模式”定义。
-        # 一个简化示例：查找连续的、功能单一的节点序列（如 "add -> multiply"）并尝试用一个复合节点替换。
-        # 由于实现复杂，这里先提供一个占位逻辑，返回原模型。
+        # 1. 采样子图
+        subgraph = self.subgraph_sampler.sample(gp.graph)
+        if subgraph is None:
+            return self._return_original_result(adaptoflux_instance, input_data, target)
 
-        # --- 占位逻辑开始 ---
-        # 假设我们识别到一个子图可以被压缩
-        # subgraph_to_compress = self._find_compressible_subgraph(gp.graph)
-        # if subgraph_to_compress:
-        #     compressed_subgraph = self._create_compressed_version(subgraph_to_compress)
-        #     if self._is_equivalent(subgraph_to_compress, compressed_subgraph, input_data, threshold=self.compression_threshold):
-        #         # 执行图替换
-        #         self._replace_subgraph(gp.graph, subgraph_to_compress, compressed_subgraph)
-        #         # 记录这个高性能子图，用于进化阶段
-        #         self.high_performance_subgraphs.append(compressed_subgraph)
-        # --- 占位逻辑结束 ---
+        # 2. 提取 I/O
+        try:
+            sub_inputs, sub_outputs = self.io_extractor.extract(adaptoflux_instance, subgraph, input_data)
+        except Exception as e:
+            logger.warning(f"IO extraction failed: {e}")
+            return self._return_original_result(adaptoflux_instance, input_data, target)
 
-        # 由于子图压缩逻辑复杂，且依赖于具体的图模式，我们暂时跳过实际压缩，直接返回原模型。
-        # 在实际项目中，您需要在此处实现具体的子图发现和替换算法。
+        # 3. 简化：直接选一个候选方法（如 "add"）作为替代（跳过训练）
+        candidate_method = "add"  # 后续可替换为训练逻辑
+        if candidate_method not in adaptoflux_instance.methods:
+            return self._return_original_result(adaptoflux_instance, input_data, target)
 
-        if self.verbose:
-            logger.info(f"[Phase 3] Modular Compression: No compression applied in this placeholder implementation.")
+        # 4. 验证等效性
+        # 构建临时单节点图并测试
+        temp_af = self._create_single_node_graph(adaptoflux_instance, candidate_method)
+        rep_output = temp_af.infer_with_graph(input_data)
+        orig_output = list(sub_outputs.values())[0]
 
+        if not self.equivalence_checker.is_equivalent(orig_output, rep_output):
+            return self._return_original_result(adaptoflux_instance, input_data, target)
+
+        # 5. 执行替换
+        try:
+            new_node_id = self.replacer.replace_with_node(gp, subgraph, candidate_method)
+            logger.info(f"Replaced subgraph with node '{new_node_id}' ({candidate_method})")
+
+            # 记录用于进化（保存原子图）
+            self.high_performance_subgraphs.append(subgraph)
+
+            # 返回新结果
+            new_loss = self._evaluate_loss_with_instance(adaptoflux_instance, input_data, target)
+            new_acc = self._evaluate_accuracy_with_instance(adaptoflux_instance, input_data, target)
+            return {
+                'final_model': adaptoflux_instance,
+                'final_loss': new_loss,
+                'final_accuracy': new_acc,
+                'compression_applied': True,
+                'compressed_subgraphs': 1
+            }
+
+        except Exception as e:
+            logger.error(f"Replacement failed: {e}")
+            return self._return_original_result(adaptoflux_instance, input_data, target)
+
+    def _return_original_result(self, adaptoflux_instance, input_data, target):
+        """
+        辅助方法：返回未进行任何压缩的原始模型评估结果。
+
+        当模块化压缩因以下原因跳过时调用：
+        - 压缩功能被禁用（enable_compression=False）
+        - 未能采样到有效子图
+        - I/O 提取失败
+        - 候选替代方法不可用
+        - 等效性验证未通过
+        - 图替换过程中发生异常
+
+        该方法确保压缩阶段始终返回结构一致的结果字典，便于主训练循环统一处理。
+
+        :param adaptoflux_instance: 当前的 AdaptoFlux 实例（未修改）
+        :param input_data: 用于评估的输入数据
+        :param target: 对应的标签
+        :return: 表示“无压缩”的标准结果字典
+        """
+        loss = self._evaluate_loss_with_instance(adaptoflux_instance, input_data, target)
+        acc = self._evaluate_accuracy_with_instance(adaptoflux_instance, input_data, target)
         return {
             'final_model': adaptoflux_instance,
-            'final_loss': original_loss,
-            'final_accuracy': original_acc,
-            'compression_applied': False, # 标记本次是否执行了压缩
+            'final_loss': loss,
+            'final_accuracy': acc,
+            'compression_applied': False,
             'compressed_subgraphs': 0
         }
 

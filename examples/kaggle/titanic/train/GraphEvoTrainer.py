@@ -47,11 +47,11 @@ model.add_collapse_method(collapse_sum_positive)
 # === 使用 GraphEvoTrainer ===
 trainer = GraphEvoTrainer(
     adaptoflux_instance=model,
-    num_initial_models=5,
+    enable_compression=False,
+    num_initial_models=10,
     max_refinement_steps=50,
     compression_threshold=0.95,
-    evolution_frequency=3,
-    max_init_layers=3,
+    max_init_layers=5,
     init_mode="fixed",
     frozen_nodes=["root", "collapse"],
     frozen_methods=["return_value"],

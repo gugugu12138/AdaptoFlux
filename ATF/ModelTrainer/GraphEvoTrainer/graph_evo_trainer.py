@@ -11,7 +11,7 @@ import traceback
 from ...PathGenerator.path_generator import PathGenerator
 from ...GraphManager.graph_processor import GraphProcessor
 
-from .components import (
+from .Components import (
     BFSSubgraphSampler,
     SubgraphIOExtractor,
     SubgraphReplacer,
@@ -35,38 +35,64 @@ class GraphEvoTrainer(ModelTrainer):
         num_initial_models: int = 5,
         max_refinement_steps: int = 100,
         compression_threshold: float = 0.95,
-        evolution_frequency: int = 3,
         max_init_layers: int = 3,
         init_mode: str = "fixed",
         init_layers_list: Optional[List[int]] = None,
         frozen_nodes: Optional[List[str]] = None,
         frozen_methods: Optional[List[str]] = None,
         refinement_strategy: str = "random_single",
-        candidate_pool_mode: str = "group",      # 控制第3步：候选池构建
-        fallback_mode: Optional[str] = None,     # 控制第5步：兜底行为
-        enable_compression: bool = True,   # <-- 新增
-        enable_evolution: bool = True,      # <-- 新增
+        candidate_pool_mode: str = "group",
+        fallback_mode: Optional[str] = None,
+        enable_compression: bool = True,
+        enable_evolution: bool = True,
+        evolution_sampling_frequency: int = 1,
+        evolution_trigger_count: int = 3,
+        evolution_cleanup_mode: str = "full",
+        methods_per_evolution: int = 1,
         verbose: bool = True,
         **kwargs
     ):
         """
-        初始化 GraphEvoTrainer。
+        初始化 GraphEvoTrainer，用于执行 AdaptoFlux 的图结构自进化优化流程。
 
-        :param adaptoflux_instance: 已初始化的 AdaptoFlux 对象
-        :param num_initial_models: 在“多样初始化”阶段生成的候选模型数量
-        :param max_refinement_steps: 在“逐节点精炼”阶段，单次优化的最大步数
-        :param compression_threshold: 在“模块化压缩”阶段，子图等效性判定的相似度阈值 (0~1)
-        :param evolution_frequency: 每进行多少次完整的“精炼-压缩”循环后，执行一次“方法池进化”
-        :param max_init_layers: 在“多样初始化”阶段，每个候选模型最多随机添加的层数（仅在 fixed 模式生效）
-        :param init_mode: 初始化模式，"fixed"=所有模型添加固定 max_init_layers 层数，"list"=按 init_layers_list 指定层数
-        :param init_layers_list: 当 init_mode="list" 时，指定每个候选模型的层数列表，长度应 >= num_initial_models
-        :param verbose: 是否打印详细日志
+        本训练器通过四个核心阶段实现图结构的迭代优化：
+        1. **多样初始化**：生成多个随机初始图，选择性能最优者作为起点；
+        2. **逐节点精炼**：对图中可优化节点尝试方法替换，局部搜索更优结构；
+        3. **方法池进化**（可选）：基于记录的高性能图结构，抽象新方法注入方法池。
+        4. **模块化压缩**（可选）：识别并替换等效的高效子图，实现结构简化；
+        
+
+        参数控制说明：
+        - **初始化控制**：通过 `num_initial_models`、`init_mode` 等控制初始多样性；
+        - **精炼控制**：通过 `refinement_strategy`、`frozen_nodes` 等控制局部搜索行为；
+        - **进化控制**：通过 `evolution_sampling_frequency`、`evolution_trigger_count` 等控制进化触发机制。
+        - **压缩控制**：通过 `enable_compression`、`compression_threshold` 控制是否启用及等效性标准；
+        :param adaptoflux_instance: 已初始化的 AdaptoFlux 实例，作为优化的基础模板。
+        :param num_initial_models: 多样初始化阶段生成的候选模型数量。
+        :param max_refinement_steps: 单次精炼阶段允许的最大优化步数。
+        :param compression_threshold: 模块化压缩阶段判定子图等效的 MSE 相似度阈值（值越小要求越严格）。
+        :param max_init_layers: 初始化时每个候选模型最多添加的随机层数（仅在 init_mode="fixed" 时生效）。
+        :param init_mode: 初始化模式，"fixed" 表示所有模型添加相同层数，"list" 表示按 init_layers_list 指定。
+        :param init_layers_list: 当 init_mode="list" 时，指定每个候选模型的初始化层数，长度需 ≥ num_initial_models。
+        :param frozen_nodes: 显式冻结的节点名称列表（如 ["root", "collapse"]），这些节点在精炼阶段不会被修改。
+        :param frozen_methods: 显式冻结的方法名称列表（如 ["return_value"]），使用这些方法的节点将自动被冻结。
+        :param refinement_strategy: 精炼策略，"random_single"（随机单点优化）或 "full_sweep"（全图遍历优化）。
+        :param candidate_pool_mode: 构建候选方法池的策略，"all"（所有方法）、"group"（同组方法）或 "self"（仅自身）。
+        :param fallback_mode: 当无类型兼容方法时的兜底策略，"all"/"group_first"/"self"/"error"。
+        :param enable_compression: 是否启用模块化压缩阶段。
+        :param enable_evolution: 是否启用方法池进化阶段。
+        :param evolution_sampling_frequency: 每隔多少个训练轮次（即一次完整的「精炼+压缩」循环）记录一次当前图结构快照，用于后续方法池进化。例如设为 2 表示每 2 轮保存一次快照。
+        :param evolution_trigger_count: 当累计记录的图快照数量达到此值时，触发一次方法池进化。
+        :param evolution_cleanup_mode: 进化完成后如何清理已记录的快照，"full"（清空全部）或 "oldest"（仅移除最早的一个）。
+        :param methods_per_evolution: 每次方法池进化时，最多从记录的图结构中抽象并添加的新方法数量。
+        :param verbose: 是否输出详细日志信息。
+        :param kwargs: 其他可选组件，如自定义的 subgraph_sampler、io_extractor 等。
         """
+
         super().__init__(adaptoflux_instance)
         self.num_initial_models = num_initial_models
         self.max_refinement_steps = max_refinement_steps
         self.compression_threshold = compression_threshold
-        self.evolution_frequency = evolution_frequency
         self.max_init_layers = max_init_layers
         self.init_mode = init_mode
         self.init_layers_list = init_layers_list
@@ -77,6 +103,10 @@ class GraphEvoTrainer(ModelTrainer):
         self.refinement_strategy = refinement_strategy
         self.enable_compression = enable_compression
         self.enable_evolution = enable_evolution
+        self.evolution_sampling_frequency = evolution_sampling_frequency
+        self.evolution_trigger_count = evolution_trigger_count
+        self.evolution_cleanup_mode = evolution_cleanup_mode
+        self.methods_per_evolution = methods_per_evolution    
         self.verbose = verbose
 
         self.subgraph_sampler = kwargs.get('subgraph_sampler') or BFSSubgraphSampler(max_nodes=4)
@@ -88,14 +118,16 @@ class GraphEvoTrainer(ModelTrainer):
         
 
         # 校验参数
+        if self.methods_per_evolution < 1:
+            raise ValueError("methods_per_evolution must be >= 1")
         if self.init_mode == "list":
             if self.init_layers_list is None:
                 raise ValueError("init_mode='list' requires init_layers_list to be provided.")
             if len(self.init_layers_list) < self.num_initial_models:
                 raise ValueError(f"init_layers_list length ({len(self.init_layers_list)}) must be >= num_initial_models ({self.num_initial_models})")
 
-        # 用于记录高性能子图，供“方法池进化”阶段使用
-        self.high_performance_subgraphs: List[Dict[str, Any]] = []
+        # 用于记录完整图结构快照（用于方法池进化）
+        self.graph_snapshots: List[Any] = []
 
         
         self._strategy_map = {
@@ -397,7 +429,7 @@ class GraphEvoTrainer(ModelTrainer):
 
     def _phase_modular_compression(self, adaptoflux_instance, input_data: np.ndarray, target: np.ndarray) -> Dict[str, Any]:
         """
-        阶段三：模块化压缩 (Modular Compression)
+        阶段四：模块化压缩 (Modular Compression)
         识别图中可被替换的高效子图，用更小或更快的等效结构进行替代。
 
         本阶段执行以下流程：
@@ -457,9 +489,6 @@ class GraphEvoTrainer(ModelTrainer):
             new_node_id = self.replacer.replace_with_node(gp, subgraph, candidate_method)
             logger.info(f"Replaced subgraph with node '{new_node_id}' ({candidate_method})")
 
-            # 记录用于进化（保存原子图）
-            self.high_performance_subgraphs.append(subgraph)
-
             # 返回新结果
             new_loss = self._evaluate_loss_with_instance(adaptoflux_instance, input_data, target)
             new_acc = self._evaluate_accuracy_with_instance(adaptoflux_instance, input_data, target)
@@ -504,57 +533,104 @@ class GraphEvoTrainer(ModelTrainer):
             'compressed_subgraphs': 0
         }
 
-    def _phase_method_pool_evolution(self, adaptoflux_instance) -> Dict[str, Any]:
+    def _extract_node_signature(graph, node_id: str) -> Tuple[int, Tuple[int, ...], Tuple[int, ...]]:
         """
-        阶段四：方法池进化 (Method Pool Evolution)
-        将在“模块化压缩”阶段发现的高性能子结构，抽象为新的方法，并注入到方法池中。
+        从图中提取节点的拓扑签名：(layer, sorted_in_coords, sorted_out_coords)
+        
+        :param graph: NetworkX 图
+        :param node_id: 节点 ID，格式如 "L_I_method"
+        :return: (layer, in_coords_tuple, out_coords_tuple)
+        """
+        # 1. 提取 layer
+        if node_id in ("root", "collapse"):
+            raise ValueError("Skip special nodes")
+        try:
+            layer = int(node_id.split('_', 1)[0])
+        except (ValueError, IndexError):
+            raise ValueError(f"Cannot parse layer from node ID: {node_id}")
 
-        :param adaptoflux_instance: 当前的 AdaptoFlux 实例，其方法池将被更新
-        :return: 包含进化后方法池信息的字典
-        """
+        # 2. 收集所有输入边的 data_coord（指向该节点的边）
+        in_coords = []
+        for src, _, edge_data in graph.in_edges(node_id, data=True):
+            coord = edge_data.get('data_coord')
+            if coord is not None:
+                in_coords.append(coord)
+        in_coords = tuple(sorted(in_coords))
+
+        # 3. 收集所有输出边的 data_coord（从该节点出发的边）
+        out_coords = []
+        for _, dst, edge_data in graph.out_edges(node_id, data=True):
+            coord = edge_data.get('data_coord')
+            if coord is not None:
+                out_coords.append(coord)
+        out_coords = tuple(sorted(out_coords))
+
+        return (layer, in_coords, out_coords)
+    
+    def _phase_method_pool_evolution(
+        self,
+        adaptoflux_instance,
+        snapshots: List[Any],
+        max_methods: int = 1
+    ) -> Dict[str, Any]:
+        # 打印日志：开始方法池进化阶段，说明将基于拓扑签名对齐节点
+        # 对齐依据：(层号, 输入数据坐标集合, 输出数据坐标集合)
+        # 这种签名能唯一标识节点在数据流图中的拓扑角色，与节点ID或方法名无关
         if self.verbose:
-            logger.info(f"[Phase 4] Method Pool Evolution: Evolving method pool with {len(self.high_performance_subgraphs)} new subgraphs...")
+            logger.info(f"[Phase 3] Method Pool Evolution: Aligning nodes via (layer, in_coords, out_coords) "
+                        f"across {len(snapshots)} snapshots...")
 
-        methods_added = 0
-        # 遍历记录的高性能子图
-        for subgraph in self.high_performance_subgraphs:
-            # 为子图创建一个唯一的方法名
-            new_method_name = f"evolved_method_{len(adaptoflux_instance.methods) + methods_added + 1}"
+        # 安全检查：若无快照可供分析，直接返回空结果
+        if not snapshots:
+            return {'methods_added': 0, 'new_method_names': []}
 
-            # 将子图封装为一个新方法
-            # 这需要一个复杂的封装过程，将子图的输入输出接口和内部逻辑打包成一个可调用的函数
-            # new_method_callable = self._wrap_subgraph_as_method(subgraph)
+        # Step 1: 构建拓扑签名到方法频次的映射
+        # 结构：signature_freq[signature][method_name] = count
+        # 其中 signature = (layer, (in_coord1, in_coord2, ...), (out_coord1, out_coord2, ...))
+        signature_freq = defaultdict(lambda: defaultdict(int))
 
-            # 由于封装逻辑复杂，这里仅模拟添加一个占位方法
-            # adaptoflux_instance.add_method(new_method_name, new_method_callable, ...)
+        # 遍历每个快照（即每次保存的图结构）
+        for snap in snapshots:
+            graph = snap.graph_processor.graph
+            # 遍历图中每个节点
+            for node_id in graph.nodes():
+                try:
+                    # 提取该节点的拓扑签名（基于层号和边的 data_coord）
+                    sig = _extract_node_signature(graph, node_id)
+                    # 获取该节点当前使用的方法名，若缺失则标记为 'unknown'
+                    method = graph.nodes[node_id].get('method_name', 'unknown')
+                    # 累加该方法在该拓扑位置出现的次数
+                    signature_freq[sig][method] += 1
+                except ValueError:
+                    # 跳过无法解析的节点（如 "root"、"collapse" 等特殊节点）
+                    continue
 
-            # 模拟添加
-            adaptoflux_instance.methods[new_method_name] = {
+        # 日志：报告共识别出多少种唯一的拓扑角色（即不同的节点位置）
+        # 这反映了快照间图结构的一致性程度
+        if self.verbose:
+            logger.debug(f"Aligned {len(signature_freq)} unique node roles across snapshots.")
+
+        # Step 2: （占位）生成新方法
+        new_method_names = []
+        num_to_add = min(len(snapshots), max_methods)
+        for i in range(num_to_add):
+            name = f"evolved_method_{len(adaptoflux_instance.methods) + i + 1}"
+            adaptoflux_instance.methods[name] = {
                 'output_count': 1,
                 'input_types': ['scalar'],
                 'output_types': ['scalar'],
                 'group': 'evolved',
                 'weight': 1.0,
                 'vectorized': True,
-                'is_evolved': True, # 标记为进化而来
-                'source_subgraph': 'placeholder' # 保存来源信息
+                'is_evolved': True,
+                'aligned_roles': len(signature_freq)
             }
-            methods_added += 1
-
-            if self.verbose:
-                logger.info(f"  Added new evolved method: {new_method_name}")
-
-        # 清空已进化的子图列表，避免重复添加
-        self.high_performance_subgraphs.clear()
-
-        if self.verbose:
-            logger.info(f"[Phase 4] Method Pool Evolution: Added {methods_added} new methods to the pool.")
+            new_method_names.append(name)
 
         return {
-            'methods_added': methods_added,
-            'new_method_names': [f"evolved_method_{i}" for i in range(len(adaptoflux_instance.methods) - methods_added + 1, len(adaptoflux_instance.methods) + 1)]
+            'methods_added': len(new_method_names),
+            'new_method_names': new_method_names
         }
-
     def _evaluate_loss_with_instance(self, adaptoflux_instance, input_data: np.ndarray, target: np.ndarray) -> float:
         """
         辅助方法：使用指定的 AdaptoFlux 实例计算损失。
@@ -604,7 +680,7 @@ class GraphEvoTrainer(ModelTrainer):
 
         :param input_data: 用于快速评估的输入数据（小批量）
         :param target: 对应的标签
-        :param max_evo_cycles: 最多执行的“精炼-压缩-进化”循环次数
+        :param max_evo_cycles: 最多执行的训练轮次数。
         :param save_model: 是否在训练结束后保存模型
         :param model_save_path: 模型保存的文件夹路径
         :param save_best_model: 是否保存过程中遇到的最佳模型
@@ -666,36 +742,42 @@ class GraphEvoTrainer(ModelTrainer):
 
             cycle_results['refinement'] = refinement_result
 
-            # 阶段三：模块化压缩（可选）
-            if self.enable_compression:
-                compression_result = self._phase_modular_compression(current_af, input_data, target)
-                current_af = compression_result['final_model']
-                current_loss = compression_result['final_loss']
-                current_acc = compression_result['final_accuracy']
-                if compression_result['compression_applied']:
-                    results['total_compressions'] += compression_result['compressed_subgraphs']
+            # 阶段三：方法池进化（基于快照触发）
+            if self.enable_evolution:
+                # 1. 按频率记录图快照
+                if cycle % self.evolution_sampling_frequency == 0:
+                    snapshot = copy.deepcopy(current_af)
+                    self.graph_snapshots.append(snapshot)
+                    if self.verbose:
+                        logger.debug(f"Saved graph snapshot #{len(self.graph_snapshots)} at cycle {cycle}")
+
+                # 2. 检查是否触发进化
+                if len(self.graph_snapshots) >= self.evolution_trigger_count:
+                    # 3. 执行进化
+                    evolution_result = self._phase_method_pool_evolution(
+                        current_af,
+                        snapshots=self.graph_snapshots,
+                        max_methods=self.methods_per_evolution
+                    )
+                    results['total_methods_evolved'] += evolution_result['methods_added']
+                    cycle_results['evolution'] = evolution_result
+
+                    # 4. 清理快照
+                    if self.evolution_cleanup_mode == "full":
+                        self.graph_snapshots.clear()
+                    elif self.evolution_cleanup_mode == "oldest":
+                        if self.graph_snapshots:
+                            self.graph_snapshots.pop(0)
+                else:
+                    cycle_results['evolution'] = {
+                        'skipped': True,
+                        'reason': 'insufficient_snapshots'
+                    }
             else:
-                # 跳过压缩，直接传递当前状态
-                compression_result = {
-                    'final_model': current_af,
-                    'final_loss': current_loss,
-                    'final_accuracy': current_acc,
-                    'compression_applied': False,
-                    'compressed_subgraphs': 0
+                cycle_results['evolution'] = {
+                    'skipped': True,
+                    'reason': 'disabled'
                 }
-                if self.verbose:
-                    logger.info("[Phase 3] Modular Compression: SKIPPED (disabled by enable_compression=False)")
-
-            cycle_results['compression'] = compression_result
-
-            # 阶段四：方法池进化（可选）
-            if self.enable_evolution and cycle % self.evolution_frequency == 0:
-                evolution_result = self._phase_method_pool_evolution(current_af)
-                results['total_methods_evolved'] += evolution_result['methods_added']
-                cycle_results['evolution'] = evolution_result
-            else:
-                reason = "disabled" if not self.enable_evolution else "frequency"
-                cycle_results['evolution'] = {'skipped': True, 'reason': reason}
 
             # 更新全局状态
             self.adaptoflux = current_af
@@ -715,6 +797,26 @@ class GraphEvoTrainer(ModelTrainer):
 
         if self.verbose:
             logger.info(f"GraphEvoTrainer finished after {results['evo_cycles_completed']} cycles.")
+
+
+        # === 阶段四（后处理）：模块化压缩（仅执行一次）===
+        final_compression_result = None
+        if self.enable_compression:
+            if self.verbose:
+                logger.info("[Post-Training] Applying Modular Compression once on final model...")
+            final_compression_result = self._phase_modular_compression(self.adaptoflux, input_data, target)
+            # 更新最终模型
+            self.adaptoflux = final_compression_result['final_model']
+            results['total_compressions'] = final_compression_result['compressed_subgraphs']
+        else:
+            if self.verbose:
+                logger.info("[Post-Training] Modular Compression: SKIPPED (disabled by enable_compression=False)")
+            results['total_compressions'] = 0
+        
+        if final_compression_result:
+            results['final_compression_applied'] = final_compression_result['compression_applied']
+        else:
+            results['final_compression_applied'] = False
 
         # 保存模型
         if save_model:

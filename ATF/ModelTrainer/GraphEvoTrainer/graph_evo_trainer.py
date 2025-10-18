@@ -10,6 +10,8 @@ import json
 import traceback
 from ...PathGenerator.path_generator import PathGenerator
 from ...GraphManager.graph_processor import GraphProcessor
+from collections import defaultdict
+import networkx as nx
 
 from .Components import (
     BFSSubgraphSampler,
@@ -48,7 +50,9 @@ class GraphEvoTrainer(ModelTrainer):
         evolution_sampling_frequency: int = 1,
         evolution_trigger_count: int = 3,
         evolution_cleanup_mode: str = "full",
+        consensus_threshold: Optional[float] = None,  # <-- 新增
         methods_per_evolution: int = 1,
+        min_subgraph_size_for_evolution: int = 2,  # <-- 新增参数
         verbose: bool = True,
         **kwargs
     ):
@@ -106,6 +110,7 @@ class GraphEvoTrainer(ModelTrainer):
         self.evolution_sampling_frequency = evolution_sampling_frequency
         self.evolution_trigger_count = evolution_trigger_count
         self.evolution_cleanup_mode = evolution_cleanup_mode
+        self.consensus_threshold = consensus_threshold
         self.methods_per_evolution = methods_per_evolution    
         self.verbose = verbose
 
@@ -115,7 +120,10 @@ class GraphEvoTrainer(ModelTrainer):
         self.equivalence_checker = kwargs.get('equivalence_checker') or MSEEquivalenceChecker(
             threshold=self.compression_threshold
         )
-        
+
+        self.min_subgraph_size_for_evolution = min_subgraph_size_for_evolution
+        if self.min_subgraph_size_for_evolution < 1:
+            raise ValueError("min_subgraph_size_for_evolution must be at least 1")
 
         # 校验参数
         if self.methods_per_evolution < 1:
@@ -125,6 +133,11 @@ class GraphEvoTrainer(ModelTrainer):
                 raise ValueError("init_mode='list' requires init_layers_list to be provided.")
             if len(self.init_layers_list) < self.num_initial_models:
                 raise ValueError(f"init_layers_list length ({len(self.init_layers_list)}) must be >= num_initial_models ({self.num_initial_models})")
+        if self.consensus_threshold is not None:
+            if not (0.0 <= self.consensus_threshold <= 1.0):
+                raise ValueError("consensus_threshold must be in [0.0, 1.0] or None")
+
+        
 
         # 用于记录完整图结构快照（用于方法池进化）
         self.graph_snapshots: List[Any] = []
@@ -604,6 +617,58 @@ class GraphEvoTrainer(ModelTrainer):
                 except ValueError:
                     # 跳过无法解析的节点（如 "root"、"collapse" 等特殊节点）
                     continue
+
+        # Step 2: 为每个拓扑位置选择高频方法（构建共识）
+        consensus_map = {}
+        for sig, method_counts in signature_freq.items():
+            total = sum(method_counts.values())
+            max_method, max_count = max(method_counts.items(), key=lambda x: x[1])
+            if self.consensus_threshold is None or (max_count / total) >= self.consensus_threshold:
+                consensus_map[sig] = max_method
+
+        if self.verbose:
+            logger.debug(f"Selected consensus methods for {len(consensus_map)} node roles.")
+
+        # Step 3: 重建共识图（节点为 signature）
+        template_graph = snapshots[0].graph_processor.graph
+        consensus_graph = nx.DiGraph()
+        node_id_to_sig = {}
+
+        # 添加节点
+        for node_id in template_graph.nodes():
+            if node_id in ("root", "collapse"):
+                continue
+            try:
+                sig = _extract_node_signature(template_graph, node_id)
+                if sig in consensus_map:
+                    consensus_graph.add_node(sig, method=consensus_map[sig])
+                    node_id_to_sig[node_id] = sig
+            except ValueError:
+                continue
+
+        # 添加边
+        for src_id, dst_id, edge_data in template_graph.edges(data=True):
+            if src_id in node_id_to_sig and dst_id in node_id_to_sig:
+                src_sig = node_id_to_sig[src_id]
+                dst_sig = node_id_to_sig[dst_id]
+                consensus_graph.add_edge(src_sig, dst_sig, **edge_data)
+
+        # Step 4: 分割为连通分量
+        connected_components = list(nx.weakly_connected_components(consensus_graph))
+        
+        # Step 4: 分割为连通分量
+        connected_components = list(nx.weakly_connected_components(consensus_graph))
+
+        # 过滤：只保留节点数 >= 阈值的连通子图
+        connected_components = [
+            comp for comp in connected_components 
+            if len(comp) >= self.min_subgraph_size_for_evolution
+        ]
+        
+        num_components = len(connected_components)
+
+        if self.verbose:
+            logger.debug(f"Consensus graph split into {num_components} connected components.")
 
         # 日志：报告共识别出多少种唯一的拓扑角色（即不同的节点位置）
         # 这反映了快照间图结构的一致性程度

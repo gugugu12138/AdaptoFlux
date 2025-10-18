@@ -121,7 +121,31 @@ class GraphProcessor:
 
                 method_counts[discard_node_method_name] += 1
 
-        elif unmatched_groups and discard_unmatched != 'ignore':
+        elif unmatched_groups and discard_unmatched == 'ignore':
+            logging.warning(
+                "discard_unmatched='ignore' 策略未经充分测试，可能存在未预见行为。"
+                "如有问题，请联系开发者。"
+            )
+            logging.warning(
+                "⚠️  UNTESTED PATH: discard_unmatched='ignore' is experimental. "
+                "Data will be DROPPED (edges removed from 'collapse'). "
+                "Use at your own risk."
+            )
+            # TODO: Add unit tests for 'ignore' mode (2025-10-18)
+            logging.warning("Experimental 'ignore' mode: unmatched data is dropped.")
+            # === 新增逻辑：彻底丢弃 unmatched 数据 ===
+            # 将 unmatched_groups 扁平化为一个集合，便于快速查找
+            unmatched_coords = set()
+            for group in unmatched_groups:
+                unmatched_coords.update(group)
+
+            # 遍历原始 collapse 入边（已缓存），删除属于 unmatched 的边
+            for u, _, data in collapse_edges:
+                if data.get('data_coord') in unmatched_coords:
+                    self.graph.remove_edge(u, v)
+            # 注意：不创建新节点，也不添加新边 → 数据被丢弃
+
+        elif unmatched_groups:
             raise ValueError(f"未知的 discard_unmatched 值：{discard_unmatched}")
 
         return self.graph
@@ -579,6 +603,7 @@ class GraphProcessor:
             return False
         
         node_data = self.graph.nodes.get(node, {})
+
         # 如果是 passthrough 节点（如 discard_node_method_name 对应的节点），不视为处理节点
         if node_data.get("is_passthrough", False):
             return False

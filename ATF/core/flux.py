@@ -265,8 +265,8 @@ class AdaptoFlux:
                 - 'valid_groups': 按照方法名分组的有效数据索引列表
                 - 'unmatched': 无法匹配成完整输入的剩余索引
             discard_unmatched: 如何处理未匹配项。可选值：
-                'to_discard' - 创建单独节点并连接回 collapse
-                'ignore' - 忽略这些未匹配项
+                'to_discard' - 创建单独节点并连接回 collapse，数据仍然保留在图中参与运算
+                'ignore' - 忽略这些未匹配项，不会进入 collapse
             discard_node_method_name: 如果 discard_unmatched == 'to_discard'，则用该名称作为丢弃节点的 method_name
         """
 

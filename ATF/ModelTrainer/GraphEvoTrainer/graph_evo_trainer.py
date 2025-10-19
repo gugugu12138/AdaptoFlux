@@ -584,12 +584,14 @@ class GraphEvoTrainer(ModelTrainer):
         self,
         adaptoflux_instance,
         snapshots: List[Any],
-        max_methods: int = 1
+        max_methods: int = 1,
+        enable_graph_isomorphism_clustering: bool = True
     ) -> Dict[str, Any]:
         # 打印日志：开始方法池进化阶段，说明将基于拓扑签名对齐节点
         # 对齐依据：(层号, 输入数据坐标集合, 输出数据坐标集合)
         # 这种签名能唯一标识节点在数据流图中的拓扑角色，与节点ID或方法名无关
         if self.verbose:
+            logger.warning(f"该函数（_phase_method_pool_evolution）仍在开发中，如出现与预期不符请联系开发者")
             logger.info(f"[Phase 3] Method Pool Evolution: Aligning nodes via (layer, in_coords, out_coords) "
                         f"across {len(snapshots)} snapshots...")
 
@@ -655,9 +657,6 @@ class GraphEvoTrainer(ModelTrainer):
 
         # Step 4: 分割为连通分量
         connected_components = list(nx.weakly_connected_components(consensus_graph))
-        
-        # Step 4: 分割为连通分量
-        connected_components = list(nx.weakly_connected_components(consensus_graph))
 
         # 过滤：只保留节点数 >= 阈值的连通子图
         connected_components = [
@@ -670,15 +669,80 @@ class GraphEvoTrainer(ModelTrainer):
         if self.verbose:
             logger.debug(f"Consensus graph split into {num_components} connected components.")
 
-        # 日志：报告共识别出多少种唯一的拓扑角色（即不同的节点位置）
-        # 这反映了快照间图结构的一致性程度
-        if self.verbose:
-            logger.debug(f"Aligned {len(signature_freq)} unique node roles across snapshots.")
+        if num_components == 0:
+            return {'methods_added': 0, 'new_method_names': []}
 
-        # Step 2: （占位）生成新方法
+        # Step 5: 决定是否进行图同构聚类
+        if enable_graph_isomorphism_clustering:
+            # ===== 启用图匹配聚类 =====
+            from networkx.algorithms.isomorphism import DiGraphMatcher
+
+            unique_graphs = []      # 存储唯一子图
+            graph_counts = []       # 对应出现次数
+
+            for comp in connected_components:
+                g = consensus_graph.subgraph(comp).copy()
+                matched = False
+                for i, rep_g in enumerate(unique_graphs):
+                    nm = lambda n1, n2: n1.get('method') == n2.get('method')
+                    em = None  # 或启用边属性匹配
+                    if DiGraphMatcher(rep_g, g, node_match=nm, edge_match=em).is_isomorphic():
+                        graph_counts[i] += 1
+                        matched = True
+                        break
+                if not matched:
+                    unique_graphs.append(g)
+                    graph_counts.append(1)
+
+            # 按频次排序，取 top-k
+            sorted_pairs = sorted(zip(unique_graphs, graph_counts), key=lambda x: x[1], reverse=True)
+            top_k = sorted_pairs[:max_methods]
+            selected_graphs = [g for g, _ in top_k]
+            selected_counts = [c for _, c in top_k]
+
+            if self.verbose:
+                logger.debug(f"Graph isomorphism clustering: {len(sorted_pairs)} unique structures; "
+                            f"selected top-{len(selected_graphs)}.")
+
+        else:
+            # ===== 禁用聚类：每个连通分量独立处理 =====
+            selected_graphs = [consensus_graph.subgraph(comp).copy() for comp in connected_components]
+            selected_counts = [1] * len(selected_graphs)  # 无频次意义，统一为1
+            # 但仍受 max_methods 限制
+            if len(selected_graphs) > max_methods:
+                selected_graphs = selected_graphs[:max_methods]
+                selected_counts = selected_counts[:max_methods]
+                if self.verbose:
+                    logger.debug(f"Clustering disabled; truncated to first {max_methods} components.")
+
+        # Step 6: 对 selected_graphs 还原（添加 root/collapse + 重命名）（未完成）
+        reconstructed_graphs = []
+
+        for g in selected_graphs:
+            g_full = g.copy()
+            g_full.add_node("root", label="root")
+            g_full.add_node("collapse", label="collapse")
+            
+            internal_nodes = [n for n in g_full.nodes() if n not in ("root", "collapse")]
+            entry_nodes = [n for n in internal_nodes if g_full.in_degree(n) == 0]
+            exit_nodes = [n for n in internal_nodes if g_full.out_degree(n) == 0]
+            
+            for n in entry_nodes:
+                g_full.add_edge("root", n, data_coord=0, output_index=0, data_type="scalar", networkx_key=0)
+            for n in exit_nodes:
+                g_full.add_edge(n, "collapse", data_coord=0, output_index=0, data_type="scalar", networkx_key=0)
+            
+            mapping = {}
+            for n in internal_nodes:
+                method = g_full.nodes[n].get('method', 'unknown')
+                idx = n[1][0] if n[1] else 0
+                mapping[n] = f"{n[0]}_{idx}_{method}"
+            g_full = nx.relabel_nodes(g_full, mapping)
+            reconstructed_graphs.append(g_full)
+
+        # Step 7: 生成新方法 （未完成）
         new_method_names = []
-        num_to_add = min(len(snapshots), max_methods)
-        for i in range(num_to_add):
+        for i, (g, count) in enumerate(zip(selected_graphs, selected_counts)):
             name = f"evolved_method_{len(adaptoflux_instance.methods) + i + 1}"
             adaptoflux_instance.methods[name] = {
                 'output_count': 1,
@@ -688,7 +752,10 @@ class GraphEvoTrainer(ModelTrainer):
                 'weight': 1.0,
                 'vectorized': True,
                 'is_evolved': True,
-                'aligned_roles': len(signature_freq)
+                'aligned_roles': len(signature_freq),
+                'subgraph_node_count': g.number_of_nodes(),
+                'occurrence_count': count,
+                'is_clustered': enable_graph_isomorphism_clustering  # 可选元信息
             }
             new_method_names.append(name)
 
@@ -696,6 +763,7 @@ class GraphEvoTrainer(ModelTrainer):
             'methods_added': len(new_method_names),
             'new_method_names': new_method_names
         }
+
     def _evaluate_loss_with_instance(self, adaptoflux_instance, input_data: np.ndarray, target: np.ndarray) -> float:
         """
         辅助方法：使用指定的 AdaptoFlux 实例计算损失。

@@ -12,6 +12,7 @@ from ...PathGenerator.path_generator import PathGenerator
 from ...GraphManager.graph_processor import GraphProcessor
 from collections import defaultdict
 import networkx as nx
+from networkx.readwrite import json_graph
 
 from .Components import (
     BFSSubgraphSampler,
@@ -546,7 +547,7 @@ class GraphEvoTrainer(ModelTrainer):
             'compressed_subgraphs': 0
         }
 
-    def _extract_node_signature(graph, node_id: str) -> Tuple[int, Tuple[int, ...], Tuple[int, ...]]:
+    def _extract_node_signature(self, graph, node_id: str) -> Tuple[int, Tuple[int, ...], Tuple[int, ...]]:
         """
         从图中提取节点的拓扑签名：(layer, sorted_in_coords, sorted_out_coords)
         
@@ -585,7 +586,8 @@ class GraphEvoTrainer(ModelTrainer):
         adaptoflux_instance,
         snapshots: List[Any],
         max_methods: int = 1,
-        enable_graph_isomorphism_clustering: bool = True
+        enable_graph_isomorphism_clustering: bool = True,
+        evolved_methods_save_dir: Optional[str] = None
     ) -> Dict[str, Any]:
         # 打印日志：开始方法池进化阶段，说明将基于拓扑签名对齐节点
         # 对齐依据：(层号, 输入数据坐标集合, 输出数据坐标集合)
@@ -611,7 +613,7 @@ class GraphEvoTrainer(ModelTrainer):
             for node_id in graph.nodes():
                 try:
                     # 提取该节点的拓扑签名（基于层号和边的 data_coord）
-                    sig = _extract_node_signature(graph, node_id)
+                    sig = self._extract_node_signature(graph, node_id)
                     # 获取该节点当前使用的方法名，若缺失则标记为 'unknown'
                     method = graph.nodes[node_id].get('method_name', 'unknown')
                     # 累加该方法在该拓扑位置出现的次数
@@ -620,7 +622,7 @@ class GraphEvoTrainer(ModelTrainer):
                     # 跳过无法解析的节点（如 "root"、"collapse" 等特殊节点）
                     continue
 
-        # Step 2: 为每个拓扑位置选择高频方法（构建共识）
+        # Step 2: 为每个拓扑位置选择高频方法（构建共识）（可以按照不同节点方法构建多个共识图，但目前来说没有必要）
         consensus_map = {}
         for sig, method_counts in signature_freq.items():
             total = sum(method_counts.values())
@@ -641,9 +643,9 @@ class GraphEvoTrainer(ModelTrainer):
             if node_id in ("root", "collapse"):
                 continue
             try:
-                sig = _extract_node_signature(template_graph, node_id)
+                sig = self._extract_node_signature(template_graph, node_id)
                 if sig in consensus_map:
-                    consensus_graph.add_node(sig, method=consensus_map[sig])
+                    consensus_graph.add_node(sig, method_name=consensus_map[sig])
                     node_id_to_sig[node_id] = sig
             except ValueError:
                 continue
@@ -718,46 +720,200 @@ class GraphEvoTrainer(ModelTrainer):
         # Step 6: 对 selected_graphs 还原（添加 root/collapse + 重命名）（未完成）
         reconstructed_graphs = []
 
+        # 构建反向映射：signature -> 原始 node_id（任选一个即可，因签名相同）
+        sig_to_original_node = {}
+        for node_id, sig in node_id_to_sig.items():
+            if sig not in sig_to_original_node:
+                sig_to_original_node[sig] = node_id
+
         for g in selected_graphs:
             g_full = g.copy()
-            g_full.add_node("root", label="root")
-            g_full.add_node("collapse", label="collapse")
+            g_full.add_node("root")
+            g_full.add_node("collapse")
             
             internal_nodes = [n for n in g_full.nodes() if n not in ("root", "collapse")]
             entry_nodes = [n for n in internal_nodes if g_full.in_degree(n) == 0]
             exit_nodes = [n for n in internal_nodes if g_full.out_degree(n) == 0]
             
-            for n in entry_nodes:
-                g_full.add_edge("root", n, data_coord=0, output_index=0, data_type="scalar", networkx_key=0)
-            for n in exit_nodes:
-                g_full.add_edge(n, "collapse", data_coord=0, output_index=0, data_type="scalar", networkx_key=0)
+            # === 连接 root 到 entry_nodes，使用原始边属性 ===
+            edge_counter = 0
+
+            for sig in entry_nodes:
+                orig_node = sig_to_original_node.get(sig)
+                
+                if orig_node is None or not list(template_graph.in_edges(orig_node, data=True)):
+                    logging.warning("理论上不该进入该分支，请联系开发者。")
+                    g_full.add_edge("root", sig,
+                                    data_type='scalar',
+                                    output_index=edge_counter,
+                                    data_coord=edge_counter)
+                    edge_counter += 1
+                    continue
+
+                # 构建并排序入边列表
+                edge_info_list = []
+                for u, v, attrs in template_graph.in_edges(orig_node, data=True):
+                    if 'data_coord' not in attrs or 'data_type' not in attrs:
+                        raise ValueError(f"Edge {u}->{v} missing required attrs: {attrs}")
+                    layer_u = self.get_node_layer(u)
+                    edge_info_list.append((layer_u, attrs['data_coord'], u, v, attrs))
+                
+                edge_info_list.sort(key=lambda x: (x[0], x[1]))
+
+                # 为每条原始入边创建一条 root -> sig 的边
+                for (_, _, u, v, orig_attrs) in edge_info_list:
+                    g_full.add_edge("root", sig,
+                                    data_type=orig_attrs['data_type'],
+                                    output_index=edge_counter,
+                                    data_coord=edge_counter)
+                    edge_counter += 1
             
+            # === 连接 exit_nodes 到 collapse，使用原始边属性并重新排序 ===
+            # === 全局收集所有 exit -> collapse 的候选边 ===
+            all_exit_edges = []  # (sig, orig_output_index, data_type, layer_u, orig_data_coord)
+
+            for sig in exit_nodes:
+                orig_node = sig_to_original_node.get(sig)
+                if orig_node is None:
+                    logging.warning("理论上不该进入该分支，请联系开发者。")
+                    raise ValueError(f"No original node found for exit signature: {sig}")
+
+                out_edges = list(template_graph.out_edges(orig_node, data=True))
+                if not out_edges:
+                    logging.warning("理论上不该进入该分支，请联系开发者。")
+                    # 添加默认输出（注意：这也应纳入全局编号！）
+                    all_exit_edges.append((sig, 0, 'scalar', self.get_node_layer(orig_node), 0))
+                    continue
+
+                for u, v, attrs in out_edges:
+                    if not {'data_type', 'data_coord', 'output_index'} <= attrs.keys():
+                        raise ValueError(f"Edge {u}->{v} missing required attrs: {attrs}")
+                    layer_u = self.get_node_layer(u)
+                    all_exit_edges.append((
+                        sig,
+                        attrs['output_index'],
+                        attrs['data_type'],
+                        layer_u,
+                        attrs['data_coord']
+                    ))
+
+            # === 全局排序：高层级优先，同层按原 data_coord 升序 ===
+            all_exit_edges.sort(key=lambda x: (-x[3], x[4]))  # x[3]=layer_u, x[4]=orig_data_coord
+
+            # === 全局分配 data_coord（0,1,2,...）并添加边 ===
+            for data_coord, (sig, orig_output_index, data_type, _, _) in enumerate(all_exit_edges):
+                g_full.add_edge(sig, "collapse",
+                                output_index=orig_output_index,  # ✅ 保留原始输出索引
+                                data_coord=data_coord,           # ✅ 全局唯一
+                                data_type=data_type)
+            
+            # === 重命名节点：使用与 append_nx_layer 一致的命名格式 ===
+            logging.info("Renaming nodes...")
+            logging.warning("图的重命名系统根据节点到root的路径层数进行命名，理论上不该出现问题，如出现问题，请联系开发者")
+
+            # 在 g_full 中（已添加 root），计算每个节点到 root 的最短路径长度
+            # 注意：g_full 是 DiGraph，边方向 root → node
+            try:
+                lengths = nx.single_source_shortest_path_length(g_full, "root")
+            except nx.NetworkXError:
+                # 如果 root 不连通（理论上不应发生）
+                lengths = {node: 0 for node in g_full.nodes()}
+                lengths["root"] = 0
+
             mapping = {}
-            for n in internal_nodes:
-                method = g_full.nodes[n].get('method', 'unknown')
-                idx = n[1][0] if n[1] else 0
-                mapping[n] = f"{n[0]}_{idx}_{method}"
+
+            # 按方法名分组，为每个方法分配局部索引
+            layer_method_counter = defaultdict(lambda: defaultdict(int))
+
+            for node in internal_nodes:
+                method = g_full.nodes[node].get('method_name', 'unknown')
+                local_layer = lengths.get(node, 1)
+                
+                # 按 (layer, method) 计数
+                local_index = layer_method_counter[local_layer][method]
+                layer_method_counter[local_layer][method] += 1
+                
+                new_name = f"{local_layer}_{local_index}_{method}"
+                mapping[node] = new_name
+
             g_full = nx.relabel_nodes(g_full, mapping)
+
+            # === 修正：按边起点所在层重新分配 data_coord，确保每层内唯一且从0开始 ===
+            # 提取所有非 root/collapse 的边（包括内部边和到 collapse 的边）
+            edges_to_update = []
+            layer_edges = defaultdict(list)  # layer -> list of (src, dst, edge_attrs)
+
+            for src, dst, attrs in list(g_full.edges(data=True)):
+                # 跳过 root 的出边（它们的 data_coord 已在前面正确设置为 input_slot）
+                if src == "root":
+                    continue
+                # 获取起点的 layer（从节点名解析）
+                if src == "collapse":
+                    continue  # collapse 不应有出边
+                try:
+                    layer = int(src.split('_')[0])
+                except (ValueError, IndexError):
+                    logger.warning(f"Cannot parse layer from node name: {src}. Skipping edge {src}->{dst}.")
+                    continue
+                layer_edges[layer].append((src, dst, attrs))
+
+            # 对每一层的边重新分配 data_coord
+            for layer, edge_list in layer_edges.items():
+                # 可选：按目标节点名排序以保证确定性
+                edge_list.sort(key=lambda x: x[1])  # 按 dst 节点名排序
+                for new_coord, (src, dst, attrs) in enumerate(edge_list):
+                    # 更新边的 data_coord
+                    g_full[src][dst]['data_coord'] = new_coord
+
             reconstructed_graphs.append(g_full)
 
-        # Step 7: 生成新方法 （未完成）
+        # Step 7: 生成新方法并可选保存子图（未完成）
         new_method_names = []
-        for i, (g, count) in enumerate(zip(selected_graphs, selected_counts)):
+
+        # 确定保存目录
+        save_dir = evolved_methods_save_dir
+        if save_dir is not None:
+            os.makedirs(save_dir, exist_ok=True)
+
+        for i, (g_orig, g_full, count) in enumerate(zip(selected_graphs, reconstructed_graphs, selected_counts)):
             name = f"evolved_method_{len(adaptoflux_instance.methods) + i + 1}"
-            adaptoflux_instance.methods[name] = {
-                'output_count': 1,
-                'input_types': ['scalar'],
-                'output_types': ['scalar'],
-                'group': 'evolved',
-                'weight': 1.0,
-                'vectorized': True,
-                'is_evolved': True,
-                'aligned_roles': len(signature_freq),
-                'subgraph_node_count': g.number_of_nodes(),
-                'occurrence_count': count,
-                'is_clustered': enable_graph_isomorphism_clustering  # 可选元信息
-            }
-            new_method_names.append(name)
+            
+            # 保存子图为 .gexf 和 .json（如果指定了目录）
+            if save_dir is not None:
+                base_path = os.path.join(save_dir, name)
+                try:
+                    # 保存 GEXF（可读性强，支持属性）
+                    nx.write_gexf(g_full, base_path + ".gexf")
+                    
+                    # 保存 JSON（便于程序解析）
+                    data = json_graph.node_link_data(g_full, edges="edges")
+                    with open(base_path + ".json", 'w', encoding='utf-8') as f:
+                        json.dump(data, f, indent=2, ensure_ascii=False)
+                        
+                    if self.verbose:
+                        logger.info(f"Saved evolved method subgraph: {name} to {save_dir}")
+                except Exception as e:
+                    if self.verbose:
+                        logger.error(f"Failed to save evolved method {name}: {e}")
+
+            # # 注册方法（暂不绑定 function，后续可动态生成）
+            # adaptoflux_instance.methods[name] = {
+            #     'output_count': 1,
+            #     'input_types': ['scalar'],
+            #     'output_types': ['scalar'],
+            #     'group': 'evolved',
+            #     'weight': 1.0,
+            #     'vectorized': True,
+            #     'is_evolved': True,
+            #     'aligned_roles': len(signature_freq),
+            #     'subgraph_node_count': g_full.number_of_nodes(),
+            #     'occurrence_count': count,
+            #     'is_clustered': enable_graph_isomorphism_clustering,
+            #     # 可选：存储路径或图对象（根据后续执行需求）
+            #     # 'subgraph': g_full,  # 如果内存允许，可直接存图
+            # }
+
+            # new_method_names.append(name)
 
         return {
             'methods_added': len(new_method_names),
@@ -886,11 +1042,15 @@ class GraphEvoTrainer(ModelTrainer):
 
                 # 2. 检查是否触发进化
                 if len(self.graph_snapshots) >= self.evolution_trigger_count:
+
+                    evolved_dir = os.path.join(model_save_path, "evolved_methods")
+
                     # 3. 执行进化
                     evolution_result = self._phase_method_pool_evolution(
                         current_af,
                         snapshots=self.graph_snapshots,
-                        max_methods=self.methods_per_evolution
+                        max_methods=self.methods_per_evolution,
+                        evolved_methods_save_dir=evolved_dir
                     )
                     results['total_methods_evolved'] += evolution_result['methods_added']
                     cycle_results['evolution'] = evolution_result
@@ -1213,3 +1373,12 @@ class GraphEvoTrainer(ModelTrainer):
                 return group_methods if group_methods else all_method_names[:1]
             else:  # group_with_fallback
                 return group_methods if len(group_methods) >= 2 else all_method_names
+
+    def get_node_layer(self, node_id: str) -> int:
+        if node_id in ("root", "collapse"):
+            return -1  # 特殊节点设为 -1（优先级最高）
+        try:
+            return int(node_id.split('_')[0])
+        except (ValueError, IndexError):
+            logging.warning(f"Cannot parse layer from node_id: {node_id}. Using layer=0.")
+            return 0

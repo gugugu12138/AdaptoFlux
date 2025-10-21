@@ -587,8 +587,10 @@ class GraphEvoTrainer(ModelTrainer):
         snapshots: List[Any],
         max_methods: int = 1,
         enable_graph_isomorphism_clustering: bool = True,
-        evolved_methods_save_dir: Optional[str] = None
+        evolved_methods_save_dir: Optional[str] = None,
+        subgraph_selection_policy: str = "largest"
     ) -> Dict[str, Any]:
+        # 后续可能添加其他种类的选取连图子图的策略
         # 打印日志：开始方法池进化阶段，说明将基于拓扑签名对齐节点
         # 对齐依据：(层号, 输入数据坐标集合, 输出数据坐标集合)
         # 这种签名能唯一标识节点在数据流图中的拓扑角色，与节点ID或方法名无关
@@ -660,6 +662,13 @@ class GraphEvoTrainer(ModelTrainer):
         # Step 4: 分割为连通分量
         connected_components = list(nx.weakly_connected_components(consensus_graph))
 
+        comp_sizes = [len(comp) for comp in connected_components]
+        if self.verbose:
+            logger.debug(
+                f"[Connectivity Analysis] Found {len(connected_components)} weakly connected components. "
+                f"连通分量数量：{len(connected_components)}，各分量大小：{comp_sizes}"
+            )
+
         # 过滤：只保留节点数 >= 阈值的连通子图
         connected_components = [
             comp for comp in connected_components 
@@ -667,6 +676,14 @@ class GraphEvoTrainer(ModelTrainer):
         ]
         
         num_components = len(connected_components)
+
+        if self.verbose:
+            filtered_sizes = [len(comp) for comp in connected_components]
+            logger.info(
+                f"[Component Filtering] Kept {num_components} components (min size ≥ {self.min_subgraph_size_for_evolution}). "
+                f"保留连通分量数量：{num_components}（最小尺寸 ≥ {self.min_subgraph_size_for_evolution}），尺寸列表：{filtered_sizes}"
+            )
+
 
         if self.verbose:
             logger.debug(f"Consensus graph split into {num_components} connected components.")
@@ -686,7 +703,7 @@ class GraphEvoTrainer(ModelTrainer):
                 g = consensus_graph.subgraph(comp).copy()
                 matched = False
                 for i, rep_g in enumerate(unique_graphs):
-                    nm = lambda n1, n2: n1.get('method') == n2.get('method')
+                    nm = lambda n1, n2: n1.get('method_name') == n2.get('method_name')
                     em = None  # 或启用边属性匹配
                     if DiGraphMatcher(rep_g, g, node_match=nm, edge_match=em).is_isomorphic():
                         graph_counts[i] += 1
@@ -697,14 +714,51 @@ class GraphEvoTrainer(ModelTrainer):
                     graph_counts.append(1)
 
             # 按频次排序，取 top-k
-            sorted_pairs = sorted(zip(unique_graphs, graph_counts), key=lambda x: x[1], reverse=True)
+            # ===== 根据策略选择排序键 =====
+            if subgraph_selection_policy == "most_frequent":
+                # 仅按频次（原始行为）
+                sort_key = lambda x: (x[1],)
+            elif subgraph_selection_policy == "largest":
+                # 频次优先，节点数次之（默认推荐）
+                sort_key = lambda x: (x[1], x[0].number_of_nodes(), x[0].number_of_edges())
+            elif subgraph_selection_policy == "smallest":
+                # 频次优先，但节点数越小越好
+                sort_key = lambda x: (x[1], -x[0].number_of_nodes(), -x[0].number_of_edges())
+            elif subgraph_selection_policy == "balanced":
+                # 频次为主，节点数为辅（同 largest，但显式命名）
+                sort_key = lambda x: (x[1], x[0].number_of_nodes(), x[0].number_of_edges())
+            else:
+                raise ValueError(f"Unknown subgraph_selection_policy: {subgraph_selection_policy}")
+
+            # 执行排序（频次高的在前，同频次按策略排）
+            sorted_pairs = sorted(zip(unique_graphs, graph_counts), key=sort_key, reverse=True)
+
             top_k = sorted_pairs[:max_methods]
             selected_graphs = [g for g, _ in top_k]
             selected_counts = [c for _, c in top_k]
 
             if self.verbose:
-                logger.debug(f"Graph isomorphism clustering: {len(sorted_pairs)} unique structures; "
-                            f"selected top-{len(selected_graphs)}.")
+                logger.debug(
+                    f"Graph isomorphism clustering: {len(sorted_pairs)} unique structures; "
+                    f"selected top-{len(selected_graphs)}."
+                )
+                logger.info(
+                    f"[Graph Clustering] Identified {len(unique_graphs)} unique graph structures via isomorphism. "
+                    f"图同构聚类结果：共发现 {len(unique_graphs)} 种唯一子图结构。"
+                )
+                for idx, (g, cnt) in enumerate(sorted_pairs):
+                    logger.debug(
+                        f"  Structure {idx+1}: {g.number_of_nodes()} nodes, {g.number_of_edges()} edges, frequency = {cnt}. "
+                        f"  结构 {idx+1}：{g.number_of_nodes()} 个节点，{g.number_of_edges()} 条边，出现频次 = {cnt}"
+                    )
+                logger.info(
+                    f"[Subgraph Selection] Using policy '{subgraph_selection_policy}'. "
+                    f"子图选择策略：'{subgraph_selection_policy}'"
+                )
+                logger.info(
+                    f"[Top-K Selection] Selected top-{len(selected_graphs)} most frequent structures for evolution. "
+                    f"最终选取：频次最高的前 {len(selected_graphs)} 个结构用于方法进化。"
+                )
 
         else:
             # ===== 禁用聚类：每个连通分量独立处理 =====
@@ -715,7 +769,10 @@ class GraphEvoTrainer(ModelTrainer):
                 selected_graphs = selected_graphs[:max_methods]
                 selected_counts = selected_counts[:max_methods]
                 if self.verbose:
-                    logger.debug(f"Clustering disabled; truncated to first {max_methods} components.")
+                    logger.info(
+                        f"[No Clustering] Clustering disabled; using first {max_methods} components out of {len(connected_components)}. "
+                        f"未启用聚类：从 {len(connected_components)} 个分量中直接选取前 {max_methods} 个。"
+                    )
 
         # Step 6: 对 selected_graphs 还原（添加 root/collapse + 重命名）（未完成）
         reconstructed_graphs = []
@@ -742,7 +799,7 @@ class GraphEvoTrainer(ModelTrainer):
                 orig_node = sig_to_original_node.get(sig)
                 
                 if orig_node is None or not list(template_graph.in_edges(orig_node, data=True)):
-                    logging.warning("理论上不该进入该分支，请联系开发者。")
+                    logger.warning("理论上不该进入该分支，请联系开发者。")
                     g_full.add_edge("root", sig,
                                     data_type='scalar',
                                     output_index=edge_counter,
@@ -775,12 +832,12 @@ class GraphEvoTrainer(ModelTrainer):
             for sig in exit_nodes:
                 orig_node = sig_to_original_node.get(sig)
                 if orig_node is None:
-                    logging.warning("理论上不该进入该分支，请联系开发者。")
+                    logger.warning("理论上不该进入该分支，请联系开发者。")
                     raise ValueError(f"No original node found for exit signature: {sig}")
 
                 out_edges = list(template_graph.out_edges(orig_node, data=True))
                 if not out_edges:
-                    logging.warning("理论上不该进入该分支，请联系开发者。")
+                    logger.warning("理论上不该进入该分支，请联系开发者。")
                     # 添加默认输出（注意：这也应纳入全局编号！）
                     all_exit_edges.append((sig, 0, 'scalar', self.get_node_layer(orig_node), 0))
                     continue
@@ -808,8 +865,8 @@ class GraphEvoTrainer(ModelTrainer):
                                 data_type=data_type)
             
             # === 重命名节点：使用与 append_nx_layer 一致的命名格式 ===
-            logging.info("Renaming nodes...")
-            logging.warning("图的重命名系统根据节点到root的路径层数进行命名，理论上不该出现问题，如出现问题，请联系开发者")
+            logger.info("Renaming nodes...")
+            logger.warning("图的重命名系统根据节点到root的路径层数进行命名，理论上不该出现问题，如出现问题，请联系开发者")
 
             # 在 g_full 中（已添加 root），计算每个节点到 root 的最短路径长度
             # 注意：g_full 是 DiGraph，边方向 root → node
@@ -865,7 +922,16 @@ class GraphEvoTrainer(ModelTrainer):
                     # 更新边的 data_coord
                     g_full[src][dst]['data_coord'] = new_coord
 
+            internal_nodes = [n for n in g_full.nodes() if n not in ("root", "collapse")]
+
+            if self.verbose:
+                logger.debug(
+                    f"[Node Renaming] Renamed {len(internal_nodes)} internal nodes using layer-method-index scheme. "
+                    f"节点重命名：已按 (层_局部索引_方法名) 格式重命名 {len(internal_nodes)} 个内部节点。"
+                )
+
             reconstructed_graphs.append(g_full)
+
 
         # Step 7: 生成新方法并可选保存子图（未完成）
         new_method_names = []
@@ -877,6 +943,14 @@ class GraphEvoTrainer(ModelTrainer):
 
         for i, (g_orig, g_full, count) in enumerate(zip(selected_graphs, reconstructed_graphs, selected_counts)):
             name = f"evolved_method_{len(adaptoflux_instance.methods) + i + 1}"
+
+            if self.verbose:
+                internal_nodes = [n for n in g_full.nodes() if n not in ("root", "collapse")]
+                logger.info(
+                    f"[Method Export] Evolved method #{i+1}: name='{name}', "
+                    f"nodes={len(internal_nodes)}, edges={g_full.number_of_edges()}, occurrence={count}. "
+                    f"进化方法 #{i+1}：名称='{name}'，内部节点数={len(internal_nodes)}，边数={g_full.number_of_edges()}，出现次数={count}"
+                )
             
             # 保存子图为 .gexf 和 .json（如果指定了目录）
             if save_dir is not None:
@@ -891,10 +965,17 @@ class GraphEvoTrainer(ModelTrainer):
                         json.dump(data, f, indent=2, ensure_ascii=False)
                         
                     if self.verbose:
-                        logger.info(f"Saved evolved method subgraph: {name} to {save_dir}")
+                        logger.info(
+                            f"[File Saved] Successfully saved evolved method to: {base_path}.{{gexf,json}}. "
+                            f"文件已保存：进化方法已写入 {base_path}.{{gexf,json}}"
+                        )
+
                 except Exception as e:
                     if self.verbose:
-                        logger.error(f"Failed to save evolved method {name}: {e}")
+                        logger.error(
+                            f"[Save Failed] Failed to save evolved method {name}: {e}. "
+                            f"保存失败：无法保存进化方法 {name}：{e}"
+                        )
 
             # # 注册方法（暂不绑定 function，后续可动态生成）
             # adaptoflux_instance.methods[name] = {
@@ -961,6 +1042,7 @@ class GraphEvoTrainer(ModelTrainer):
         save_best_model: bool = True,
         best_model_subfolder: str = "best",
         final_model_subfolder: str = "final",
+        subgraph_selection_policy: str = "largest",
         **kwargs
     ) -> dict:
         """
@@ -1050,7 +1132,8 @@ class GraphEvoTrainer(ModelTrainer):
                         current_af,
                         snapshots=self.graph_snapshots,
                         max_methods=self.methods_per_evolution,
-                        evolved_methods_save_dir=evolved_dir
+                        evolved_methods_save_dir=evolved_dir,
+                        subgraph_selection_policy=subgraph_selection_policy
                     )
                     results['total_methods_evolved'] += evolution_result['methods_added']
                     cycle_results['evolution'] = evolution_result
@@ -1380,5 +1463,5 @@ class GraphEvoTrainer(ModelTrainer):
         try:
             return int(node_id.split('_')[0])
         except (ValueError, IndexError):
-            logging.warning(f"Cannot parse layer from node_id: {node_id}. Using layer=0.")
+            logger.warning(f"Cannot parse layer from node_id: {node_id}. Using layer=0.")
             return 0

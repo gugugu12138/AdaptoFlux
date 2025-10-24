@@ -8,7 +8,7 @@ class SubgraphReplacer:
     def replace_with_node(
         self,
         graph_processor: Any,
-        old_subgraph: nx.DiGraph,
+        old_subgraph: nx.MultiDiGraph,
         new_method_name: str
     ) -> str:
         """

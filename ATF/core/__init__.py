@@ -1,1 +1,2 @@
-from .flux import AdaptoFlux
+from .adaptoflux import AdaptoFlux
+from .evolved_method import EvolvedMethod

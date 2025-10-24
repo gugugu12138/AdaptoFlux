@@ -1,5 +1,5 @@
 # adaptoflux/__init__.py
-from .core.flux import AdaptoFlux
+from .core.adaptoflux import AdaptoFlux
 from .GraphManager.graph_processor import GraphProcessor
 from .CollapseManager.collapse_functions import CollapseFunctionManager, CollapseMethod
 from .methods.decorators import method_profile

@@ -9,6 +9,7 @@ class CollapseMethod(Enum):
     PRODUCT = 4   # 相乘
     CUSTOM = 5    # 自定义方法
     Energy = 6
+    IDENTITY = 7  # ← 新增：直接输出原始输入
 
 class CollapseFunctionManager:
     def __init__(self, method=CollapseMethod.SUM):
@@ -56,6 +57,8 @@ class CollapseFunctionManager:
             return self._custom(values)
         elif self.collapse_method == CollapseMethod.Energy:
             return self._energy(values)
+        elif self.collapse_method == CollapseMethod.IDENTITY:
+            return self._identity(values)  # ← 新增分支
         else:
             raise ValueError("未知或未设置的坍缩方法")
 
@@ -76,6 +79,13 @@ class CollapseFunctionManager:
             raise ValueError("自定义坍缩函数未设置或不是一个可调用函数")
         return self.custom_function(values)
     
+    def _identity(self, values):
+        """
+        直接返回原始输入，不做任何修改或聚合。
+        适用于进化方法（EvolvedMethod）等已封装完整 I/O 的场景。
+        """
+        return values  # 注意：返回的是原始数组，不是标量！
+        
     def _energy(self, values):
         """
         计算任意维度数据分割概率（返回概率列表）

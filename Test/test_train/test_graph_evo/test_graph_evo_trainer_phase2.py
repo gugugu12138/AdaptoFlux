@@ -26,7 +26,7 @@ class MockAdaptoFlux:
 class MockGraphProcessor:
     def __init__(self):
         import networkx as nx
-        self.graph = nx.DiGraph()
+        self.graph = nx.MultiDiGraph()
         self.graph.add_node("root", method_name=None)
         self.graph.add_node("node1", method_name="method_a", group="math")
         self.graph.add_node("node2", method_name="method_b", group="math")

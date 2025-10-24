@@ -76,7 +76,7 @@ AdaptoFlux的核心是方法池。您可以通过修改 `methods.py` 或创建�
 每个方法都需使用 `@method_profile` 装饰器进行注册，该装饰器定义了方法的输入/输出数量、数据类型、分组和权重等关键元信息。
 
 ```python
-from ATF.core.flux import method_profile
+from ATF.core.adaptoflux import method_profile
 
 @method_profile(
     output_count=1,

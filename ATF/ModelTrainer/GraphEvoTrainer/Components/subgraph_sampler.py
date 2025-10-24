@@ -10,7 +10,7 @@ class BFSSubgraphSampler:
         self.max_nodes = max_nodes
         self.exclude_nodes = exclude_nodes or {"root", "collapse"}
 
-    def sample(self, graph: nx.DiGraph) -> Optional[nx.DiGraph]:
+    def sample(self, graph: nx.MultiDiGraph) -> Optional[nx.MultiDiGraph]:
         """返回一个连通子图，若无法采样则返回 None"""
         candidate_starts = [n for n in graph.nodes() if n not in self.exclude_nodes]
         if not candidate_starts:

@@ -9,7 +9,7 @@ class SubgraphIOExtractor:
     def extract(
         self,
         adaptoflux_instance: Any,
-        subgraph: 'nx.DiGraph',
+        subgraph: 'nx.MultiDiGraph',
         input_data: np.ndarray
     ) -> Tuple[Dict[str, np.ndarray], Dict[str, np.ndarray]]:
         """

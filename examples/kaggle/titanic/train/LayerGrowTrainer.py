@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from ATF.core.flux import AdaptoFlux
+from ATF.core.adaptoflux import AdaptoFlux
 from ATF.CollapseManager.collapse_functions import CollapseMethod, CollapseFunctionManager
 
 from ATF.ModelTrainer.LayerGrowTrainer.layer_grow_trainer import LayerGrowTrainer

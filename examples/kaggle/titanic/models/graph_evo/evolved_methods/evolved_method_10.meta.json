@@ -1,0 +1,32 @@
+{
+  "name": "evolved_method_10",
+  "occurrence_count": 1,
+  "subgraph_node_count": 40,
+  "is_clustered": true,
+  "selection_policy": "largest",
+  "evolved_at": "2025-10-24T23:56:07.051277",
+  "input_types": [
+    "float64",
+    "float64",
+    "float64",
+    "float64",
+    "float64",
+    "float64",
+    "float64",
+    "float64",
+    "float64"
+  ],
+  "output_types": [
+    "scalar",
+    "scalar",
+    "scalar",
+    "scalar",
+    "scalar",
+    "scalar"
+  ],
+  "output_count": 6,
+  "group": "evolved",
+  "weight": 1.0,
+  "vectorized": true,
+  "is_evolved": true
+}

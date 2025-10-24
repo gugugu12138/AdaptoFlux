@@ -61,7 +61,7 @@ class MockAdaptoFlux:
 
 class MockGraphProcessor:
     def __init__(self):
-        self.graph = nx.DiGraph()
+        self.graph = nx.MultiDiGraph()
         self.node_counter = 0
 
     def add_node_with_method(self, method_name: str):

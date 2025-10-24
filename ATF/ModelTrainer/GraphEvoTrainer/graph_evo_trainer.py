@@ -10,9 +10,11 @@ import json
 import traceback
 from ...PathGenerator.path_generator import PathGenerator
 from ...GraphManager.graph_processor import GraphProcessor
+from ...core.evolved_method import EvolvedMethod
 from collections import defaultdict
 import networkx as nx
 from networkx.readwrite import json_graph
+from datetime import datetime
 
 from .Components import (
     BFSSubgraphSampler,
@@ -590,6 +592,7 @@ class GraphEvoTrainer(ModelTrainer):
         evolved_methods_save_dir: Optional[str] = None,
         subgraph_selection_policy: str = "largest"
     ) -> Dict[str, Any]:
+        # 后续可能添加参数允许选择初始化的多个模型进入后面阶段单个任务构建多个实例，实现一种在单任务上实现类多任务的知识提取，这种方法效果会更好但是消耗性能更多
         # 后续可能添加其他种类的选取连图子图的策略
         # 打印日志：开始方法池进化阶段，说明将基于拓扑签名对齐节点
         # 对齐依据：(层号, 输入数据坐标集合, 输出数据坐标集合)
@@ -637,7 +640,7 @@ class GraphEvoTrainer(ModelTrainer):
 
         # Step 3: 重建共识图（节点为 signature）
         template_graph = snapshots[0].graph_processor.graph
-        consensus_graph = nx.DiGraph()
+        consensus_graph = nx.MultiDiGraph()
         node_id_to_sig = {}
 
         # 添加节点
@@ -900,7 +903,7 @@ class GraphEvoTrainer(ModelTrainer):
             edges_to_update = []
             layer_edges = defaultdict(list)  # layer -> list of (src, dst, edge_attrs)
 
-            for src, dst, attrs in list(g_full.edges(data=True)):
+            for src, dst, key, attrs in list(g_full.edges(keys=True, data=True)):
                 # 跳过 root 的出边（它们的 data_coord 已在前面正确设置为 input_slot）
                 if src == "root":
                     continue
@@ -912,15 +915,15 @@ class GraphEvoTrainer(ModelTrainer):
                 except (ValueError, IndexError):
                     logger.warning(f"Cannot parse layer from node name: {src}. Skipping edge {src}->{dst}.")
                     continue
-                layer_edges[layer].append((src, dst, attrs))
+                layer_edges[layer].append((src, dst, key, attrs))
 
             # 对每一层的边重新分配 data_coord
             for layer, edge_list in layer_edges.items():
                 # 可选：按目标节点名排序以保证确定性
                 edge_list.sort(key=lambda x: x[1])  # 按 dst 节点名排序
-                for new_coord, (src, dst, attrs) in enumerate(edge_list):
+                for new_coord, (src, dst, key, attrs) in enumerate(edge_list):
                     # 更新边的 data_coord
-                    g_full[src][dst]['data_coord'] = new_coord
+                    g_full.edges[src, dst, key]['data_coord'] = new_coord
 
             internal_nodes = [n for n in g_full.nodes() if n not in ("root", "collapse")]
 
@@ -944,57 +947,53 @@ class GraphEvoTrainer(ModelTrainer):
         for i, (g_orig, g_full, count) in enumerate(zip(selected_graphs, reconstructed_graphs, selected_counts)):
             name = f"evolved_method_{len(adaptoflux_instance.methods) + i + 1}"
 
-            if self.verbose:
-                internal_nodes = [n for n in g_full.nodes() if n not in ("root", "collapse")]
-                logger.info(
-                    f"[Method Export] Evolved method #{i+1}: name='{name}', "
-                    f"nodes={len(internal_nodes)}, edges={g_full.number_of_edges()}, occurrence={count}. "
-                    f"进化方法 #{i+1}：名称='{name}'，内部节点数={len(internal_nodes)}，边数={g_full.number_of_edges()}，出现次数={count}"
-                )
-            
-            # 保存子图为 .gexf 和 .json（如果指定了目录）
+            # 推断输入/输出类型（从 root/collapse 边）
+            input_types = [edge['data_type'] for _, _, edge in g_full.out_edges("root", data=True)]
+            output_types = [edge['data_type'] for _, _, edge in g_full.in_edges("collapse", data=True)]
+
+            meta = {
+                'name': name,
+                'occurrence_count': count,
+                'subgraph_node_count': g_full.number_of_nodes(),
+                'is_clustered': enable_graph_isomorphism_clustering,
+                'selection_policy': subgraph_selection_policy,
+                'evolved_at': datetime.now().isoformat(),
+                'input_types': input_types,
+                'output_types': output_types,
+                'output_count': len(output_types),
+                'group': 'evolved',
+                'weight': 1.0,
+                'vectorized': True,
+                'is_evolved': True
+            }
+
+            # 创建可调用对象
+            evolved_method = EvolvedMethod(
+                name=name,
+                graph=g_full,
+                methods_ref=adaptoflux_instance.methods,
+                metadata=meta
+            )
+
+            # 注册到主类 methods（关键！）
+            adaptoflux_instance.methods[name] = {
+                'func': evolved_method,           # ← 可调用对象
+                'output_count': meta['output_count'],
+                'input_types': meta['input_types'],
+                'output_types': meta['output_types'],
+                'group': meta['group'],
+                'weight': meta['weight'],
+                'vectorized': meta['vectorized'],
+                'is_evolved': True
+            }
+
+            new_method_names.append(name)
+
+            # 保存到磁盘
             if save_dir is not None:
-                base_path = os.path.join(save_dir, name)
-                try:
-                    # 保存 GEXF（可读性强，支持属性）
-                    nx.write_gexf(g_full, base_path + ".gexf")
-                    
-                    # 保存 JSON（便于程序解析）
-                    data = json_graph.node_link_data(g_full, edges="edges")
-                    with open(base_path + ".json", 'w', encoding='utf-8') as f:
-                        json.dump(data, f, indent=2, ensure_ascii=False)
-                        
-                    if self.verbose:
-                        logger.info(
-                            f"[File Saved] Successfully saved evolved method to: {base_path}.{{gexf,json}}. "
-                            f"文件已保存：进化方法已写入 {base_path}.{{gexf,json}}"
-                        )
-
-                except Exception as e:
-                    if self.verbose:
-                        logger.error(
-                            f"[Save Failed] Failed to save evolved method {name}: {e}. "
-                            f"保存失败：无法保存进化方法 {name}：{e}"
-                        )
-
-            # # 注册方法（暂不绑定 function，后续可动态生成）
-            # adaptoflux_instance.methods[name] = {
-            #     'output_count': 1,
-            #     'input_types': ['scalar'],
-            #     'output_types': ['scalar'],
-            #     'group': 'evolved',
-            #     'weight': 1.0,
-            #     'vectorized': True,
-            #     'is_evolved': True,
-            #     'aligned_roles': len(signature_freq),
-            #     'subgraph_node_count': g_full.number_of_nodes(),
-            #     'occurrence_count': count,
-            #     'is_clustered': enable_graph_isomorphism_clustering,
-            #     # 可选：存储路径或图对象（根据后续执行需求）
-            #     # 'subgraph': g_full,  # 如果内存允许，可直接存图
-            # }
-
-            # new_method_names.append(name)
+                evolved_method.save(save_dir)
+                if self.verbose:
+                    logger.info(f"[Saved] Evolved method {name} to {save_dir}")
 
         return {
             'methods_added': len(new_method_names),
@@ -1060,6 +1059,10 @@ class GraphEvoTrainer(ModelTrainer):
         :param kwargs: 其他可选参数
         :return: 一个包含训练过程信息的字典
         """
+
+        # 后面可能编写单任务使用多个实例的知识提取（消耗性能更高，但提取出来的知识应该效果更好），以及多任务适配
+        # 后面添加可选参数，控制该轮训练得到的新知识是否直接加入方法池，或保存为图使用。
+
         if self.verbose:
             logger.info(f"Starting GraphEvoTrainer. Max evolution cycles: {max_evo_cycles}")
 

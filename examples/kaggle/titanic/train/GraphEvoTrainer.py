@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from ATF.core.flux import AdaptoFlux
+from ATF.core.adaptoflux import AdaptoFlux
 from ATF.CollapseManager.collapse_functions import CollapseMethod
 
 # 导入你的 GraphEvoTrainer（注意路径是否正确）
@@ -68,7 +68,7 @@ trainer = GraphEvoTrainer(
 result = trainer.train(
     input_data=model.values,
     target=model.labels,
-    max_evo_cycles=10,                           # 总共跑 5 个进化周期
+    max_evo_cycles=5,                           # 总共跑 5 个进化周期
     save_model=True,
     model_save_path="examples/kaggle/titanic/models/graph_evo",         # 修改保存路径
     save_best_model=True,

@@ -12,6 +12,11 @@ setup(
         "tensorflow",
         "numpy",
         "networkx",
+        "pandas",
+        "matplotlib",
+        "graphviz",
+        "scipy",
+        "pytest",
     ],
     classifiers=[
         "Programming Language :: Python :: 3.12",

@@ -4,156 +4,219 @@
   "graph": {},
   "nodes": [
     {
+      "method_name": "increment",
+      "is_passthrough": false,
+      "id": "1_0_increment"
+    },
+    {
+      "method_name": "increment",
+      "is_passthrough": false,
+      "id": "1_1_increment"
+    },
+    {
+      "method_name": "return_value",
+      "is_passthrough": false,
+      "id": "1_0_return_value"
+    },
+    {
       "method_name": "return_two_values",
+      "is_passthrough": false,
       "id": "1_0_return_two_values"
     },
     {
       "method_name": "return_two_values",
+      "is_passthrough": false,
       "id": "1_1_return_two_values"
     },
     {
-      "method_name": "increment",
-      "id": "1_0_increment"
-    },
-    {
-      "method_name": "return_value",
-      "id": "1_0_return_value"
-    },
-    {
-      "method_name": "return_value",
-      "id": "1_1_return_value"
-    },
-    {
-      "method_name": "decrement",
-      "id": "1_0_decrement"
-    },
-    {
-      "method_name": "divide_values",
-      "id": "1_0_divide_values"
-    },
-    {
-      "method_name": "null",
-      "id": "1_0_null"
-    },
-    {
-      "method_name": "decrement",
-      "id": "2_0_decrement"
-    },
-    {
-      "method_name": "add_values",
-      "id": "2_0_add_values"
-    },
-    {
-      "method_name": "increment",
-      "id": "2_0_increment"
-    },
-    {
-      "method_name": "negate_value",
-      "id": "2_0_negate_value"
-    },
-    {
-      "method_name": "negate_value",
-      "id": "2_1_negate_value"
-    },
-    {
       "method_name": "return_two_values",
-      "id": "2_0_return_two_values"
-    },
-    {
-      "method_name": "null",
-      "id": "2_0_null"
-    },
-    {
-      "method_name": "null",
-      "id": "2_1_null"
-    },
-    {
-      "method_name": "return_value",
-      "id": "3_0_return_value"
+      "is_passthrough": false,
+      "id": "1_2_return_two_values"
     },
     {
       "method_name": "multiply_values",
+      "is_passthrough": false,
+      "id": "1_0_multiply_values"
+    },
+    {
+      "method_name": "negate_value",
+      "is_passthrough": false,
+      "id": "1_0_negate_value"
+    },
+    {
+      "method_name": "negate_value",
+      "is_passthrough": false,
+      "id": "1_1_negate_value"
+    },
+    {
+      "method_name": "null",
+      "is_passthrough": true,
+      "id": "1_0_null"
+    },
+    {
+      "method_name": "null",
+      "is_passthrough": true,
+      "id": "1_1_null"
+    },
+    {
+      "method_name": "decrement",
+      "is_passthrough": false,
+      "id": "2_0_decrement"
+    },
+    {
+      "method_name": "decrement",
+      "is_passthrough": false,
+      "id": "2_1_decrement"
+    },
+    {
+      "method_name": "multiply_values",
+      "is_passthrough": false,
+      "id": "2_0_multiply_values"
+    },
+    {
+      "method_name": "negate_value",
+      "is_passthrough": false,
+      "id": "2_0_negate_value"
+    },
+    {
+      "method_name": "add_values",
+      "is_passthrough": false,
+      "id": "2_0_add_values"
+    },
+    {
+      "method_name": "add_values",
+      "is_passthrough": false,
+      "id": "2_1_add_values"
+    },
+    {
+      "method_name": "return_value",
+      "is_passthrough": false,
+      "id": "2_0_return_value"
+    },
+    {
+      "method_name": "null",
+      "is_passthrough": true,
+      "id": "2_0_null"
+    },
+    {
+      "method_name": "decrement",
+      "is_passthrough": false,
+      "id": "3_0_decrement"
+    },
+    {
+      "method_name": "multiply_values",
+      "is_passthrough": false,
       "id": "3_0_multiply_values"
     },
     {
+      "method_name": "divide_values",
+      "is_passthrough": false,
+      "id": "3_0_divide_values"
+    },
+    {
       "method_name": "return_two_values",
+      "is_passthrough": false,
       "id": "3_0_return_two_values"
     },
     {
+      "method_name": "return_two_values",
+      "is_passthrough": false,
+      "id": "3_1_return_two_values"
+    },
+    {
       "method_name": "increment",
+      "is_passthrough": false,
       "id": "3_0_increment"
     },
     {
       "method_name": "negate_value",
+      "is_passthrough": false,
       "id": "3_0_negate_value"
     },
     {
-      "method_name": "null",
-      "id": "3_0_null"
-    },
-    {
-      "method_name": "return_value",
-      "id": "4_0_return_value"
-    },
-    {
-      "method_name": "return_value",
-      "id": "4_1_return_value"
-    },
-    {
-      "method_name": "add_values",
-      "id": "4_0_add_values"
+      "method_name": "negate_value",
+      "is_passthrough": false,
+      "id": "3_1_negate_value"
     },
     {
       "method_name": "divide_values",
+      "is_passthrough": false,
       "id": "4_0_divide_values"
     },
     {
       "method_name": "decrement",
-      "id": "5_0_decrement"
-    },
-    {
-      "method_name": "calculate_difference",
-      "id": "5_0_calculate_difference"
-    },
-    {
-      "method_name": "return_two_values",
-      "id": "5_0_return_two_values"
-    },
-    {
-      "method_name": "multiply_values",
-      "id": "5_0_multiply_values"
-    },
-    {
-      "method_name": "null",
-      "id": "5_0_null"
-    },
-    {
-      "method_name": "calculate_difference",
-      "id": "4_0_calculate_difference"
+      "is_passthrough": false,
+      "id": "4_0_decrement"
     },
     {
       "method_name": "negate_value",
-      "id": "3_1_negate_value"
-    },
-    {
-      "method_name": "negate_value",
-      "id": "3_2_negate_value"
-    },
-    {
-      "method_name": "increment",
-      "id": "2_1_increment"
-    },
-    {
-      "method_name": "negate_value",
+      "is_passthrough": false,
       "id": "4_0_negate_value"
     },
     {
+      "method_name": "add_values",
+      "is_passthrough": false,
+      "id": "4_0_add_values"
+    },
+    {
+      "method_name": "multiply_values",
+      "is_passthrough": false,
+      "id": "4_0_multiply_values"
+    },
+    {
+      "method_name": "return_two_values",
+      "is_passthrough": false,
+      "id": "4_0_return_two_values"
+    },
+    {
+      "method_name": "null",
+      "is_passthrough": true,
+      "id": "4_0_null"
+    },
+    {
       "method_name": "return_value",
-      "id": "4_2_return_value"
+      "is_passthrough": false,
+      "id": "5_0_return_value"
+    },
+    {
+      "method_name": "return_value",
+      "is_passthrough": false,
+      "id": "5_1_return_value"
+    },
+    {
+      "method_name": "decrement",
+      "is_passthrough": false,
+      "id": "5_0_decrement"
+    },
+    {
+      "method_name": "decrement",
+      "is_passthrough": false,
+      "id": "5_1_decrement"
     },
     {
       "method_name": "negate_value",
-      "id": "3_3_negate_value"
+      "is_passthrough": false,
+      "id": "5_0_negate_value"
+    },
+    {
+      "method_name": "null",
+      "is_passthrough": true,
+      "id": "5_0_null"
+    },
+    {
+      "method_name": "add_values",
+      "is_passthrough": false,
+      "id": "2_2_add_values"
+    },
+    {
+      "method_name": "negate_value",
+      "is_passthrough": false,
+      "id": "2_1_negate_value"
+    },
+    {
+      "method_name": "divide_values",
+      "is_passthrough": false,
+      "id": "5_0_divide_values"
     },
     {
       "id": "root"
@@ -164,6 +227,38 @@
   ],
   "edges": [
     {
+      "output_index": 0,
+      "data_coord": 10,
+      "data_type": "scalar",
+      "source": "1_0_increment",
+      "target": "2_1_decrement",
+      "key": 0
+    },
+    {
+      "output_index": 0,
+      "data_coord": 3,
+      "data_type": "scalar",
+      "source": "1_1_increment",
+      "target": "2_0_multiply_values",
+      "key": 0
+    },
+    {
+      "output_index": 0,
+      "data_coord": 12,
+      "data_type": "scalar",
+      "source": "1_0_return_value",
+      "target": "2_2_add_values",
+      "key": 0
+    },
+    {
+      "output_index": 0,
+      "data_coord": 5,
+      "data_type": "scalar",
+      "source": "1_0_return_two_values",
+      "target": "2_0_negate_value",
+      "key": 0
+    },
+    {
       "output_index": 1,
       "data_coord": 0,
       "data_type": "scalar",
@@ -173,66 +268,58 @@
     },
     {
       "output_index": 0,
-      "data_coord": 7,
-      "data_type": "scalar",
-      "source": "1_0_return_two_values",
-      "target": "2_1_increment",
-      "key": 0
-    },
-    {
-      "output_index": 0,
-      "data_coord": 2,
+      "data_coord": 8,
       "data_type": "scalar",
       "source": "1_1_return_two_values",
-      "target": "2_0_decrement",
+      "target": "2_1_add_values",
       "key": 0
     },
     {
       "output_index": 1,
-      "data_coord": 4,
+      "data_coord": 11,
       "data_type": "scalar",
       "source": "1_1_return_two_values",
-      "target": "2_0_negate_value",
-      "key": 0
-    },
-    {
-      "output_index": 0,
-      "data_coord": 8,
-      "data_type": "scalar",
-      "source": "1_0_increment",
       "target": "2_1_negate_value",
-      "key": 0
-    },
-    {
-      "output_index": 0,
-      "data_coord": 5,
-      "data_type": "scalar",
-      "source": "1_0_return_value",
-      "target": "2_0_null",
-      "key": 0
-    },
-    {
-      "output_index": 0,
-      "data_coord": 6,
-      "data_type": "scalar",
-      "source": "1_1_return_value",
-      "target": "2_0_return_two_values",
       "key": 0
     },
     {
       "output_index": 0,
       "data_coord": 9,
       "data_type": "scalar",
-      "source": "1_0_decrement",
-      "target": "2_1_null",
+      "source": "1_2_return_two_values",
+      "target": "2_1_add_values",
+      "key": 0
+    },
+    {
+      "output_index": 1,
+      "data_coord": 6,
+      "data_type": "scalar",
+      "source": "1_2_return_two_values",
+      "target": "2_0_null",
       "key": 0
     },
     {
       "output_index": 0,
-      "data_coord": 3,
+      "data_coord": 2,
       "data_type": "scalar",
-      "source": "1_0_divide_values",
-      "target": "2_0_increment",
+      "source": "1_0_multiply_values",
+      "target": "2_0_decrement",
+      "key": 0
+    },
+    {
+      "output_index": 0,
+      "data_coord": 13,
+      "data_type": "scalar",
+      "source": "1_0_negate_value",
+      "target": "2_2_add_values",
+      "key": 0
+    },
+    {
+      "output_index": 0,
+      "data_coord": 4,
+      "data_type": "scalar",
+      "source": "1_1_negate_value",
+      "target": "2_0_multiply_values",
       "key": 0
     },
     {
@@ -245,49 +332,41 @@
     },
     {
       "output_index": 0,
-      "data_coord": 8,
+      "data_coord": 7,
+      "data_type": "float64",
+      "source": "1_1_null",
+      "target": "2_0_return_value",
+      "key": 0
+    },
+    {
+      "output_index": 0,
+      "data_coord": 4,
       "data_type": "scalar",
       "source": "2_0_decrement",
-      "target": "3_2_negate_value",
-      "key": 0
-    },
-    {
-      "output_index": 0,
-      "data_coord": 1,
-      "data_type": "scalar",
-      "source": "2_0_add_values",
       "target": "3_0_multiply_values",
-      "key": 0
-    },
-    {
-      "output_index": 0,
-      "data_coord": 5,
-      "data_type": "scalar",
-      "source": "2_0_increment",
-      "target": "3_0_return_two_values",
       "key": 0
     },
     {
       "output_index": 0,
       "data_coord": 0,
       "data_type": "scalar",
-      "source": "2_0_negate_value",
-      "target": "3_0_increment",
+      "source": "2_1_decrement",
+      "target": "3_0_decrement",
       "key": 0
     },
     {
       "output_index": 0,
-      "data_coord": 3,
+      "data_coord": 1,
       "data_type": "scalar",
-      "source": "2_1_negate_value",
-      "target": "3_0_negate_value",
+      "source": "2_0_multiply_values",
+      "target": "3_0_divide_values",
       "key": 0
     },
     {
-      "output_index": 1,
-      "data_coord": 7,
+      "output_index": 0,
+      "data_coord": 8,
       "data_type": "scalar",
-      "source": "2_0_return_two_values",
+      "source": "2_0_negate_value",
       "target": "3_1_negate_value",
       "key": 0
     },
@@ -295,96 +374,136 @@
       "output_index": 0,
       "data_coord": 9,
       "data_type": "scalar",
-      "source": "2_0_return_two_values",
-      "target": "3_3_negate_value",
+      "source": "2_0_add_values",
+      "target": "3_1_return_two_values",
       "key": 0
     },
     {
       "output_index": 0,
-      "data_coord": 4,
-      "data_type": "scalar",
-      "source": "2_0_null",
-      "target": "3_0_null",
-      "key": 0
-    },
-    {
-      "output_index": 0,
-      "data_coord": 2,
-      "data_type": "scalar",
-      "source": "2_1_null",
-      "target": "3_0_multiply_values",
-      "key": 0
-    },
-    {
-      "output_index": 0,
-      "data_coord": 2,
-      "data_type": "scalar",
-      "source": "3_0_return_value",
-      "target": "4_0_calculate_difference",
-      "key": 0
-    },
-    {
-      "output_index": 0,
-      "data_coord": 0,
-      "data_type": "scalar",
-      "source": "3_0_multiply_values",
-      "target": "4_0_add_values",
-      "key": 0
-    },
-    {
-      "output_index": 0,
-      "data_coord": 4,
-      "data_type": "scalar",
-      "source": "3_0_return_two_values",
-      "target": "4_0_divide_values",
-      "key": 0
-    },
-    {
-      "output_index": 1,
       "data_coord": 6,
       "data_type": "scalar",
-      "source": "3_0_return_two_values",
-      "target": "4_0_negate_value",
+      "source": "2_1_add_values",
+      "target": "3_0_negate_value",
+      "key": 0
+    },
+    {
+      "output_index": 0,
+      "data_coord": 2,
+      "data_type": "scalar",
+      "source": "2_0_return_value",
+      "target": "3_0_divide_values",
       "key": 0
     },
     {
       "output_index": 0,
       "data_coord": 5,
       "data_type": "scalar",
-      "source": "3_0_increment",
-      "target": "4_0_divide_values",
+      "source": "2_0_null",
+      "target": "3_0_multiply_values",
       "key": 0
     },
     {
       "output_index": 0,
       "data_coord": 3,
       "data_type": "scalar",
-      "source": "3_0_negate_value",
-      "target": "4_0_calculate_difference",
+      "source": "3_0_decrement",
+      "target": "4_0_divide_values",
       "key": 0
     },
     {
       "output_index": 0,
-      "data_coord": 1,
+      "data_coord": 7,
       "data_type": "scalar",
-      "source": "3_0_null",
+      "source": "3_0_multiply_values",
+      "target": "4_0_negate_value",
+      "key": 0
+    },
+    {
+      "output_index": 0,
+      "data_coord": 2,
+      "data_type": "scalar",
+      "source": "3_0_divide_values",
+      "target": "4_0_decrement",
+      "key": 0
+    },
+    {
+      "output_index": 0,
+      "data_coord": 0,
+      "data_type": "scalar",
+      "source": "3_0_return_two_values",
       "target": "4_0_add_values",
+      "key": 0
+    },
+    {
+      "output_index": 1,
+      "data_coord": 5,
+      "data_type": "scalar",
+      "source": "3_0_return_two_values",
+      "target": "4_0_multiply_values",
       "key": 0
     },
     {
       "output_index": 0,
       "data_coord": 6,
       "data_type": "scalar",
-      "source": "4_0_return_value",
-      "target": "5_0_return_two_values",
+      "source": "3_1_return_two_values",
+      "target": "4_0_multiply_values",
+      "key": 0
+    },
+    {
+      "output_index": 1,
+      "data_coord": 8,
+      "data_type": "scalar",
+      "source": "3_1_return_two_values",
+      "target": "4_0_null",
       "key": 0
     },
     {
       "output_index": 0,
-      "data_coord": 3,
+      "data_coord": 1,
       "data_type": "scalar",
-      "source": "4_1_return_value",
-      "target": "5_0_multiply_values",
+      "source": "3_0_increment",
+      "target": "4_0_add_values",
+      "key": 0
+    },
+    {
+      "output_index": 0,
+      "data_coord": 9,
+      "data_type": "scalar",
+      "source": "3_0_negate_value",
+      "target": "4_0_return_two_values",
+      "key": 0
+    },
+    {
+      "output_index": 0,
+      "data_coord": 4,
+      "data_type": "scalar",
+      "source": "3_1_negate_value",
+      "target": "4_0_divide_values",
+      "key": 0
+    },
+    {
+      "output_index": 0,
+      "data_coord": 5,
+      "data_type": "scalar",
+      "source": "4_0_divide_values",
+      "target": "5_0_return_value",
+      "key": 0
+    },
+    {
+      "output_index": 0,
+      "data_coord": 1,
+      "data_type": "scalar",
+      "source": "4_0_decrement",
+      "target": "5_0_divide_values",
+      "key": 0
+    },
+    {
+      "output_index": 0,
+      "data_coord": 7,
+      "data_type": "scalar",
+      "source": "4_0_negate_value",
+      "target": "5_1_return_value",
       "key": 0
     },
     {
@@ -392,22 +511,46 @@
       "data_coord": 0,
       "data_type": "scalar",
       "source": "4_0_add_values",
-      "target": "5_0_calculate_difference",
+      "target": "5_0_decrement",
+      "key": 0
+    },
+    {
+      "output_index": 0,
+      "data_coord": 6,
+      "data_type": "scalar",
+      "source": "4_0_multiply_values",
+      "target": "5_1_decrement",
       "key": 0
     },
     {
       "output_index": 0,
       "data_coord": 4,
       "data_type": "scalar",
-      "source": "4_0_divide_values",
-      "target": "5_0_multiply_values",
+      "source": "4_0_return_two_values",
+      "target": "5_0_null",
+      "key": 0
+    },
+    {
+      "output_index": 1,
+      "data_coord": 2,
+      "data_type": "scalar",
+      "source": "4_0_return_two_values",
+      "target": "5_0_divide_values",
+      "key": 0
+    },
+    {
+      "output_index": 0,
+      "data_coord": 3,
+      "data_type": "scalar",
+      "source": "4_0_null",
+      "target": "5_0_negate_value",
       "key": 0
     },
     {
       "output_index": 0,
       "data_coord": 0,
       "data_type": "scalar",
-      "source": "5_0_decrement",
+      "source": "5_0_return_value",
       "target": "collapse",
       "key": 0
     },
@@ -415,7 +558,7 @@
       "output_index": 0,
       "data_coord": 1,
       "data_type": "scalar",
-      "source": "5_0_calculate_difference",
+      "source": "5_1_return_value",
       "target": "collapse",
       "key": 0
     },
@@ -423,23 +566,23 @@
       "output_index": 0,
       "data_coord": 2,
       "data_type": "scalar",
-      "source": "5_0_return_two_values",
+      "source": "5_0_decrement",
       "target": "collapse",
       "key": 0
     },
     {
-      "output_index": 1,
+      "output_index": 0,
       "data_coord": 3,
       "data_type": "scalar",
-      "source": "5_0_return_two_values",
+      "source": "5_1_decrement",
       "target": "collapse",
-      "key": 1
+      "key": 0
     },
     {
       "output_index": 0,
       "data_coord": 4,
       "data_type": "scalar",
-      "source": "5_0_multiply_values",
+      "source": "5_0_negate_value",
       "target": "collapse",
       "key": 0
     },
@@ -453,58 +596,26 @@
     },
     {
       "output_index": 0,
-      "data_coord": 5,
-      "data_type": "scalar",
-      "source": "4_0_calculate_difference",
-      "target": "5_0_null",
-      "key": 0
-    },
-    {
-      "output_index": 0,
       "data_coord": 7,
       "data_type": "scalar",
-      "source": "3_1_negate_value",
-      "target": "4_0_return_value",
+      "source": "2_2_add_values",
+      "target": "3_0_return_two_values",
       "key": 0
     },
     {
       "output_index": 0,
-      "data_coord": 9,
+      "data_coord": 3,
       "data_type": "scalar",
-      "source": "3_2_negate_value",
-      "target": "4_2_return_value",
+      "source": "2_1_negate_value",
+      "target": "3_0_increment",
       "key": 0
     },
     {
       "output_index": 0,
       "data_coord": 6,
       "data_type": "scalar",
-      "source": "2_1_increment",
-      "target": "3_0_return_value",
-      "key": 0
-    },
-    {
-      "output_index": 0,
-      "data_coord": 1,
-      "data_type": "scalar",
-      "source": "4_0_negate_value",
-      "target": "5_0_calculate_difference",
-      "key": 0
-    },
-    {
-      "output_index": 0,
-      "data_coord": 2,
-      "data_type": "scalar",
-      "source": "4_2_return_value",
-      "target": "5_0_decrement",
-      "key": 0
-    },
-    {
-      "output_index": 0,
-      "data_coord": 8,
-      "data_type": "scalar",
-      "source": "3_3_negate_value",
-      "target": "4_1_return_value",
+      "source": "5_0_divide_values",
+      "target": "collapse",
       "key": 0
     },
     {
@@ -512,7 +623,7 @@
       "output_index": 0,
       "data_coord": 0,
       "source": "root",
-      "target": "1_0_return_two_values",
+      "target": "1_0_increment",
       "key": 0
     },
     {
@@ -520,7 +631,7 @@
       "output_index": 1,
       "data_coord": 1,
       "source": "root",
-      "target": "1_1_return_two_values",
+      "target": "1_1_increment",
       "key": 0
     },
     {
@@ -528,7 +639,7 @@
       "output_index": 2,
       "data_coord": 2,
       "source": "root",
-      "target": "1_0_increment",
+      "target": "1_0_return_value",
       "key": 0
     },
     {
@@ -536,7 +647,7 @@
       "output_index": 3,
       "data_coord": 3,
       "source": "root",
-      "target": "1_0_return_value",
+      "target": "1_0_return_two_values",
       "key": 0
     },
     {
@@ -544,7 +655,7 @@
       "output_index": 4,
       "data_coord": 4,
       "source": "root",
-      "target": "1_1_return_value",
+      "target": "1_1_return_two_values",
       "key": 0
     },
     {
@@ -552,7 +663,7 @@
       "output_index": 5,
       "data_coord": 5,
       "source": "root",
-      "target": "1_0_decrement",
+      "target": "1_2_return_two_values",
       "key": 0
     },
     {
@@ -560,7 +671,7 @@
       "output_index": 6,
       "data_coord": 6,
       "source": "root",
-      "target": "1_0_divide_values",
+      "target": "1_0_multiply_values",
       "key": 0
     },
     {
@@ -568,7 +679,7 @@
       "output_index": 7,
       "data_coord": 7,
       "source": "root",
-      "target": "1_0_divide_values",
+      "target": "1_0_multiply_values",
       "key": 1
     },
     {
@@ -576,7 +687,31 @@
       "output_index": 8,
       "data_coord": 8,
       "source": "root",
+      "target": "1_0_negate_value",
+      "key": 0
+    },
+    {
+      "data_type": "float64",
+      "output_index": 9,
+      "data_coord": 9,
+      "source": "root",
+      "target": "1_1_negate_value",
+      "key": 0
+    },
+    {
+      "data_type": "float64",
+      "output_index": 10,
+      "data_coord": 10,
+      "source": "root",
       "target": "1_0_null",
+      "key": 0
+    },
+    {
+      "data_type": "float64",
+      "output_index": 11,
+      "data_coord": 11,
+      "source": "root",
+      "target": "1_1_null",
       "key": 0
     }
   ]

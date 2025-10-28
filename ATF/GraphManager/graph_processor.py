@@ -195,13 +195,45 @@ class GraphProcessor:
         for node in nodes_in_order:
             node_data = self.graph.nodes[node]
             method_name = node_data.get("method_name", None)
+        
+            # === 新增逻辑：处理缺失 is_passthrough 的老模型 ===
+            if "is_passthrough" not in node_data:
+                # 发出警告：老版本模型
+                logger.warning(
+                    f"⚠️ 节点 '{node}' 缺少 'is_passthrough' 属性，检测到老版本模型。"
+                    f"方法名: {method_name}。未来版本将取消对老模型的支持，请尽快升级模型格式。"
+                )
+                # 推断 is_passthrough：method_name 为 None 或 'null'（不区分大小写）时视为 True
+                if method_name is None or (isinstance(method_name, str) and method_name.lower() == 'null'):
+                    is_passthrough = True
+                else:
+                    is_passthrough = False
+            else:
+                is_passthrough = bool(node_data.get("is_passthrough", False))
 
-            if node_data.get("is_passthrough"):
-                predecessors = list(self.graph.predecessors(node))
+            predecessors = list(self.graph.predecessors(node))
+            inputs = []
+            for src in predecessors:
+                edges_from_src = self.graph[src][node]
+                for edge_key in edges_from_src:
+                    edge_data = edges_from_src[edge_key]
+                    output_idx = edge_data.get("output_index")
+                    src_output = node_outputs[src]  # 假设拓扑序保证已计算
+                    if output_idx is not None:
+                        col = src_output[:, output_idx:output_idx+1]
+                    else:
+                        col = src_output
+                    inputs.append(col)
+            
+            if not inputs:
+                raise ValueError(f"节点 '{node}' 没有输入数据")
+            flat_input = np.hstack(inputs) if len(inputs) > 1 else inputs[0]
+
+            # === 处理 passthrough ===
+            if is_passthrough:
                 if len(predecessors) > 1:
-                    raise ValueError(f"节点 {node} 使用了 'unmatched' 方法，但有多个前驱节点。")
-                if predecessors:
-                    node_outputs[node] = node_outputs.get(predecessors[0], np.array([]))
+                    raise ValueError(f"节点 {node} 是 passthrough，但有多个前驱。")
+                node_outputs[node] = flat_input.copy()  # ✅ 正确透传
                 continue
 
             if method_name not in self.methods:
@@ -212,40 +244,10 @@ class GraphProcessor:
             input_count = method_info["input_count"]
             output_count = method_info["output_count"]
 
-            in_edges = list(self.graph.in_edges(node, data=True))
-            inputs = []
-
-            for src, dst, edge_data in in_edges:
-                if src not in node_outputs:
-                    raise ValueError(f"前驱节点 {src} 没有输出")
-                output_index = edge_data.get("output_index")
-                if output_index is not None:
-                    try:
-                        selected_column = [[sample[output_index]] for sample in node_outputs[src]]
-                    except IndexError:
-                        raise ValueError(f"前驱节点 {src} 输出长度不足，无法获取 output_index={output_index}")
-                    inputs.append(selected_column)
-                else:
-                    inputs.extend(node_outputs[src])
-
-            if not inputs:
-                raise ValueError("没有可合并的输入列")
-            num_samples = len(inputs[0])
-            for col in inputs:
-                if len(col) != num_samples:
-                    raise ValueError("所有输入列样本数必须一致")
-
-            final_inputs = []
-            for i in range(num_samples):
-                merged = []
-                for col in inputs:
-                    merged.extend(col[i])
-                final_inputs.append(merged)
-
-            flat_inputs = np.array(final_inputs)
+            num_samples = flat_input.shape[0]
             results = []
 
-            for row in flat_inputs:
+            for row in flat_input:
                 if len(row) != input_count:
                     raise ValueError(
                         f"Node '{node}' method '{method_name}' expects {input_count} inputs, "
@@ -348,28 +350,36 @@ class GraphProcessor:
                     flat_input = np.hstack(inputs) if len(inputs) > 1 else inputs[0]
 
                 # 执行函数
-                method_name = self.graph.nodes[node].get("method_name")
+                node_data = self.graph.nodes[node]  # ✅ 确保 node_data 被定义
+                method_name = node_data.get("method_name")
 
-                # ✅ 新增：处理 passthrough 方法节点
-                if node_data.get("is_passthrough"):
+                # ✅ 新增：兼容老版本模型，处理缺失 is_passthrough 的情况
+                if "is_passthrough" not in node_data:
+                    logger.warning(
+                        f"⚠️ 节点 '{node}' 缺少 'is_passthrough' 属性，检测到老版本模型。"
+                        f"方法名: {method_name}。未来版本将取消对老模型的支持，请尽快升级模型格式。"
+                    )
+                    # 推断：method_name 为 None 或字符串 'null'（不区分大小写）时视为 passthrough
+                    if method_name is None or (isinstance(method_name, str) and method_name.lower() == 'null'):
+                        is_passthrough = True
+                    else:
+                        is_passthrough = False
+                else:
+                    is_passthrough = bool(node_data.get("is_passthrough", False))
+
+                # ✅ 使用推断/提取出的 is_passthrough 进行判断
+                if is_passthrough:
                     with lock:
                         predecessors = list(self.graph.predecessors(node))
                         if len(predecessors) > 1:
-                            raise ValueError(f"节点 {node} 使用了 'passthrough' 方法，但有多个前驱节点。")
-                        if predecessors:
-                            src = predecessors[0]
-                            if src not in node_outputs:
-                                raise KeyError(f"前置节点 '{src}' 输出未就绪")
-                            node_outputs[node] = node_outputs[src].copy()
-                        else:
-                            # 无前驱，生成默认输出
-                            sample_count = flat_input.shape[0] if 'flat_input' in locals() else 100
-                            output_count = 1
-                            node_outputs[node] = np.zeros((sample_count, output_count))
-                        
+                            raise ValueError(f"节点 {node} 使用了 'passthrough' 方法，但有多个前驱节点。这违反设计约束。")
+
+                        node_outputs[node] = flat_input.copy()
+
                         # 触发后继节点
                         for succ in self.graph.successors(node):
-                            if succ == "collapse": continue
+                            if succ == "collapse":
+                                continue
                             if succ in in_degree_remaining:
                                 in_degree_remaining[succ] -= 1
                                 if in_degree_remaining[succ] == 0:
@@ -377,7 +387,7 @@ class GraphProcessor:
                     
                     output_shape = node_outputs[node].shape
                     # print(f"[✅ SUCCESS] 节点 {node} (method=unmatched) 执行完成，输出形状: {output_shape}")
-                    return  # ⚠️ 直接返回，跳过函数执行逻辑
+                    return  # ⚠️ 直接返回，跳过后续函数执行逻辑
 
                 # ========== 原有函数执行逻辑 ==========
                 if not method_name:

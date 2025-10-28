@@ -140,8 +140,6 @@ class GraphEvoTrainer(ModelTrainer):
             if not (0.0 <= self.consensus_threshold <= 1.0):
                 raise ValueError("consensus_threshold must be in [0.0, 1.0] or None")
 
-        
-
         # 用于记录完整图结构快照（用于方法池进化）
         self.graph_snapshots: List[Any] = []
 
@@ -650,7 +648,21 @@ class GraphEvoTrainer(ModelTrainer):
             try:
                 sig = self._extract_node_signature(template_graph, node_id)
                 if sig in consensus_map:
-                    consensus_graph.add_node(sig, method_name=consensus_map[sig])
+                    # ✅ 获取原始节点的完整属性
+                    orig_attrs = template_graph.nodes[node_id]
+                    
+                    # ✅ 构建新节点属性：至少包含 method_name 和 is_passthrough
+                    new_attrs = {
+                        'method_name': consensus_map[sig],
+                        'is_passthrough': orig_attrs.get('is_passthrough', False),  # ← 关键修复！
+                    }
+                    
+                    # 可选：保留其他你认为重要的属性
+                    # 例如：
+                    # if 'output_count' in orig_attrs:
+                    #     new_attrs['output_count'] = orig_attrs['output_count']
+                    
+                    consensus_graph.add_node(sig, **new_attrs)
                     node_id_to_sig[node_id] = sig
             except ValueError:
                 continue

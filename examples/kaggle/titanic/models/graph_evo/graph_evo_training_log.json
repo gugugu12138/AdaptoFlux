@@ -5,18 +5,18 @@
             "cycle": 0,
             "phase": "initialization",
             "result": {
-                "best_model": "<ATF.core.adaptoflux.AdaptoFlux object at 0x000001D9B0C8F2F0>",
-                "best_loss": 0.38496071829405165,
-                "best_accuracy": 0.6150392817059483
+                "best_model": "<ATF.core.adaptoflux.AdaptoFlux object at 0x0000013F33E34BF0>",
+                "best_loss": 0.37149270482603813,
+                "best_accuracy": 0.6285072951739619
             }
         },
         {
             "cycle": 1,
             "refinement": {
-                "final_model": "<ATF.core.adaptoflux.AdaptoFlux object at 0x000001D9B0C8F2F0>",
-                "final_loss": 0.27946127946127947,
-                "final_accuracy": 0.7205387205387206,
-                "steps_taken": 8,
+                "final_model": "<ATF.core.adaptoflux.AdaptoFlux object at 0x0000013F33E34BF0>",
+                "final_loss": 0.30078563411896747,
+                "final_accuracy": 0.6992143658810326,
+                "steps_taken": 7,
                 "improvement_made": true
             },
             "evolution": {
@@ -27,10 +27,10 @@
         {
             "cycle": 2,
             "refinement": {
-                "final_model": "<ATF.core.adaptoflux.AdaptoFlux object at 0x000001D9B0C8F2F0>",
-                "final_loss": 0.26038159371492703,
-                "final_accuracy": 0.7396184062850729,
-                "steps_taken": 2,
+                "final_model": "<ATF.core.adaptoflux.AdaptoFlux object at 0x0000013F33E34BF0>",
+                "final_loss": 0.2962962962962963,
+                "final_accuracy": 0.6745230078563412,
+                "steps_taken": 1,
                 "improvement_made": true
             },
             "evolution": {
@@ -41,11 +41,11 @@
         {
             "cycle": 3,
             "refinement": {
-                "final_model": "<ATF.core.adaptoflux.AdaptoFlux object at 0x000001D9B0C8F2F0>",
-                "final_loss": 0.26038159371492703,
-                "final_accuracy": 0.7396184062850729,
-                "steps_taken": 0,
-                "improvement_made": false
+                "final_model": "<ATF.core.adaptoflux.AdaptoFlux object at 0x0000013F33E34BF0>",
+                "final_loss": 0.26936026936026936,
+                "final_accuracy": 0.7306397306397306,
+                "steps_taken": 6,
+                "improvement_made": true
             },
             "evolution": {
                 "skipped": true,
@@ -55,11 +55,11 @@
         {
             "cycle": 4,
             "refinement": {
-                "final_model": "<ATF.core.adaptoflux.AdaptoFlux object at 0x000001D9B0C8F2F0>",
+                "final_model": "<ATF.core.adaptoflux.AdaptoFlux object at 0x0000013F33E34BF0>",
                 "final_loss": 0.26038159371492703,
                 "final_accuracy": 0.7396184062850729,
-                "steps_taken": 0,
-                "improvement_made": false
+                "steps_taken": 1,
+                "improvement_made": true
             },
             "evolution": {
                 "skipped": true,
@@ -69,11 +69,11 @@
         {
             "cycle": 5,
             "refinement": {
-                "final_model": "<ATF.core.adaptoflux.AdaptoFlux object at 0x000001D9B0C8F2F0>",
-                "final_loss": 0.26038159371492703,
-                "final_accuracy": 0.7396184062850729,
-                "steps_taken": 0,
-                "improvement_made": false
+                "final_model": "<ATF.core.adaptoflux.AdaptoFlux object at 0x0000013F33E34BF0>",
+                "final_loss": 0.2558922558922559,
+                "final_accuracy": 0.7441077441077442,
+                "steps_taken": 2,
+                "improvement_made": true
             },
             "evolution": {
                 "methods_added": 1,
@@ -83,13 +83,13 @@
             }
         }
     ],
-    "total_refinement_steps": 10,
+    "total_refinement_steps": 17,
     "total_compressions": 0,
     "total_methods_evolved": 1,
-    "best_accuracy": 0.7396184062850729,
-    "best_accuracy_cycle": 2,
-    "best_model_snapshot": "<ATF.core.adaptoflux.AdaptoFlux object at 0x000001D9AFC37FB0>",
-    "best_model_cycle": 2,
+    "best_accuracy": 0.7441077441077442,
+    "best_accuracy_cycle": 5,
+    "best_model_snapshot": "<ATF.core.adaptoflux.AdaptoFlux object at 0x0000013F34FE2510>",
+    "best_model_cycle": 5,
     "final_compression_applied": false,
     "final_model_saved": "examples/kaggle/titanic/models/graph_evo\\final",
     "best_model_saved": "examples/kaggle/titanic/models/graph_evo\\best"

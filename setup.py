@@ -17,6 +17,7 @@ setup(
         "graphviz",
         "scipy",
         "pytest",
+        "pygraphviz"
     ],
     classifiers=[
         "Programming Language :: Python :: 3.12",

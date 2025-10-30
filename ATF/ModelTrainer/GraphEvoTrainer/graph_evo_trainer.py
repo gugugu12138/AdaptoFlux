@@ -970,6 +970,7 @@ class GraphEvoTrainer(ModelTrainer):
                 'is_clustered': enable_graph_isomorphism_clustering,
                 'selection_policy': subgraph_selection_policy,
                 'evolved_at': datetime.now().isoformat(),
+                'input_count': len(input_types),
                 'input_types': input_types,
                 'output_types': output_types,
                 'output_count': len(output_types),
@@ -990,6 +991,7 @@ class GraphEvoTrainer(ModelTrainer):
             # 注册到主类 methods（关键！）
             adaptoflux_instance.methods[name] = {
                 'func': evolved_method,           # ← 可调用对象
+                'input_count': meta['input_count'],
                 'output_count': meta['output_count'],
                 'input_types': meta['input_types'],
                 'output_types': meta['output_types'],

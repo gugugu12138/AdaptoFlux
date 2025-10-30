@@ -59,14 +59,29 @@ class AdaptoFlux:
         self.graph.add_node('collapse')
 
         # 获取每个特征维度的数据类型
-        if isinstance(self.values, pd.DataFrame):
-            self.feature_types = [str(dtype) for dtype in self.values.dtypes]
-        elif self.values.dtype.names is not None:  # structured array
-            self.feature_types = [self.values.dtype.fields[name][0].name for name in self.values.dtype.names]
-        else:
-            self.feature_types = [str(self.values.dtype)] * self.values.shape[1]
+        self.feature_types = []  # 初始化为空列表
 
         if self.values is not None:
+            if isinstance(self.values, pd.DataFrame):
+                self.feature_types = [str(dtype) for dtype in self.values.dtypes]
+            elif self.values.dtype.names is not None:  # structured array
+                self.feature_types = [self.values.dtype.fields[name][0].name for name in self.values.dtype.names]
+            else:
+                # 普通 ndarray：确保是二维且列数 > 0
+                if len(self.values.shape) != 2:
+                    raise ValueError(f"Input `values` must be 2D when not a DataFrame or structured array, got shape {self.values.shape}")
+                if self.values.shape[1] == 0:
+                    raise ValueError("Input `values` has zero feature dimensions (shape[1] == 0). At least one feature is required to initialize the graph.")
+                self.feature_types = [str(self.values.dtype)] * self.values.shape[1]
+
+            # === 新增：检查 feature_types 是否为空 ===
+            if len(self.feature_types) == 0:
+                raise ValueError(
+                    "Failed to infer any feature types from `values`. "
+                    "This usually happens when input data has zero columns. "
+                    "Please ensure `values` is a non-empty 2D array (e.g., shape (N, D) with D >= 1)."
+                )
+
             # 添加 root -> collapse 边
             for feature_index, feature_type in enumerate(self.feature_types):
                 self.graph.add_edge(
@@ -185,6 +200,7 @@ class AdaptoFlux:
                 weight = getattr(obj, "weight", 1.0)
                 vectorized = getattr(obj, "vectorized", False)
                 self.add_method(name, obj, input_count, output_count, input_types, output_types, group, weight, vectorized)
+        
         # 记录初始状态
         self.history_method_inputs.append(self.method_inputs)
         self.history_method_input_values.append(self.method_input_values)
@@ -328,7 +344,7 @@ class AdaptoFlux:
         from networkx.readwrite import json_graph
 
         # 确保文件夹存在，如果不存在则创建
-        if not os.path.exists(folder):
+        if self.methods_path and os.path.exists(self.methods_path):
             os.makedirs(folder)
 
         # 保存图结构到 graph.gexf（可读性强）

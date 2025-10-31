@@ -2,6 +2,8 @@ from typing import Any, List, Optional, Dict
 import networkx as nx
 from networkx.readwrite import json_graph
 from ..GraphManager.graph_processor import GraphProcessor
+from ..CollapseManager.collapse_functions import CollapseMethod
+import numpy as np
 
 import logging
 logger = logging.getLogger(__name__)
@@ -54,27 +56,71 @@ class EvolvedMethod:
     def __call__(self, *inputs) -> List[Any]:
         """
         执行该进化方法的前向推理。
-
-        内部通过 GraphProcessor 对子图进行调度执行，输入数据从 'root' 注入，结果从 'collapse' 收集。
-
-        Parameters
-        ----------
-        *inputs : Any
-            输入数据，数量和类型需与 metadata['input_types'] 一致。
-
-        Returns
-        -------
-        List[Any]
-            输出结果列表，长度等于 metadata['output_count']。
         """
+        # === 新增：标准化所有输入为 (N, D) 二维数组 ===
+        standardized_inputs = []
+        for inp in inputs:
+            if isinstance(inp, (int, float, bool, np.number)):
+                # 标量 → 视为单样本单特征: (1, 1)
+                inp = np.array([[inp]])
+            elif isinstance(inp, np.ndarray):
+                if inp.ndim == 0:
+                    inp = inp[None, None]          # () → (1, 1)
+                elif inp.ndim == 1:
+                    inp = inp[:, None]             # (N,) → (N, 1)
+                elif inp.ndim >= 2:
+                    # 保留 (N, D)，忽略更高维（或报错）
+                    pass
+                else:
+                    raise ValueError(f"Unexpected input ndim: {inp.ndim}")
+            elif isinstance(inp, (list, tuple)):
+                # 尝试转为 array，再标准化
+                inp = np.asarray(inp)
+                if inp.ndim == 1:
+                    inp = inp[:, None]
+                elif inp.ndim == 0:
+                    inp = inp[None, None]
+                elif inp.ndim >= 2:
+                    pass
+                else:
+                    inp = np.array([[inp]], dtype=object)
+            else:
+                # 其他对象（如字符串、自定义类）→ (1, 1) object array
+                inp = np.array([[inp]], dtype=object)
+            standardized_inputs.append(inp)
+
+        # 确保所有输入有相同的行数 N（可选但推荐）
+        Ns = [x.shape[0] for x in standardized_inputs]
+        if len(set(Ns)) > 1:
+            raise ValueError(f"Inconsistent input batch sizes: {Ns}")
+
+        # === 初始化 processor（如未初始化）===
         if self._processor is None:
-            # 传入全局 methods_ref
             self._processor = GraphProcessor(
                 graph=self.graph,
-                methods=self.methods_ref,     # ← 关键：使用主类的 methods
-                collapse_method=CollapseMethod.IDENTITY  # 或从 metadata 读取
+                methods=self.methods_ref,
+                collapse_method=CollapseMethod.IDENTITY
             )
-        return self._processor.run(*inputs)
+
+        # === 调用子图推理 ===
+        raw_outputs = self._processor.infer_with_graph(*standardized_inputs)
+
+        # === 可选：对输出也做标准化（作为双重保险）===
+        standardized_outputs = []
+        for out in raw_outputs:
+            if isinstance(out, (int, float, bool, np.number)):
+                out = np.array([[out]])
+            elif isinstance(out, np.ndarray):
+                if out.ndim == 0:
+                    out = out[None, None]
+                elif out.ndim == 1:
+                    out = out[:, None]
+            else:
+                out = np.array([[out]], dtype=object)
+            standardized_outputs.append(out)
+
+        return standardized_outputs
+
     @classmethod
     def from_files(cls, base_path: str):
         """

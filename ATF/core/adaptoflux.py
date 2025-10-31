@@ -125,8 +125,6 @@ class AdaptoFlux:
         # 自动导入方法
         if self.methods_path is not None:
             self.import_methods_from_file(self.methods_path)
-        
-        self.model_trainer = ModelTrainer(adaptoflux_instance=self)
 
     def get_input_dimension(self):
         """
@@ -481,10 +479,12 @@ class AdaptoFlux:
         return GraphProcessor(
             graph=graph,
             methods=self.methods,              # 可用的方法集合（如加法、乘法、激活函数等）
-            collapse_method=self.collapse_method  # 输出聚合方式（如 sum、mean 等）
+            collapse_method=self.graph_processor.collapse_manager.collapse_method  # 输出聚合方式（如 sum、mean 等）
         )
+
     def clone(self):
         """
+        该方法未作测试，谨慎使用！
         创建当前 AdaptoFlux 实例的深拷贝副本。
         
         该方法确保：

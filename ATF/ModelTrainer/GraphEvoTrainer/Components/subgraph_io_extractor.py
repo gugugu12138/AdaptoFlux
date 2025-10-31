@@ -20,7 +20,6 @@ class SubgraphIOExtractor:
         # 执行主图，获取所有节点输出
         full_outputs = adaptoflux_instance.infer_with_graph(
             values=input_data,
-            return_all_nodes=True  # 需确保 AdaptoFlux 支持此参数
         )
 
         graph = adaptoflux_instance.graph_processor.graph

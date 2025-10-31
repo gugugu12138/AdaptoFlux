@@ -199,8 +199,8 @@ class GraphEvoTrainer(ModelTrainer):
             self._randomly_initialize_graph(candidate_af, num_layers_to_add=layers_to_add)
 
             # 评估候选模型
-            loss = self._evaluate_loss_with_instance(candidate_af, input_data, target)
-            acc = self._evaluate_accuracy_with_instance(candidate_af, input_data, target)
+            loss = self._evaluate_loss(input_data, target, adaptoflux_instance=candidate_af)
+            acc = self._evaluate_accuracy(input_data, target, adaptoflux_instance=candidate_af)
 
             candidates.append({
                 'model': candidate_af,
@@ -232,6 +232,8 @@ class GraphEvoTrainer(ModelTrainer):
         :param adaptoflux_instance: 要初始化的 AdaptoFlux 实例
         :param num_layers_to_add: 要添加的层数
         """
+        while adaptoflux_instance.graph_processor.layer > 0:
+            adaptoflux_instance.remove_last_nx_layer()
         for _ in range(num_layers_to_add):
             candidate_plan = adaptoflux_instance.process_random_method()
             if candidate_plan["valid_groups"]:
@@ -242,7 +244,7 @@ class GraphEvoTrainer(ModelTrainer):
                         discard_node_method_name="null"
                     )
                 except Exception as e:
-                    logger.warning(f"Failed to add random layer during initialization: {e}")
+                    logger.warning(f"Failed to add random layer during initialization: {e}", exc_info=True)
                     # 如果添加失败，跳过，不影响整体流程
 
     def _phase_node_refinement(self, adaptoflux_instance, input_data: np.ndarray, target: np.ndarray) -> Dict[str, Any]:
@@ -270,8 +272,8 @@ class GraphEvoTrainer(ModelTrainer):
 
         # 获取图处理器和当前性能指标
         gp = adaptoflux_instance.graph_processor
-        current_loss = self._evaluate_loss_with_instance(adaptoflux_instance, input_data, target)
-        current_acc = self._evaluate_accuracy_with_instance(adaptoflux_instance, input_data, target)
+        current_loss = self._evaluate_loss(input_data, target, adaptoflux_instance=adaptoflux_instance)
+        current_acc = self._evaluate_accuracy(input_data, target, adaptoflux_instance=adaptoflux_instance)
 
         # 初始化状态变量
         improvement_made = False  # 标记本轮是否发生过改进
@@ -504,8 +506,8 @@ class GraphEvoTrainer(ModelTrainer):
             logger.info(f"Replaced subgraph with node '{new_node_id}' ({candidate_method})")
 
             # 返回新结果
-            new_loss = self._evaluate_loss_with_instance(adaptoflux_instance, input_data, target)
-            new_acc = self._evaluate_accuracy_with_instance(adaptoflux_instance, input_data, target)
+            new_loss = self._evaluate_loss(input_data, target, adaptoflux_instance=adaptoflux_instance)
+            new_acc = self._evaluate_accuracy(input_data, target, adaptoflux_instance=adaptoflux_instance)
             return {
                 'final_model': adaptoflux_instance,
                 'final_loss': new_loss,
@@ -537,8 +539,8 @@ class GraphEvoTrainer(ModelTrainer):
         :param target: 对应的标签
         :return: 表示“无压缩”的标准结果字典
         """
-        loss = self._evaluate_loss_with_instance(adaptoflux_instance, input_data, target)
-        acc = self._evaluate_accuracy_with_instance(adaptoflux_instance, input_data, target)
+        loss = self._evaluate_loss(input_data, target, adaptoflux_instance=adaptoflux_instance)
+        acc = self._evaluate_accuracy(input_data, target, adaptoflux_instance=adaptoflux_instance)
         return {
             'final_model': adaptoflux_instance,
             'final_loss': loss,
@@ -990,7 +992,7 @@ class GraphEvoTrainer(ModelTrainer):
 
             # 注册到主类 methods（关键！）
             adaptoflux_instance.methods[name] = {
-                'func': evolved_method,           # ← 可调用对象
+                'function': evolved_method,           # ← 可调用对象
                 'input_count': meta['input_count'],
                 'output_count': meta['output_count'],
                 'input_types': meta['input_types'],
@@ -1000,6 +1002,13 @@ class GraphEvoTrainer(ModelTrainer):
                 'vectorized': meta['vectorized'],
                 'is_evolved': True
             }
+
+            # 6. 【关键】重建 graph_processor 以识别新方法，并保留当前 layer 状态
+            current_layer = adaptoflux_instance.graph_processor.layer
+            adaptoflux_instance.graph_processor = adaptoflux_instance._create_graph_processor(
+                graph=adaptoflux_instance.graph
+            )
+            adaptoflux_instance.graph_processor.layer = current_layer
 
             new_method_names.append(name)
 
@@ -1013,37 +1022,6 @@ class GraphEvoTrainer(ModelTrainer):
             'methods_added': len(new_method_names),
             'new_method_names': new_method_names
         }
-
-    def _evaluate_loss_with_instance(self, adaptoflux_instance, input_data: np.ndarray, target: np.ndarray) -> float:
-        """
-        辅助方法：使用指定的 AdaptoFlux 实例计算损失。
-        """
-        try:
-            output = adaptoflux_instance.infer_with_graph(values=input_data)
-            loss = self.loss_fn(output, target)
-            return float(loss)
-        except Exception as e:
-            logger.error(f"Evaluation failed for instance: {e}")
-            logger.error(traceback.format_exc())
-            raise RuntimeError("Failed to evaluate loss with the given AdaptoFlux instance.")
-
-    def _evaluate_accuracy_with_instance(self, adaptoflux_instance, input_data: np.ndarray, target: np.ndarray) -> float:
-        """
-        辅助方法：使用指定的 AdaptoFlux 实例计算准确率。
-        """
-        try:
-            output = adaptoflux_instance.infer_with_graph(values=input_data)
-            output = np.array(output)
-            if len(output.shape) == 1 or output.shape[1] == 1:
-                pred_classes = (output >= 0.5).astype(int).flatten()
-            else:
-                pred_classes = np.argmax(output, axis=1)
-            true_labels = np.array(target).flatten()
-            accuracy = float(np.mean(pred_classes == true_labels))
-            return accuracy
-        except Exception as e:
-            logger.error(f"Accuracy evaluation failed for instance: {e}")
-            raise RuntimeError("Failed to evaluate loss with the given AdaptoFlux instance.")
 
     def train(
         self,
@@ -1313,7 +1291,7 @@ class GraphEvoTrainer(ModelTrainer):
             temp_gp.graph.nodes[target_node]['method_name'] = candidate_method_name
 
             # 评估替换后的损失
-            new_loss = self._evaluate_loss_with_instance(temp_af, input_data, target)
+            new_loss = self._evaluate_loss(input_data, target, adaptoflux_instance=temp_af)
 
 
             # 记录损失更低的最优候选
@@ -1330,7 +1308,7 @@ class GraphEvoTrainer(ModelTrainer):
             # 如果作者有空而且没忘记可能会在gp里面加一个刷新图节点id的方法提升可读性
 
             # 重新评估准确率
-            new_acc = self._evaluate_accuracy_with_instance(adaptoflux_instance, input_data, target)
+            new_acc = self._evaluate_accuracy(input_data, target, adaptoflux_instance=adaptoflux_instance)
 
             # 重新获取处理节点列表（因为节点 ID 已变）
             updated_nodes = [node for node in gp.graph.nodes() if gp._is_processing_node(node)]
@@ -1379,7 +1357,7 @@ class GraphEvoTrainer(ModelTrainer):
         nodes_to_try = random.sample(processing_nodes, len(processing_nodes))
         improvement_made = False
         total_replacements = 0
-        current_acc = self._evaluate_accuracy_with_instance(adaptoflux_instance, input_data, target)
+        current_acc = self._evaluate_accuracy(input_data, target, adaptoflux_instance=adaptoflux_instance)
 
         # 遍历每一个待优化节点
         for target_node in nodes_to_try:
@@ -1398,8 +1376,7 @@ class GraphEvoTrainer(ModelTrainer):
             # 获取与该节点兼容的候选方法列表（考虑组别、类型兼容性及冻结规则）
             candidate_methods = self._get_compatible_methods_for_node(
                 adaptoflux_instance,
-                target_node,
-                compatibility_mode=self.compatibility_mode
+                target_node
             )
 
             best_candidate = None
@@ -1419,7 +1396,7 @@ class GraphEvoTrainer(ModelTrainer):
                     # 所以直接修改 method_name 是安全的，前提是不依赖边结构变化
                     temp_gp.graph.nodes[target_node]['method_name'] = candidate_method_name
 
-                    new_loss = self._evaluate_loss_with_instance(temp_af, input_data, target)
+                    new_loss = self._evaluate_loss(input_data, target, adaptoflux_instance=temp_af)
 
                     if new_loss < best_loss:
                         best_loss = new_loss
@@ -1436,7 +1413,7 @@ class GraphEvoTrainer(ModelTrainer):
                     new_node_id = gp.replace_node_method(target_node, best_candidate)
                     # 更新当前损失和准确率
                     current_loss = best_loss
-                    current_acc = self._evaluate_accuracy_with_instance(adaptoflux_instance, input_data, target)
+                    current_acc = self._evaluate_accuracy(input_data, target, adaptoflux_instance=adaptoflux_instance)
                     improvement_made = True
                     total_replacements += 1
 

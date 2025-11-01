@@ -1175,6 +1175,7 @@ class GraphEvoTrainer(ModelTrainer):
         if self.enable_compression:
             if self.verbose:
                 logger.info("[Post-Training] Applying Modular Compression once on final model...")
+                logger.warning(f"该函数（_phase_modular_compression）仍在开发中，大概率无法达到预期效果，不建议开启")
             final_compression_result = self._phase_modular_compression(self.adaptoflux, input_data, target)
             # 更新最终模型
             self.adaptoflux = final_compression_result['final_model']

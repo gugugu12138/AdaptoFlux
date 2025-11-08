@@ -106,7 +106,7 @@ class GraphEvoTrainer(ModelTrainer):
         self.frozen_nodes = set(frozen_nodes) if frozen_nodes else set()
         self.frozen_methods = set(frozen_methods) if frozen_methods else set()  # <-- 保存为集合
         self.candidate_pool_mode = candidate_pool_mode
-        self.fallback_mode = fallback_mode or candidate_pool_mode  # 默认同 pool_mode
+        self.fallback_mode = fallback_mode or 'self'  
         self.refinement_strategy = refinement_strategy
         self.enable_compression = enable_compression
         self.enable_evolution = enable_evolution
@@ -1034,6 +1034,7 @@ class GraphEvoTrainer(ModelTrainer):
         best_model_subfolder: str = "best",
         final_model_subfolder: str = "final",
         subgraph_selection_policy: str = "largest",
+        skip_initialization: bool = False,
         **kwargs
     ) -> dict:
         """
@@ -1048,6 +1049,8 @@ class GraphEvoTrainer(ModelTrainer):
         :param save_best_model: 是否保存过程中遇到的最佳模型
         :param best_model_subfolder: 最佳模型保存的子目录
         :param final_model_subfolder: 最终模型保存的子目录
+        :param skip_initialization: 若为 True，则跳过多样初始化阶段，直接使用当前 adaptoflux 实例的图结构作为优化起点。
+                            适用于 CombinedTrainer 或人工预设模型场景。
         :param kwargs: 其他可选参数
         :return: 一个包含训练过程信息的字典
         """
@@ -1056,7 +1059,8 @@ class GraphEvoTrainer(ModelTrainer):
         # 后面添加可选参数，控制该轮训练得到的新知识是否直接加入方法池，或保存为图使用。
 
         if self.verbose:
-            logger.info(f"Starting GraphEvoTrainer. Max evolution cycles: {max_evo_cycles}")
+            init_msg = "Skipping diverse initialization" if skip_initialization else "Starting diverse initialization"
+            logger.info(f"Starting GraphEvoTrainer. {init_msg}. Max evolution cycles: {max_evo_cycles}")
 
         results = {
             "evo_cycles_completed": 0,
@@ -1070,27 +1074,50 @@ class GraphEvoTrainer(ModelTrainer):
             "best_model_cycle": -1
         }
 
-        # 阶段一：多样初始化
-        init_result = self._phase_diverse_initialization(input_data, target)
-        current_af = init_result['best_model']
-        current_loss = init_result['best_loss']
-        current_acc = init_result['best_accuracy']
+        # === 阶段一：多样初始化（可选）===
+        if not skip_initialization:
+            init_result = self._phase_diverse_initialization(input_data, target)
+            current_af = init_result['best_model']
+            current_loss = init_result['best_loss']
+            current_acc = init_result['best_accuracy']
 
-        # 更新全局状态
-        self.adaptoflux = current_af
+            # 更新全局状态（即使跳过，后续也会用 current_af 覆盖）
+            self.adaptoflux = current_af
 
-        # 记录最佳模型
-        if current_acc > results['best_accuracy']:
-            results['best_accuracy'] = current_acc
-            results['best_accuracy_cycle'] = 0
-            results['best_model_snapshot'] = copy.deepcopy(current_af)
-            results['best_model_cycle'] = 0
+            # 记录初始化结果
+            if current_acc > results['best_accuracy']:
+                results['best_accuracy'] = current_acc
+                results['best_accuracy_cycle'] = 0
+                results['best_model_snapshot'] = copy.deepcopy(current_af)
+                results['best_model_cycle'] = 0
 
-        results['phase_results'].append({
-            'cycle': 0,
-            'phase': 'initialization',
-            'result': init_result
-        })
+            results['phase_results'].append({
+                'cycle': 0,
+                'phase': 'initialization',
+                'result': init_result
+            })
+        else:
+            # 直接使用当前实例的模型
+            current_af = copy.deepcopy(self.adaptoflux)
+            current_loss = self._evaluate_loss(input_data, target)
+            current_acc = self._evaluate_accuracy(input_data, target)
+
+            # 初始化即为当前状态
+            if current_acc > results['best_accuracy']:
+                results['best_accuracy'] = current_acc
+                results['best_accuracy_cycle'] = 0
+                results['best_model_snapshot'] = copy.deepcopy(current_af)
+                results['best_model_cycle'] = 0
+
+            results['phase_results'].append({
+                'cycle': 0,
+                'phase': 'initialization_skipped',
+                'result': {
+                    'loss': current_loss,
+                    'accuracy': current_acc,
+                    'model_used': 'current_adaptoflux'
+                }
+            })
 
         # 开始进化循环
         for cycle in range(1, max_evo_cycles + 1):
@@ -1456,7 +1483,7 @@ class GraphEvoTrainer(ModelTrainer):
         if node_id in ("root", "collapse"):
             return -1  # 特殊节点设为 -1（优先级最高）
         try:
-            return int(node_id.split('_')[0])
+            return int(node_id.split('_')[0]) # 感觉获取节点再获取元属性可能更慢，先这样吧
         except (ValueError, IndexError):
             logger.warning(f"Cannot parse layer from node_id: {node_id}. Using layer=0.")
             return 0

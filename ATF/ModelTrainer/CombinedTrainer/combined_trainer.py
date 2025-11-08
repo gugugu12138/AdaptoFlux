@@ -3,15 +3,29 @@ import logging
 import copy
 import os
 from typing import Optional, Dict, Any
-from .LayerGrowTrainer import LayerGrowTrainer
-from .GraphEvoTrainer import GraphEvoTrainer
+from ..LayerGrowTrainer.layer_grow_trainer import LayerGrowTrainer
+from ..GraphEvoTrainer.graph_evo_trainer import GraphEvoTrainer
+
+# 导入遗传选择器（可插拔）
+try:
+    from .GeneticMethodPoolSelector.genetic_method_pool_selector import GeneticMethodPoolSelector
+    GENETIC_AVAILABLE = True
+except ImportError as e:
+    logging.warning(f"GeneticMethodPoolSelector not available: {e}")
+    GENETIC_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
+
 
 class CombinedTrainer:
     """
     组合训练器：实现 AdaptoFlux 的完整自进化闭环。
-    流程：LayerGrow（主干构建） → GraphEvo（精炼+进化） → （可选）多轮迭代
+    支持可插拔的遗传筛选模块，用于控制方法池规模与质量。
+
+    遗传筛选模式（genetic_mode）：
+    - "disabled": 不使用遗传（默认）
+    - "once": 仅在训练开始前执行一次（对应论文 §3.3.5 阶段1）
+    - "periodic": 每 genetic_interval 轮执行一次，用于周期性压缩/重选方法池
     """
 
     def __init__(
@@ -21,8 +35,20 @@ class CombinedTrainer:
         graph_evo_config: dict,
         num_evolution_cycles: int = 1,
         save_dir: Optional[str] = None,
-        verbose: bool = True
+        verbose: bool = True,
+        # === 遗传筛选可插拔配置 ===
+        genetic_mode: str = "disabled",           # "disabled", "once", "periodic"
+        genetic_interval: int = 1,                # 仅在 periodic 模式下生效
+        target_subpool_size: Optional[int] = None,  # 控制筛选后方法池大小
+        genetic_config: Optional[dict] = None,
+        refine_only_new_layers: bool = False,
     ):
+        if genetic_mode not in {"disabled", "once", "periodic"}:
+            raise ValueError("genetic_mode must be one of: 'disabled', 'once', 'periodic'")
+
+        if genetic_mode != "disabled" and not GENETIC_AVAILABLE:
+            raise ImportError("GeneticMethodPoolSelector is required but not available.")
+
         self.base_adaptoflux = adaptoflux_instance
         self.layer_grow_config = layer_grow_config
         self.graph_evo_config = graph_evo_config
@@ -30,17 +56,75 @@ class CombinedTrainer:
         self.save_dir = save_dir or "combined_training"
         self.verbose = verbose
 
+        # 遗传配置
+        self.genetic_mode = genetic_mode
+        self.genetic_interval = genetic_interval
+        self.target_subpool_size = target_subpool_size
+        self.genetic_config = genetic_config or {}
+        self.refine_only_new_layers = refine_only_new_layers 
+
+    def _perform_genetic_selection(self, adaptoflux_instance, input_data, target) -> tuple:
+        """
+        执行一次遗传筛选，返回 (筛选后的 adaptoflux 实例, 遗传结果字典)
+        """
+        if self.verbose:
+            logger.info("=== 开始遗传筛选方法池 ===")
+
+        # 设置默认参数
+        default_params = {
+            "population_size": 12,
+            "generations": 6,
+            "subpool_size": self.target_subpool_size or 8,
+            "layer_grow_layers": 2,
+            "layer_grow_attempts": 2,
+            "data_fraction": 0.2,
+            "elite_ratio": 0.25,
+            "mutation_rate": 0.1,
+            "verbose": self.verbose,
+            "random_seed": 42,
+        }
+        genetic_params = {**default_params, **self.genetic_config}
+
+        selector = GeneticMethodPoolSelector(
+            base_adaptoflux=adaptoflux_instance,
+            input_data=input_data,
+            target=target,
+            **genetic_params
+        )
+
+        result = selector.select()
+        best_subpool = result["best_subpool"]
+
+        # 构建新实例
+        selected_af = copy.deepcopy(adaptoflux_instance)
+        selected_af.methods = {
+            k: v for k, v in selected_af.methods.items() if k in best_subpool
+        }
+
+        if self.verbose:
+            logger.info(f"遗传筛选完成。选出 {len(best_subpool)} 个方法")
+            logger.info(f"适应度: {result['best_fitness']:.4f}")
+
+        genetic_log = {
+            "used": True,
+            "mode": self.genetic_mode,
+            "best_subpool": best_subpool,
+            "fitness": result["best_fitness"],
+            "subpool_size": len(best_subpool),
+        }
+
+        return selected_af, genetic_log
+
     def train(
         self,
         input_data,
         target,
         **kwargs
     ) -> Dict[str, Any]:
-        """
-        执行完整的自进化训练流程。
-        """
         os.makedirs(self.save_dir, exist_ok=True)
+
         results = {
+            "genetic_logs": [],  # 记录每次遗传操作
             "cycles": [],
             "final_model_path": None,
             "best_overall_accuracy": -1.0,
@@ -49,65 +133,108 @@ class CombinedTrainer:
 
         current_af = copy.deepcopy(self.base_adaptoflux)
 
+        # === 初始遗传筛选（once 或 periodic 的第0轮）===
+        if self.genetic_mode == "once":
+            current_af, log = self._perform_genetic_selection(current_af, input_data, target)
+            results["genetic_logs"].append({"cycle": 0, **log})
+        elif self.genetic_mode == "periodic":
+            # 在 Cycle 0 前执行一次
+            current_af, log = self._perform_genetic_selection(current_af, input_data, target)
+            results["genetic_logs"].append({"cycle": 0, **log})
+
+        # === 自进化循环 ===
         for cycle in range(self.num_evolution_cycles):
             if self.verbose:
                 logger.info(f"=== Combined Training Cycle {cycle + 1}/{self.num_evolution_cycles} ===")
 
             cycle_result = {}
 
-            # === 阶段 1: LayerGrow 主干构建 ===
+            old_nodes = set(current_af.graph.nodes)  # 记录 LayerGrow 前的节点（即“旧节点”）
+
+            init_params = {
+                k: v for k, v in self.layer_grow_config.items()
+                if k in {'max_attempts', 'decision_threshold', 'verbose'}
+            }
+
+            # LayerGrow
             lg_trainer = LayerGrowTrainer(
                 adaptoflux_instance=current_af,
-                **self.layer_grow_config
+                **init_params
             )
+
+            # 把 max_layers 传给 train()
             lg_result = lg_trainer.train(
                 input_data=input_data,
                 target=target,
                 model_save_path=os.path.join(self.save_dir, f"cycle_{cycle+1}", "layer_grow"),
                 save_best_model=True,
+                max_layers=self.layer_grow_config.get("max_layers", 10),  # ✅ 正确位置
                 **kwargs
             )
-            current_af = lg_trainer.adaptoflux  # 更新状态
+
+            current_af = lg_trainer.adaptoflux
             cycle_result["layer_grow"] = lg_result
 
-            # === 阶段 2: GraphEvo 精炼与进化 ===
+            # === 2. GraphEvo（可选：仅精炼新节点）===
+            ge_config = self.graph_evo_config.copy()
+
+            if self.refine_only_new_layers:
+                # 计算新节点：LayerGrow 后有、但之前没有的节点
+                new_nodes = set(current_af.graph.nodes) - old_nodes
+                # 要冻结的节点 = 所有旧节点（包括 root/collapse）
+                frozen_nodes = list(old_nodes)
+
+                # 合并用户可能已设置的 frozen_nodes
+                user_frozen = ge_config.get("frozen_nodes", [])
+                ge_config["frozen_nodes"] = list(set(frozen_nodes) | set(user_frozen))
+
+                if self.verbose:
+                    logger.info(f"  [Refine-Only-New] Freezing {len(frozen_nodes)} old nodes, refining {len(new_nodes)} new nodes.")
+
+            # 5. 调用 GraphEvo 时传入 frozen_nodes
             ge_trainer = GraphEvoTrainer(
                 adaptoflux_instance=current_af,
-                **self.graph_evo_config
+                **ge_config
             )
+
             ge_result = ge_trainer.train(
                 input_data=input_data,
                 target=target,
                 model_save_path=os.path.join(self.save_dir, f"cycle_{cycle+1}", "graph_evo"),
                 save_best_model=True,
+                skip_initialization=True,
                 **kwargs
             )
-            current_af = ge_trainer.adaptoflux  # 更新状态（含新方法）
+
+            current_af = ge_trainer.adaptoflux
             cycle_result["graph_evo"] = ge_result
 
-            # === 记录最佳模型 ===
+            # 全局最优更新
             final_acc = ge_result.get("best_accuracy", -1.0)
             if final_acc > results["best_overall_accuracy"]:
                 results["best_overall_accuracy"] = final_acc
                 results["best_cycle"] = cycle + 1
-                # 保存当前最佳模型快照
-                best_snapshot = copy.deepcopy(current_af)
                 best_path = os.path.join(self.save_dir, "best_overall")
                 current_af.save_model(folder=best_path)
                 results["best_model_path"] = best_path
 
             results["cycles"].append(cycle_result)
 
-            # === 为下一轮准备：使用进化后的方法池 ===
-            # 注意：GraphEvoTrainer 已将新方法注入 current_af.methods
-            # 所以下一轮 LayerGrow 会自动使用增强后的方法池
+            # === 周期性遗传筛选（仅 periodic 模式）===
+            if (
+                self.genetic_mode == "periodic"
+                and (cycle + 1) % self.genetic_interval == 0
+                and (cycle + 1) < self.num_evolution_cycles  # 不在最后一轮后执行
+            ):
+                current_af, log = self._perform_genetic_selection(current_af, input_data, target)
+                results["genetic_logs"].append({"cycle": cycle + 1, **log})
 
         # 保存最终模型
         final_path = os.path.join(self.save_dir, "final")
         current_af.save_model(folder=final_path)
         results["final_model_path"] = final_path
 
-        # 保存总日志
+        # 保存日志
         import json
         log_path = os.path.join(self.save_dir, "combined_training_log.json")
         with open(log_path, 'w', encoding='utf-8') as f:

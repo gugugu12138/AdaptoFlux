@@ -62,6 +62,7 @@ class GraphProcessor:
                 self.graph.add_node(
                     new_target_node,
                     method_name=method_name,
+                    layer=self.layer,
                     is_passthrough=False   # ← 关键：显式标记
                 )
 
@@ -98,6 +99,7 @@ class GraphProcessor:
                 self.graph.add_node(
                     node_name,
                     method_name=discard_node_method_name,
+                    layer=self.layer,
                     is_passthrough=True   # ← 关键：显式标记
                 )
 

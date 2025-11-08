@@ -1,1 +1,2 @@
 from .combined_trainer import CombinedTrainer
+from .GeneticMethodPoolSelector.genetic_method_pool_selector import GeneticMethodPoolSelector

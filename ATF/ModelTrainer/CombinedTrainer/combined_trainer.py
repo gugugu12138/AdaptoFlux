@@ -42,6 +42,10 @@ class CombinedTrainer:
         target_subpool_size: Optional[int] = None,  # 控制筛选后方法池大小
         genetic_config: Optional[dict] = None,
         refine_only_new_layers: bool = False,
+        # === 新增：LayerGrowTrainer.train() 参数 ===
+        lg_train_kwargs: Optional[Dict[str, Any]] = None,
+        # === 新增：GraphEvoTrainer.train() 参数 ===
+        ge_train_kwargs: Optional[Dict[str, Any]] = None,
     ):
         if genetic_mode not in {"disabled", "once", "periodic"}:
             raise ValueError("genetic_mode must be one of: 'disabled', 'once', 'periodic'")
@@ -61,7 +65,13 @@ class CombinedTrainer:
         self.genetic_interval = genetic_interval
         self.target_subpool_size = target_subpool_size
         self.genetic_config = genetic_config or {}
-        self.refine_only_new_layers = refine_only_new_layers 
+        self.refine_only_new_layers = refine_only_new_layers
+
+        # === 存储新增参数 ===
+        self.lg_train_kwargs = lg_train_kwargs or {}
+        self.ge_train_kwargs = ge_train_kwargs or {}
+
+        self._final_adaptoflux_instance = None
 
     def _perform_genetic_selection(self, adaptoflux_instance, input_data, target) -> tuple:
         """
@@ -81,7 +91,7 @@ class CombinedTrainer:
             "elite_ratio": 0.25,
             "mutation_rate": 0.1,
             "verbose": self.verbose,
-            "random_seed": 42,
+            "random_seed": 42
         }
         genetic_params = {**default_params, **self.genetic_config}
 
@@ -163,14 +173,17 @@ class CombinedTrainer:
             )
 
             # 把 max_layers 传给 train()
-            lg_result = lg_trainer.train(
-                input_data=input_data,
-                target=target,
-                model_save_path=os.path.join(self.save_dir, f"cycle_{cycle+1}", "layer_grow"),
-                save_best_model=True,
-                max_layers=self.layer_grow_config.get("max_layers", 10),  # ✅ 正确位置
-                **kwargs
-            )
+            lg_train_kwargs_to_pass = self.lg_train_kwargs.copy()
+            lg_train_kwargs_to_pass.update({
+                "input_data": input_data,
+                "target": target,
+                "model_save_path": os.path.join(self.save_dir, f"cycle_{cycle+1}", "layer_grow"),
+                "save_best_model": True,
+                "max_layers": self.layer_grow_config.get("max_layers", 10),
+                **kwargs # 合并传入的通用 kwargs
+            })
+
+            lg_result = lg_trainer.train(**lg_train_kwargs_to_pass)
 
             current_af = lg_trainer.adaptoflux
             cycle_result["layer_grow"] = lg_result
@@ -197,14 +210,17 @@ class CombinedTrainer:
                 **ge_config
             )
 
-            ge_result = ge_trainer.train(
-                input_data=input_data,
-                target=target,
-                model_save_path=os.path.join(self.save_dir, f"cycle_{cycle+1}", "graph_evo"),
-                save_best_model=True,
-                skip_initialization=True,
-                **kwargs
-            )
+            ge_train_kwargs_to_pass = self.ge_train_kwargs.copy()
+            ge_train_kwargs_to_pass.update({
+                "input_data": input_data,
+                "target": target,
+                "model_save_path": os.path.join(self.save_dir, f"cycle_{cycle+1}", "graph_evo"),
+                "save_best_model": True,
+                "skip_initialization": True,
+                **kwargs # 合并传入的通用 kwargs
+            })
+
+            ge_result = ge_trainer.train(**ge_train_kwargs_to_pass)
 
             current_af = ge_trainer.adaptoflux
             cycle_result["graph_evo"] = ge_result
@@ -233,6 +249,7 @@ class CombinedTrainer:
         final_path = os.path.join(self.save_dir, "final")
         current_af.save_model(folder=final_path)
         results["final_model_path"] = final_path
+        self._final_adaptoflux_instance = current_af
 
         # 保存日志
         import json
@@ -242,3 +259,13 @@ class CombinedTrainer:
         results["training_log_saved"] = log_path
 
         return results
+
+    @property
+    def adaptoflux(self):
+        """
+        获取训练完成后的 AdaptoFlux 实例。
+
+        Returns:
+            AdaptoFlux: 训练完成后的 AdaptoFlux 实例，如果尚未训练则为 None。
+        """
+        return self._final_adaptoflux_instance

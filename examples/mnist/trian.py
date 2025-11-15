@@ -76,7 +76,7 @@ if __name__ == "__main__":
     )
 
     # 添加自定义坍缩函数（如果需要）
-    model.add_collapse_method(collapse_sum_positive)
+    model.set_custom_collapse(collapse_sum_positive)
 
     # 创建训练器
     trainer = LayerGrowTrainer(

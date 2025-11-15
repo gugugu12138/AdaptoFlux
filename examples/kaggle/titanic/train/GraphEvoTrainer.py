@@ -42,7 +42,7 @@ model = load_titanic_for_adaptoflux(
     methods_path='examples/kaggle/titanic/methods.py',
     collapse_method=CollapseMethod.SUM
 )
-model.add_collapse_method(collapse_sum_positive)
+model.set_custom_collapse(collapse_sum_positive)
 
 # === 使用 GraphEvoTrainer ===
 trainer = GraphEvoTrainer(

@@ -71,7 +71,7 @@ class AdaptoFlux:
         # 存储文件路径
         self.methods_path = methods_path  # 默认为 "methods.py"
     
-    def add_collapse_method(self, collapse_function):
+    def set_custom_collapse(self, collapse_function):
         """
         允许用户自定义坍缩方法，并替换现有的坍缩方法
         :param collapse_function: 传入一个函数

@@ -62,7 +62,7 @@ model = load_titanic_for_adaptoflux(train_processed_path='examples/kaggle/titani
                                     methods_path='examples/kaggle/titanic/methods.py',
                                     collapse_method=CollapseMethod.SUM)
 
-model.add_collapse_method(collapse_sum_positive)
+model.set_custom_collapse(collapse_sum_positive)
 
 trainer = LayerGrowTrainer(
             adaptoflux_instance=model,

@@ -140,7 +140,7 @@ class AdaptoFlux:
         return 0  # 默认值
 
     
-    def add_collapse_method(self, collapse_function):
+    def set_custom_collapse(self, collapse_function):
         """
         允许用户自定义坍缩方法，并替换现有的坍缩方法
         :param collapse_function: 传入一个函数
@@ -476,11 +476,26 @@ class AdaptoFlux:
             - 使用图结构进行推理（infer_with_graph）
             - 图结构的优化与分析等操作
         """
-        return GraphProcessor(
-            graph=graph,
-            methods=self.methods,              # 可用的方法集合（如加法、乘法、激活函数等）
-            collapse_method=self.graph_processor.collapse_manager.collapse_method  # 输出聚合方式（如 sum、mean 等）
-        )
+        # --- 修改开始 ---
+        # 获取旧的 graph_processor 的 collapse_manager
+        old_collapse_manager = self.graph_processor.collapse_manager
+        
+        if old_collapse_manager.collapse_method == CollapseMethod.CUSTOM:
+            # 创建新的 GraphProcessor 实例
+            gp = GraphProcessor(
+                graph=graph,
+                methods=self.methods,              # 可用的方法集合（如加法、乘法、激活函数等）
+            )
+            
+            gp.collapse_manager.set_custom_collapse(old_collapse_manager.custom_function)
+        else:
+            gp = GraphProcessor(
+                graph=graph,
+                methods=self.methods,              # 可用的方法集合（如加法、乘法、激活函数等）
+                collapse_method=old_collapse_manager.collapse_method  # 继承旧的坍缩方法
+            )
+            
+        return gp
 
     def clone(self):
         """

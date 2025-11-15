@@ -35,7 +35,7 @@ model.graph.add_edge("classify", "collapse", output_index=2, data_coord=2)  # �
 def custom_collapse(arr):
     return arr
 
-model.add_collapse_method(custom_collapse)  # 注册自定义坍缩函数
+model.set_custom_collapse(custom_collapse)  # 注册自定义坍缩函数
 
 # 执行推理
 result = model.infer_with_graph(values)

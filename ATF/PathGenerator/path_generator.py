@@ -9,6 +9,7 @@ class PathGenerator:
     def __init__(self, graph, methods):
         """
         初始化路径生成器。
+        目前未做类型匹配机制
         
         :param graph: 当前图结构（nx.MultiDiGraph）
         :param methods: 方法池字典 {method_name: {"function": ..., "input_count": int, ...}}

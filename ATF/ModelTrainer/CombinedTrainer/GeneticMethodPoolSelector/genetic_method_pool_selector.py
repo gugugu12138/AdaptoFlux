@@ -77,7 +77,7 @@ class GeneticMethodPoolSelector:
         af_copy = copy.deepcopy(self.base_af)
         # 仅保留子集中的方法
         af_copy.methods = {k: v for k, v in af_copy.methods.items() if k in method_subset}
-
+        
         # 创建轻量 LayerGrowTrainer
         lg_trainer = LayerGrowTrainer(
             adaptoflux_instance=af_copy,
@@ -92,10 +92,10 @@ class GeneticMethodPoolSelector:
                 input_data=self.eval_input,
                 target=self.eval_target,
                 max_layers=self.lg_layers,
-                max_total_attempts=self.lg_layers * 10,  # 防止卡死
+                max_total_attempts=self.lg_layers * 100,  # 防止卡死
                 save_model=False,
-                verbose=False
             )
+
             best_acc = results.get("best_model_accuracy", -1.0)
             if best_acc < 0:
                 best_acc = results.get("final_model_accuracy", 0.0)
@@ -139,12 +139,21 @@ class GeneticMethodPoolSelector:
         population = [self._create_individual() for _ in range(self.population_size)]
         fitness_history = []
 
+        # 记录全局最佳个体和适应度
+        best_overall_individual = None
+        best_overall_fitness = -float('inf') # 初始化为负无穷，确保任何合理的准确率都能更新它
+
         for gen in range(self.generations):
             # 评估适应度
             fitness_scores = [(ind, self._evaluate_individual(ind)) for ind in population]
             fitness_scores.sort(key=lambda x: x[1], reverse=True)
             best_in_gen = fitness_scores[0]
             fitness_history.append(best_in_gen[1])
+
+            # 更新全局最佳（如果当前代最佳优于全局最佳）
+            if best_in_gen[1] > best_overall_fitness:
+                best_overall_fitness = best_in_gen[1]
+                best_overall_individual = best_in_gen[0].copy() # 确保是副本，防止后续变异等操作影响
 
             if self.verbose:
                 logger.info(f"Generation {gen+1}/{self.generations} | Best Acc: {best_in_gen[1]:.4f}")
@@ -163,11 +172,14 @@ class GeneticMethodPoolSelector:
 
             population = next_gen
 
-        # 返回最终结果
-        final_best = max(
-            [(ind, self._evaluate_individual(ind)) for ind in population],
-            key=lambda x: x[1]
-        )
+        # 返回进化过程中记录到的最佳结果，避免最后的重复评估
+        # final_best = max(
+        #     [(ind, self._evaluate_individual(ind)) for ind in population],
+        #     key=lambda x: x[1]
+        # )
+
+        # 使用记录的全局最佳
+        final_best = (best_overall_individual, best_overall_fitness)
 
         return {
             "best_subpool": list(final_best[0]),

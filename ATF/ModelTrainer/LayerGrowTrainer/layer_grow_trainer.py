@@ -81,7 +81,7 @@ class LayerGrowTrainer(ModelTrainer):
         :param discard_unmatched: 是否丢弃不匹配的节点
         :param discard_node_method_name: 丢弃节点的方法名称
         :param save_model: 是否在训练结束后保存模型
-        :param on_retry_exhausted: 当所有尝试失败时的策略（如 "stop", "continue"）
+        :param on_retry_exhausted: 当所有尝试失败时的策略（如 "stop", "rollback"）
         :param rollback_layers: 如果添加失败，回退的层数
         :param max_total_attempts: 全局最大增长尝试次数，防止无限循环。默认为 max_layers * 30
         :param model_save_path: 模型保存的文件夹路径。仅在 save_model=True 时生效。默认为 None（使用 'models'）
@@ -282,6 +282,30 @@ class LayerGrowTrainer(ModelTrainer):
         if self.verbose:
             logger.info(f"LayerGrowTrainer finished. Successfully added {results['layers_added']} layers.")
 
+        # === 评估最终模型性能 ===
+        # 这部分应该总是在训练结束后执行，不依赖 save_model
+        final_acc = self._evaluate_accuracy(input_data, target)
+        results["final_model_accuracy"] = final_acc
+        results["final_model_layers"] = results["layers_added"]
+
+        # === 评估最佳模型性能 === (如果存在最佳模型)
+        if best_graph_snapshot is not None:
+            # 临时替换以评估最佳状态
+            original_graph = self.adaptoflux.graph
+            original_methods = self.adaptoflux.methods
+
+            self.adaptoflux.graph = best_graph_snapshot
+            self.adaptoflux.methods = best_methods_snapshot
+            try:
+                best_acc_for_results = self._evaluate_accuracy(input_data, target) # 重新评估最佳模型
+            finally:
+                # 恢复原始状态
+                self.adaptoflux.graph = original_graph
+                self.adaptoflux.methods = original_methods
+
+            results["best_model_accuracy"] = best_acc_for_results # 使用重新评估的准确率
+            results["best_model_layers"] = best_layer_count
+
         # 根据参数决定是否保存模型
         if save_model:
             try:
@@ -298,7 +322,8 @@ class LayerGrowTrainer(ModelTrainer):
                 if save_best_model and best_graph_snapshot is not None:
                     best_path = os.path.join(base_save_path, best_model_subfolder)
 
-                    # 临时替换当前图结构以保存最佳状态
+                    # 临时替换当前图结构以保存最佳状态 (这里可能不需要再次评估)
+                    # 因为我们上面已经评估过了
                     original_graph = self.adaptoflux.graph
                     original_methods = self.adaptoflux.methods
 
@@ -307,20 +332,16 @@ class LayerGrowTrainer(ModelTrainer):
                     try:
                         self.adaptoflux.save_model(folder=best_path)
                         if self.verbose:
-                            logger.info(f"Best model saved to '{best_path}' (accuracy={best_acc:.4f}, layers={best_layer_count})")
+                            logger.info(f"Best model saved to '{best_path}' (accuracy={best_acc_for_results:.4f}, layers={best_layer_count})")
                     finally:
                         # 恢复原始状态
                         self.adaptoflux.graph = original_graph
                         self.adaptoflux.methods = original_methods
 
-                # 添加到 results
+                # 添加到 results (这些路径信息只有在保存时才有意义)
                 results["final_model_saved"] = final_path
-                results["final_model_accuracy"] = self._evaluate_accuracy(input_data, target)
-                results["final_model_layers"] = results["layers_added"]
                 if save_best_model and best_graph_snapshot is not None:
                     results["best_model_saved"] = best_path
-                    results["best_model_accuracy"] = best_acc
-                    results["best_model_layers"] = best_layer_count
                 
                 # 自动保存训练日志为 JSON
                 log_filename = kwargs.get("log_filename", "training_log.json")

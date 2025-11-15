@@ -85,7 +85,7 @@ def load_titanic_for_adaptoflux(train_processed_path, methods_path=None, collaps
 model = load_titanic_for_adaptoflux(train_processed_path='examples/kaggle/titanic/output/test_processed.csv',
                                     methods_path='examples/kaggle/titanic/methods.py')
 
-model.add_collapse_method(collapse_sum_positive)
+model.set_custom_collapse(collapse_sum_positive)
 
 model.load_model(folder='models/best')
 

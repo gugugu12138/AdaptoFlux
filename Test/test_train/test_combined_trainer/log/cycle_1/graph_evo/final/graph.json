@@ -1,0 +1,37 @@
+{
+  "directed": true,
+  "multigraph": true,
+  "graph": {},
+  "nodes": [
+    {
+      "id": "root"
+    },
+    {
+      "id": "collapse"
+    },
+    {
+      "method_name": "add_one",
+      "layer": 1,
+      "is_passthrough": false,
+      "id": "1_0_add_one"
+    }
+  ],
+  "edges": [
+    {
+      "output_index": 0,
+      "data_coord": 0,
+      "data_type": "float32",
+      "source": "root",
+      "target": "1_0_add_one",
+      "key": 0
+    },
+    {
+      "output_index": 0,
+      "data_coord": 0,
+      "data_type": "scalar",
+      "source": "1_0_add_one",
+      "target": "collapse",
+      "key": 0
+    }
+  ]
+}

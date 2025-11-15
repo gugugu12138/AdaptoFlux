@@ -1,0 +1,53 @@
+{
+    "layers_added": 1,
+    "attempt_history": [
+        {
+            "layer": 1,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.6829059743503053,
+                    "new_acc": 0.002,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": true,
+                    "new_loss": 0.6805819618935312,
+                    "new_acc": 0.004,
+                    "status": "accepted"
+                }
+            ]
+        },
+        {
+            "layer": 2,
+            "attempts": [
+                {
+                    "attempt": 1,
+                    "accepted": false,
+                    "new_loss": 0.6805819618935312,
+                    "new_acc": 0.004,
+                    "status": "rejected"
+                },
+                {
+                    "attempt": 2,
+                    "accepted": false,
+                    "new_loss": 2.678257946514579,
+                    "new_acc": 0.0,
+                    "status": "rejected"
+                }
+            ]
+        }
+    ],
+    "total_growth_attempts": 2,
+    "total_candidate_attempts": 4,
+    "rollback_count": 0,
+    "rollback_events": [],
+    "final_model_saved": "Test/test_train/test_combined_trainer/log\\cycle_1\\layer_grow\\final",
+    "final_model_accuracy": 0.004,
+    "final_model_layers": 1,
+    "best_model_saved": "Test/test_train/test_combined_trainer/log\\cycle_1\\layer_grow\\best",
+    "best_model_accuracy": 0.004,
+    "best_model_layers": 1
+}

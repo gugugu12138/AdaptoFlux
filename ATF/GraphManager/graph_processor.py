@@ -621,3 +621,45 @@ class GraphProcessor:
             return False
         
         return True
+
+    def get_graph_entropy(self):
+        """
+        计算图结构的熵值，基于节点和方法类型的分布。
+        示例计算方法，可根据实际需求替换。
+        :return: 计算得到的图结构熵值
+        """
+        method_counter = Counter()
+
+        # 统计每种方法的出现次数
+        for node in self.graph.nodes:
+            data = self.graph.nodes[node]
+            method_name = data.get("method_name")
+            if method_name and method_name != "null":  # 忽略 null 节点
+                method_counter[method_name] += 1
+
+        if not method_counter:
+            return 0.0
+
+        # 计算概率分布
+        total = sum(method_counter.values())
+        probabilities = [count / total for count in method_counter.values()]
+
+        # 计算香农熵
+        entropy = -sum(p * math.log2(p) for p in probabilities if p > 0)
+
+        return entropy
+
+    def get_method_counter(self):
+        """
+        统计图中各 method_name 的出现次数
+        """
+        from collections import Counter
+        method_counter = Counter()
+
+        for node in self.graph.nodes:
+            data = self.graph.nodes[node]
+            method_name = data.get("method_name")
+            if method_name and method_name != "null":  # 忽略 null 节点
+                method_counter[method_name] += 1
+
+        return method_counter

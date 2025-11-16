@@ -40,6 +40,7 @@ class LayerGrowTrainer(ModelTrainer):
         self.max_attempts = max_attempts
         self.decision_threshold = decision_threshold
         self.verbose = verbose
+        self.best_adaptoflux = None  # 用于保存最佳模型的 AdaptoFlux 实例
 
     def _should_accept(self, old_loss: float, new_loss: float) -> bool:
         """
@@ -77,7 +78,7 @@ class LayerGrowTrainer(ModelTrainer):
 
         :param input_data: 用于快速评估的输入数据（小批量）
         :param target: 对应的标签
-        :param max_layers: 最多尝试添加的新层数量
+        :param max_layers: 最多尝试添加的新层数量，与模型实际层数无关
         :param discard_unmatched: 是否丢弃不匹配的节点
         :param discard_node_method_name: 丢弃节点的方法名称
         :param save_model: 是否在训练结束后保存模型
@@ -91,6 +92,7 @@ class LayerGrowTrainer(ModelTrainer):
 
         best_acc = -1.0
         best_graph_snapshot = None
+        best_graph_processor_snapshot = None
         best_layer_count = 0
         if self.verbose:
             logger.info(f"Starting LayerGrowTrainer. Max layers to grow: {max_layers}")
@@ -212,7 +214,7 @@ class LayerGrowTrainer(ModelTrainer):
                         logger.info(f"🎉 New best accuracy: {best_acc:.4f} → {new_acc:.4f}, layers={results['layers_added']}")
                     best_acc = new_acc
                     # 保存图结构和方法池的快照
-                    best_graph_snapshot = copy.deepcopy(self.adaptoflux.graph)
+                    best_graph_processor_snapshot = copy.deepcopy(self.adaptoflux.graph_processor)
                     best_methods_snapshot = copy.deepcopy(self.adaptoflux.methods)
                     best_layer_count = results["layers_added"]
             else:
@@ -289,18 +291,19 @@ class LayerGrowTrainer(ModelTrainer):
         results["final_model_layers"] = results["layers_added"]
 
         # === 评估最佳模型性能 === (如果存在最佳模型)
-        if best_graph_snapshot is not None:
+        if best_graph_processor_snapshot is not None:
             # 临时替换以评估最佳状态
-            original_graph = self.adaptoflux.graph
+            original_graph_processor = self.adaptoflux.graph_processor
             original_methods = self.adaptoflux.methods
 
-            self.adaptoflux.graph = best_graph_snapshot
+            self.adaptoflux.graph_processor = best_graph_processor_snapshot
             self.adaptoflux.methods = best_methods_snapshot
+            self.best_adaptoflux = copy.deepcopy(self.adaptoflux)  # 保存最佳模型的 AdaptoFlux 实例
             try:
                 best_acc_for_results = self._evaluate_accuracy(input_data, target) # 重新评估最佳模型
             finally:
                 # 恢复原始状态
-                self.adaptoflux.graph = original_graph
+                self.adaptoflux.graph_processor = original_graph_processor
                 self.adaptoflux.methods = original_methods
 
             results["best_model_accuracy"] = best_acc_for_results # 使用重新评估的准确率
@@ -319,15 +322,15 @@ class LayerGrowTrainer(ModelTrainer):
                     logger.info(f"Final model saved to '{final_path}'")
 
                 # === 保存最佳模型 ===
-                if save_best_model and best_graph_snapshot is not None:
+                if save_best_model and best_graph_processor_snapshot is not None:
                     best_path = os.path.join(base_save_path, best_model_subfolder)
 
                     # 临时替换当前图结构以保存最佳状态 (这里可能不需要再次评估)
                     # 因为我们上面已经评估过了
-                    original_graph = self.adaptoflux.graph
+                    original_graph_processor = self.adaptoflux.graph_processor
                     original_methods = self.adaptoflux.methods
 
-                    self.adaptoflux.graph = best_graph_snapshot
+                    self.adaptoflux.graph_processor = best_graph_processor_snapshot
                     self.adaptoflux.methods = best_methods_snapshot
                     try:
                         self.adaptoflux.save_model(folder=best_path)
@@ -335,12 +338,12 @@ class LayerGrowTrainer(ModelTrainer):
                             logger.info(f"Best model saved to '{best_path}' (accuracy={best_acc_for_results:.4f}, layers={best_layer_count})")
                     finally:
                         # 恢复原始状态
-                        self.adaptoflux.graph = original_graph
+                        self.adaptoflux.graph_processor = original_graph_processor
                         self.adaptoflux.methods = original_methods
 
                 # 添加到 results (这些路径信息只有在保存时才有意义)
                 results["final_model_saved"] = final_path
-                if save_best_model and best_graph_snapshot is not None:
+                if save_best_model and best_graph_processor_snapshot is not None:
                     results["best_model_saved"] = best_path
                 
                 # 自动保存训练日志为 JSON

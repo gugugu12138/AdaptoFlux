@@ -51,48 +51,6 @@ class AdaptoFlux:
         self.history_method_inputs = []  # 记录历史每层的预输入索引
         # 意外发现即使不使用历史记录和清空不可取的网络残余（即被清空的网络依然参与预输入索引和预输入值计算）依然会出现概率上升和方差下降
         
-        # 存储路径信息
-        # self.paths = []  # 记录每个值对应的路径
-        # self.max_probability_path = [] # 记录最高概率对应的路径
-        self.graph = nx.MultiDiGraph()
-        self.graph.add_node("root") 
-        self.graph.add_node('collapse')
-
-        # 获取每个特征维度的数据类型
-        self.feature_types = []  # 初始化为空列表
-
-        if self.values is not None:
-            if isinstance(self.values, pd.DataFrame):
-                self.feature_types = [str(dtype) for dtype in self.values.dtypes]
-            elif self.values.dtype.names is not None:  # structured array
-                self.feature_types = [self.values.dtype.fields[name][0].name for name in self.values.dtype.names]
-            else:
-                # 普通 ndarray：确保是二维且列数 > 0
-                if len(self.values.shape) != 2:
-                    raise ValueError(f"Input `values` must be 2D when not a DataFrame or structured array, got shape {self.values.shape}")
-                if self.values.shape[1] == 0:
-                    raise ValueError("Input `values` has zero feature dimensions (shape[1] == 0). At least one feature is required to initialize the graph.")
-                self.feature_types = [str(self.values.dtype)] * self.values.shape[1]
-
-            # === 新增：检查 feature_types 是否为空 ===
-            if len(self.feature_types) == 0:
-                raise ValueError(
-                    "Failed to infer any feature types from `values`. "
-                    "This usually happens when input data has zero columns. "
-                    "Please ensure `values` is a non-empty 2D array (e.g., shape (N, D) with D >= 1)."
-                )
-
-            # 添加 root -> collapse 边
-            for feature_index, feature_type in enumerate(self.feature_types):
-                self.graph.add_edge(
-                    "root",
-                    "collapse",
-                    output_index=feature_index,
-                    data_coord=feature_index,
-                    data_type=feature_type
-                )
-            self.layer = 0
-        
         # # 选择的坍缩方法
         # self.collapse_method = collapse_method  # 默认使用 SUM 方法
         # self.custom_collapse_function = None  # 预定义自定义坍缩方法，默认值为 None
@@ -115,9 +73,50 @@ class AdaptoFlux:
         # 存储文件路径
         self.methods_path = methods_path  # 默认为 "methods.py"
 
+        # 存储路径信息
+        # self.paths = []  # 记录每个值对应的路径
+        # self.max_probability_path = [] # 记录最高概率对应的路径
+        graph = nx.MultiDiGraph()
+        graph.add_node("root") 
+        graph.add_node('collapse')
+
+        # 获取每个特征维度的数据类型
+        feature_types = []  # 初始化为空列表
+
+        if self.values is not None:
+            if isinstance(self.values, pd.DataFrame):
+                feature_types = [str(dtype) for dtype in self.values.dtypes]
+            elif self.values.dtype.names is not None:  # structured array
+                feature_types = [self.values.dtype.fields[name][0].name for name in self.values.dtype.names]
+            else:
+                # 普通 ndarray：确保是二维且列数 > 0
+                if len(self.values.shape) != 2:
+                    raise ValueError(f"Input `values` must be 2D when not a DataFrame or structured array, got shape {self.values.shape}")
+                if self.values.shape[1] == 0:
+                    raise ValueError("Input `values` has zero feature dimensions (shape[1] == 0). At least one feature is required to initialize the graph.")
+                feature_types = [str(self.values.dtype)] * self.values.shape[1]
+
+            # === 新增：检查 feature_types 是否为空 ===
+            if len(feature_types) == 0:
+                raise ValueError(
+                    "Failed to infer any feature types from `values`. "
+                    "This usually happens when input data has zero columns. "
+                    "Please ensure `values` is a non-empty 2D array (e.g., shape (N, D) with D >= 1)."
+                )
+
+            # 添加 root -> collapse 边
+            for feature_index, feature_type in enumerate(feature_types):
+                graph.add_edge(
+                    "root",
+                    "collapse",
+                    output_index=feature_index,
+                    data_coord=feature_index,
+                    data_type=feature_type
+                )
+
         # 初始化图处理器
         self.graph_processor = GraphProcessor(
-            graph=self.graph,
+            graph=graph,
             methods=self.methods,
             collapse_method=collapse_method
         )
@@ -125,6 +124,11 @@ class AdaptoFlux:
         # 自动导入方法
         if self.methods_path is not None:
             self.import_methods_from_file(self.methods_path)
+
+    @property
+    def graph(self):
+        """提供图的访问接口"""
+        return self.graph_processor.graph
 
     def get_input_dimension(self):
         """
@@ -249,7 +253,7 @@ class AdaptoFlux:
         :raises ValueError: 如果方法字典为空或值列表为空，则抛出异常
         """
         self.path_generator = PathGenerator(
-            graph=self.graph,
+            graph=self.graph_processor.graph,
             methods=self.methods,
         )
         return self.path_generator.process_random_method(shuffle_indices=shuffle_indices)
@@ -265,7 +269,7 @@ class AdaptoFlux:
         :return: 新的 result 结构，包含更新后的 index_map、valid_groups 和 unmatched
         """
         self.path_generator = PathGenerator(
-            graph=self.graph,
+            graph=self.graph_processor.graph,
             methods=self.methods,
         )
         return self.path_generator.replace_random_elements(result, n, shuffle_indices=shuffle_indices)
@@ -285,8 +289,6 @@ class AdaptoFlux:
         """
 
         self.graph_processor.append_nx_layer(result, discard_unmatched, discard_node_method_name)
-        self.graph = self.graph_processor.graph  # 同步图结构
-        self.layer = self.graph_processor.layer  # 同步层数
 
     def remove_last_nx_layer(self):
         """
@@ -295,8 +297,6 @@ class AdaptoFlux:
         """
 
         self.graph_processor.remove_last_nx_layer()
-        self.graph = self.graph_processor.graph  # 同步图结构
-        self.layer = self.graph_processor.layer  # 同步层数
 
     def infer_with_graph(self, values):
         """
@@ -347,11 +347,11 @@ class AdaptoFlux:
 
         # 保存图结构到 graph.gexf（可读性强）
         gexf_file_path = os.path.join(folder, "graph.gexf")
-        nx.write_gexf(self.graph, gexf_file_path)
+        nx.write_gexf(self.graph_processor.graph, gexf_file_path)
 
         json_file_path = os.path.join(folder, "graph.json")
         try:
-            data = json_graph.node_link_data(self.graph, edges="edges")  # 转换为可序列化的字典
+            data = json_graph.node_link_data(self.graph_processor.graph, edges="edges")  # 转换为可序列化的字典
             with open(json_file_path, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=2)
         except Exception as e:
@@ -363,11 +363,10 @@ class AdaptoFlux:
 
     def load_model(self, folder="models"):
         """
-        从指定文件夹加载保存的模型：图结构（.gexf 或 .json）和 methods_path 文件。
+        从指定文件夹加载保存的模型：图结构（.gexf 或 .json）文件。
 
         1. 检查目标文件夹是否存在。
         2. 优先从 graph.gexf 加载图结构，若不存在则尝试 graph.json。
-        3. 恢复 methods_path 的路径（复制回原位置或更新引用）。
         
         参数:
             folder (str): 包含模型文件的文件夹路径，默认为 "models"。
@@ -380,16 +379,15 @@ class AdaptoFlux:
         if not os.path.exists(folder):
             raise FileNotFoundError(f"模型文件夹不存在: {folder}")
 
+        self.graph_processor.graph = None
+
         # 尝试优先加载 .gexf 文件
         gexf_file_path = os.path.join(folder, "graph.gexf")
         json_file_path = os.path.join(folder, "graph.json")
 
-        self.graph = None
-
         if os.path.exists(gexf_file_path):
             try:
-                self.graph = nx.read_gexf(gexf_file_path)
-                self.graph_processor.set_graph(self.graph)
+                self.graph_processor.set_graph(nx.read_gexf(gexf_file_path))
                 print("成功从 graph.gexf 加载图结构。")
             except Exception as e:
                 print(f"读取 graph.gexf 失败: {e}")
@@ -397,9 +395,7 @@ class AdaptoFlux:
             try:
                 with open(json_file_path, 'r', encoding='utf-8') as f:
                     data = json.load(f)
-                self.graph = json_graph.node_link_graph(data, edges="edges")
-                self.graph_processor.set_graph(self.graph)
-                self.graph_processor.set_methods(self.methods)
+                self.graph_processor.set_graph(json_graph.node_link_graph(data, edges="edges"))
                 print("成功从 graph.json 加载图结构。")
             except Exception as e:
                 print(f"读取 graph.json 失败: {e}")
@@ -408,7 +404,7 @@ class AdaptoFlux:
 
 
         # 确保图被成功加载
-        if self.graph is None:
+        if self.graph_processor.graph is None:
             raise RuntimeError("图结构加载失败。")
 
         print(f"模型已成功从 '{folder}' 加载。")
@@ -419,41 +415,15 @@ class AdaptoFlux:
         示例计算方法，可根据实际需求替换。
         :return: 计算得到的图结构熵值
         """
-        method_counter = Counter()
 
-        # 统计每种方法的出现次数
-        for node in self.graph.nodes:
-            data = self.graph.nodes[node]
-            method_name = data.get("method_name")
-            if method_name and method_name != "null":  # 忽略 null 节点
-                method_counter[method_name] += 1
-
-        if not method_counter:
-            return 0.0
-
-        # 计算概率分布
-        total = sum(method_counter.values())
-        probabilities = [count / total for count in method_counter.values()]
-
-        # 计算香农熵
-        entropy = -sum(p * math.log2(p) for p in probabilities if p > 0)
-
-        return entropy
+        return self.graph_processor.get_graph_entropy()
     
     def get_method_counter(self):
         """
         统计图中各 method_name 的出现次数
         """
-        from collections import Counter
-        method_counter = Counter()
 
-        for node in self.graph.nodes:
-            data = self.graph.nodes[node]
-            method_name = data.get("method_name")
-            if method_name and method_name != "null":  # 忽略 null 节点
-                method_counter[method_name] += 1
-
-        return method_counter
+        return self.graph_processor.get_method_counter()
     
 
     def _create_graph_processor(self, graph):

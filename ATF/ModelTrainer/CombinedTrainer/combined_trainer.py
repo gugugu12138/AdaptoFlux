@@ -185,7 +185,7 @@ class CombinedTrainer:
 
             lg_result = lg_trainer.train(**lg_train_kwargs_to_pass)
 
-            current_af = lg_trainer.adaptoflux
+            current_af = lg_trainer.best_adaptoflux # 获取 LayerGrow 后的实例(使用最佳模型)
             cycle_result["layer_grow"] = lg_result
 
             # === 2. GraphEvo（可选：仅精炼新节点）===

@@ -3,19 +3,26 @@ from copy import deepcopy
 import numpy as np
 from collections import Counter
 import networkx as nx
+import logging
+from collections import defaultdict
 
+logger = logging.getLogger(__name__)
 
 class PathGenerator:
-    def __init__(self, graph, methods):
+    def __init__(self, graph, methods, remove_from_pool=False, optimize_same_type_inputs=False):
         """
         初始化路径生成器。
-        目前未做类型匹配机制
+        目前正在做类型匹配机制
         
         :param graph: 当前图结构（nx.MultiDiGraph）
         :param methods: 方法池字典 {method_name: {"function": ..., "input_count": int, ...}}
+        :param remove_from_pool: 是否从随机池中移出已被选择的方法索引
+        :param optimize_same_type_inputs: 当方法的所有输入类型相同时，优化匹配过程
         """
         self.graph = graph
         self.methods = methods
+        self.remove_from_pool = remove_from_pool
+        self.optimize_same_type_inputs = optimize_same_type_inputs
 
     def group_indices_by_input_count(self, indices, input_count, shuffle=False):
         """
@@ -42,46 +49,118 @@ class PathGenerator:
         if not self.methods:
             raise ValueError("方法字典为空，无法处理！")
         
-        method_list = []
         collapse_edges = list(self.graph.in_edges("collapse", data=True))
         num_elements = len(collapse_edges)
 
-        for _ in range(num_elements):
-            method_name = random.choice(list(self.methods.keys()))
-            method_list.append(method_name)
+        # 建立类型对应索引位置列表的字典
+        type_to_indices = {}
+        for idx, (u, v, data) in enumerate(collapse_edges):
+            data_type = data.get("data_type")
+            if data_type is not None:
+                type_to_indices.setdefault(data_type, []).append(idx)
 
-        multi_input_positions = {}
-        for idx, method_name in enumerate(method_list):
-            input_count = self.methods[method_name]["input_count"]
-            if input_count <= 0:
-                raise ValueError(f"方法 '{method_name}' 的 input_count 必须大于 0，当前值为 {input_count}")
-            multi_input_positions.setdefault(method_name, []).append(idx)
+        # 建立类型对应方法输入索引字典
+        type_to_method_input_indices = {}
+        for method_name in self.methods:
+            if "input_types" in self.methods[method_name]:
+                input_types = self.methods[method_name]["input_types"]
+                for input_idx, input_type in enumerate(input_types):
+                    if input_type not in type_to_method_input_indices:
+                        type_to_method_input_indices[input_type] = []
+                    type_to_method_input_indices[input_type].append((method_name, input_idx))
 
+        # 为每个数据索引选择一个兼容的方法输入
+        index_to_method_input = {}  # idx -> (method_name, input_idx)
+        unmatched_indices = []
+        available_choices = deepcopy(type_to_method_input_indices) if self.remove_from_pool else type_to_method_input_indices
+        
+        for idx in range(num_elements):
+            _, _, data = collapse_edges[idx]
+            data_type = data.get("data_type")
+            
+            if data_type is not None and data_type in available_choices and available_choices[data_type]:
+                # 选择与当前数据类型和位置兼容的方法输入
+                compatible_choices = [(m, i) for m, i in available_choices[data_type] 
+                                    if "input_types" in self.methods[m] and 
+                                    i < len(self.methods[m]["input_types"]) and
+                                    self.methods[m]["input_types"][i] == data_type]
+                
+                if compatible_choices:
+                    chosen_method_input = random.choice(compatible_choices)
+                    index_to_method_input[idx] = chosen_method_input
+                    
+                    if self.remove_from_pool:
+                        available_choices[data_type].remove(chosen_method_input)
+                else:
+                    logger.warning(f"索引 {idx} 的类型 {data_type} 没有找到兼容的方法输入")
+                    unmatched_indices.append(idx)
+            else:
+                logger.warning(
+                    f"索引 {idx} 无法匹配到支持的类型，可能是开启 remove_from_pool 或提供的方法池与数据不符导致",
+                )
+                unmatched_indices.append(idx)
+
+        # 根据 method_input 信息进行分组，确保每个方法调用的输入位置正确
+        method_call_groups = defaultdict(list)  # (method_name, call_instance) -> [idx1, idx2, ...]
+        method_call_counters = defaultdict(int)  # 记录每个方法的调用实例ID
+
+        # 按 (method_name, input_idx) 分桶
+        method_input_buckets = defaultdict(lambda: defaultdict(list))
+        for idx, (method_name, input_idx) in index_to_method_input.items():
+            method_input_buckets[method_name][input_idx].append(idx)
+
+        # 为每个方法构建完整的调用组
+        for method_name, buckets in method_input_buckets.items():
+            expected_input_count = len(self.methods[method_name]["input_types"])
+            
+            if expected_input_count == 1:
+                # 单输入方法：每个索引独立成组
+                for idx in buckets[0]:
+                    call_key = (method_name, method_call_counters[method_name])
+                    method_call_groups[call_key] = [idx]
+                    method_call_counters[method_name] += 1
+            else:
+                # 多输入方法：需要每个输入位置都有值
+                available_inputs = [buckets[i] for i in range(expected_input_count) if i in buckets]
+                if len(available_inputs) == expected_input_count:
+                    # 确保每个输入位置都有足够的索引
+                    min_len = min(len(input_list) for input_list in available_inputs)
+                    for call_i in range(min_len):
+                        group = [buckets[input_pos][call_i] for input_pos in range(expected_input_count)]
+                        call_key = (method_name, method_call_counters[method_name])
+                        method_call_groups[call_key] = group
+                        method_call_counters[method_name] += 1
+
+        # 构建结果映射
         index_map = {}
-        valid_groups = {}
-        unmatched = []
+        valid_groups = defaultdict(list)
+        
+        for (method_name, call_instance), group in method_call_groups.items():
+            valid_groups[method_name].append(group)
+            for idx in group:
+                index_map[idx] = {"method": method_name, "group": tuple(group)}
 
-        for method_name, indices in multi_input_positions.items():
-            input_count = self.methods[method_name]["input_count"]
-            groups, unmatch = self.group_indices_by_input_count(indices, input_count, shuffle_indices)
-            valid_groups[method_name] = groups
-            for group in groups:
-                for idx in group:
-                    index_map[idx] = {"method": method_name, "group": tuple(group)}
-            unmatched.extend(idx for idx in unmatch)
+        # 处理未使用的索引（在分桶后剩余的）
+        used_indices = set()
+        for group_list in valid_groups.values():
+            for group in group_list:
+                used_indices.update(group)
+        
+        remaining_unmatched = [idx for idx in range(num_elements) 
+                            if idx not in used_indices and idx not in unmatched_indices]
+        unmatched_indices.extend(remaining_unmatched)
 
-        # 新增：将 unmatched 中的索引也加入 index_map
-        for sublist in unmatched:
-            for idx in sublist:
-                index_map[idx] = {
-                    "method": "unmatched",
-                    "group": tuple([idx])  # 每个 idx 自己成为一个 group
-                }
+        # 将未匹配的索引也加入 index_map
+        for idx in unmatched_indices:
+            index_map[idx] = {
+                "method": "unmatched",
+                "group": tuple([idx])
+            }
 
         return {
             "index_map": index_map,
-            "valid_groups": valid_groups,
-            "unmatched": unmatched
+            "valid_groups": dict(valid_groups),
+            "unmatched": [[idx] for idx in unmatched_indices]
         }
 
     def replace_random_elements(self, result, n, shuffle_indices=True):

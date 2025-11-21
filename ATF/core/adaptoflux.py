@@ -20,7 +20,7 @@ from ..ModelTrainer.model_trainer import ModelTrainer
 
 
 class AdaptoFlux:
-    def __init__(self, values = None, labels = None, methods_path = None, collapse_method=CollapseMethod.SUM):
+    def __init__(self, values = None, labels = None, methods_path = None, collapse_method=CollapseMethod.SUM, type_equivalence_map=None):
         """
         初始化 AdaptoFlux 类的实例
         
@@ -124,6 +124,12 @@ class AdaptoFlux:
         # 自动导入方法
         if self.methods_path is not None:
             self.import_methods_from_file(self.methods_path)
+        
+        self.path_generator = PathGenerator(
+            graph=self.graph_processor.graph,
+            methods=self.methods,
+            type_equivalence_map=processed_type_equivalence_map
+        )
 
     @property
     def graph(self):
@@ -252,10 +258,7 @@ class AdaptoFlux:
         :return: method_list，包含为每个元素随机分配的方法（可能是单输入或多输入方法）
         :raises ValueError: 如果方法字典为空或值列表为空，则抛出异常
         """
-        self.path_generator = PathGenerator(
-            graph=self.graph_processor.graph,
-            methods=self.methods,
-        )
+        self.path_generator.graph = self.graph_processor.graph
         return self.path_generator.process_random_method(shuffle_indices=shuffle_indices)
 
     
@@ -268,10 +271,7 @@ class AdaptoFlux:
         :param shuffle_indices: 是否打乱新方法分配时的索引顺序
         :return: 新的 result 结构，包含更新后的 index_map、valid_groups 和 unmatched
         """
-        self.path_generator = PathGenerator(
-            graph=self.graph_processor.graph,
-            methods=self.methods,
-        )
+        self.path_generator.graph = self.graph_processor.graph
         return self.path_generator.replace_random_elements(result, n, shuffle_indices=shuffle_indices)
 
     def append_nx_layer(self, result, discard_unmatched='to_discard', discard_node_method_name="null"):

@@ -9,7 +9,7 @@ import os
 import json
 import traceback
 from ...PathGenerator.path_generator import PathGenerator
-from ...GraphManager.graph_processor import GraphProcessor
+from ...GraphProcessor.graph_processor import GraphProcessor
 from ...core.evolved_method import EvolvedMethod
 from collections import defaultdict
 import networkx as nx
@@ -48,7 +48,7 @@ class GraphEvoTrainer(ModelTrainer):
         refinement_strategy: str = "random_single",
         candidate_pool_mode: str = "group",
         fallback_mode: Optional[str] = None,
-        enable_compression: bool = True,
+        enable_compression: bool = False,
         enable_evolution: bool = True,
         evolution_sampling_frequency: int = 1,
         evolution_trigger_count: int = 3,
@@ -161,6 +161,9 @@ class GraphEvoTrainer(ModelTrainer):
         if self.fallback_mode not in valid_fallback_modes:
             raise ValueError(f"Invalid fallback_mode: {self.fallback_mode}")
 
+        if self.enable_compression == True and self.verbose:
+            logger.warning("模块化压缩为未完成的实验性功能，使用时大概率有严重bug，如无自行修改建议不要使用！")
+
     def _phase_diverse_initialization(self, input_data: np.ndarray, target: np.ndarray) -> Dict[str, Any]:
         """
         阶段一：多样初始化 (Diverse Initialization)
@@ -269,6 +272,7 @@ class GraphEvoTrainer(ModelTrainer):
         # 打印日志：开始精炼阶段
         if self.verbose:
             logger.info(f"[Phase 2] Node-wise Refinement: Starting refinement with strategy '{self.refinement_strategy}'...")
+
 
         # 获取图处理器和当前性能指标
         gp = adaptoflux_instance.graph_processor
@@ -1069,7 +1073,7 @@ class GraphEvoTrainer(ModelTrainer):
 
         self.max_total_refinement_attempts = max_total_refinement_attempts
         self._total_refinement_attempts = 0  # <-- 新增计数器
-        
+
         # 后面可能编写单任务使用多个实例的知识提取（消耗性能更高，但提取出来的知识应该效果更好），以及多任务适配
         # 后面添加可选参数，控制该轮训练得到的新知识是否直接加入方法池，或保存为图使用。
 

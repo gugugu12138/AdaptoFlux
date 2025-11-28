@@ -98,7 +98,7 @@ class GeneticMethodPoolSelector:
         # 数据子集用于快速评估
         n_total = input_data.shape[0]
         n_eval = max(10, int(n_total * data_fraction))
-        indices = np.random.RandomState(random_seed).choice(n_total, n_eval, replace=False)
+        indices = np.random.RandomState().choice(n_total, n_eval, replace=False)
         self.eval_input = input_data[indices]
         self.eval_target = target[indices]
 

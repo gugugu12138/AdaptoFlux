@@ -221,7 +221,7 @@ class CombinedTrainer:
 
             ge_result = ge_trainer.train(**ge_train_kwargs_to_pass)
 
-            current_af = ge_trainer.adaptoflux
+            current_af = ge_trainer.adaptoflux  # 获取 GraphEvo 后的实例
             cycle_result["graph_evo"] = ge_result
 
             # 全局最优更新

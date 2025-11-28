@@ -14,7 +14,7 @@ import networkx as nx
 import pandas as pd
 import copy
 from ..CollapseManager.collapse_functions import CollapseFunctionManager, CollapseMethod
-from ..GraphManager.graph_processor import GraphProcessor
+from ..GraphProcessor.graph_processor import GraphProcessor
 from ..PathGenerator.path_generator import PathGenerator
 from ..ModelTrainer.model_trainer import ModelTrainer
 

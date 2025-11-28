@@ -21,16 +21,17 @@ class GraphProcessor:
         self.discard_node_method_name = "null"
         self.graph = graph.copy() if graph else nx.MultiDiGraph()
         self.methods = methods
-        self.layer = 0  # 记录当前层数（可选）
+        self.layer = self.get_max_layer_from_graph()  # 记录当前层数（可选）
 
         self.collapse_manager = CollapseFunctionManager(method=collapse_method)
 
     def set_graph(self, new_graph):
-        """更新图结构"""
         if not hasattr(new_graph, 'nodes') or not hasattr(new_graph, 'edges'):
             raise ValueError("new_graph 不是一个有效的图对象")
         self.graph = new_graph
-        print("图结构已更新。")
+        # 自动同步 layer 状态
+        self.layer = self.get_max_layer_from_graph()
+        print(f"图结构已更新，当前最大层数：{self.layer}。")
 
     def set_methods(self, new_methods):
         """更新 methods（函数字典或模块）"""
@@ -663,3 +664,14 @@ class GraphProcessor:
                 method_counter[method_name] += 1
 
         return method_counter
+
+    def get_max_layer_from_graph(self):
+        max_layer = 0
+        for node in self.graph.nodes:
+            if node == 'root' or node == 'collapse':
+                continue
+            if isinstance(node, str) and '_' in node:
+                layer = int(node.split('_')[0])
+                if layer > max_layer:
+                    max_layer = layer
+        return max_layer

@@ -1,7 +1,7 @@
 from typing import Any, List, Optional, Dict
 import networkx as nx
 from networkx.readwrite import json_graph
-from ..GraphManager.graph_processor import GraphProcessor
+from ..GraphProcessor.graph_processor import GraphProcessor
 from ..CollapseManager.collapse_functions import CollapseMethod
 import numpy as np
 

@@ -8,7 +8,7 @@ from typing import Optional
 import os
 import json
 from ...PathGenerator.path_generator import PathGenerator
-from ...GraphManager.graph_processor import GraphProcessor
+from ...GraphProcessor.graph_processor import GraphProcessor
 
 # 设置日志
 logger = logging.getLogger(__name__)
@@ -40,7 +40,7 @@ class LayerGrowTrainer(ModelTrainer):
         self.max_attempts = max_attempts
         self.decision_threshold = decision_threshold
         self.verbose = verbose
-        self.best_adaptoflux = None  # 用于保存最佳模型的 AdaptoFlux 实例
+        self.best_adaptoflux = adaptoflux_instance  # 用于保存最佳模型的 AdaptoFlux 实例 初始为自身
 
     def _should_accept(self, old_loss: float, new_loss: float) -> bool:
         """

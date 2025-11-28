@@ -2,7 +2,7 @@
 import random
 import numpy as np
 from collections import Counter
-from ..GraphManager.graph_processor import GraphProcessor
+from ..GraphProcessor.graph_processor import GraphProcessor
 import networkx as nx
 from ..ModelGenerator.model_generator import ModelGenerator
 from abc import ABC, abstractmethod

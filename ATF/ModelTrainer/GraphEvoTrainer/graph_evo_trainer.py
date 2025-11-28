@@ -1051,6 +1051,8 @@ class GraphEvoTrainer(ModelTrainer):
         input_data: np.ndarray,
         target: np.ndarray,
         max_evo_cycles: int = 5,
+        enable_early_stop: bool = True,      # ← 新增开关
+        early_stop_eps: float = 1e-6,        # ← 建议改名避免和数值计算库的 eps 冲突
         save_model: bool = True,
         model_save_path: Optional[str] = None,
         save_best_model: bool = True,
@@ -1158,6 +1160,14 @@ class GraphEvoTrainer(ModelTrainer):
             current_af = refinement_result['final_model']
             current_loss = refinement_result['final_loss']
             current_acc = refinement_result['final_accuracy']
+
+            # 【✅ 新增早停逻辑】
+            if enable_early_stop and current_acc >= 1.0 - early_stop_eps:
+                if self.verbose:
+                    logger.info(f"🎯 Early stopping triggered at cycle {cycle}: accuracy={current_acc:.6f} >= {1.0 - eps}")
+                results['evo_cycles_completed'] = cycle
+                break  # 立即终止后续进化轮次
+
             results['total_refinement_steps'] += refinement_result['steps_taken']
 
             cycle_results['refinement'] = refinement_result
@@ -1284,7 +1294,10 @@ class GraphEvoTrainer(ModelTrainer):
                 logger.error(f"Failed to save model(s): {e}")
                 import traceback
                 logger.error(traceback.format_exc())
-        
+                
+        # 记录总精炼尝试次数（无论是否成功）
+        results['total_refinement_attempts'] = self._total_refinement_attempts
+
         return results
     
     def _refine_random_single_step(

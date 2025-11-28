@@ -46,6 +46,8 @@ class CombinedTrainer:
         lg_train_kwargs: Optional[Dict[str, Any]] = None,
         # === 新增：GraphEvoTrainer.train() 参数 ===
         ge_train_kwargs: Optional[Dict[str, Any]] = None,
+        enable_early_stop: bool = True,
+        early_stop_eps: float = 1e-6,
     ):
         if genetic_mode not in {"disabled", "once", "periodic"}:
             raise ValueError("genetic_mode must be one of: 'disabled', 'once', 'periodic'")
@@ -73,6 +75,10 @@ class CombinedTrainer:
 
         self._final_adaptoflux_instance = None
         self._clean_initial_adaptoflux = copy.deepcopy(adaptoflux_instance)
+
+        # 早停配置
+        self.enable_early_stop = enable_early_stop
+        self.early_stop_eps = early_stop_eps
 
     def _perform_genetic_selection(self, adaptoflux_instance, input_data, target) -> tuple:
         """
@@ -180,7 +186,9 @@ class CombinedTrainer:
                 "model_save_path": os.path.join(self.save_dir, f"cycle_{cycle+1}", "layer_grow"),
                 "save_best_model": True,
                 "max_layers": self.layer_grow_config.get("max_layers", 10),
-                **kwargs # 合并传入的通用 kwargs
+                "enable_early_stop": self.enable_early_stop,      # ← 添加
+                "early_stop_eps": self.early_stop_eps,            # ← 添加
+                **kwargs
             })
 
             lg_result = lg_trainer.train(**lg_train_kwargs_to_pass)
@@ -217,7 +225,9 @@ class CombinedTrainer:
                 "model_save_path": os.path.join(self.save_dir, f"cycle_{cycle+1}", "graph_evo"),
                 "save_best_model": True,
                 "skip_initialization": True,
-                **kwargs # 合并传入的通用 kwargs
+                "enable_early_stop": self.enable_early_stop,      # ← 添加
+                "early_stop_eps": self.early_stop_eps,            # ← 添加
+                **kwargs
             })
 
             ge_result = ge_trainer.train(**ge_train_kwargs_to_pass)
@@ -246,6 +256,14 @@ class CombinedTrainer:
                     "path": best_path
                 })
 
+            results["cycles"].append(cycle_result)
+            
+            # 在 cycle 循环末尾（保存最优模型之后）
+            if self.enable_early_stop and final_acc >= 1.0 - self.early_stop_eps:
+                if self.verbose:
+                    logger.info(f"🎯 全局早停触发：Cycle {cycle+1} 后准确率 = {final_acc:.6f} ≥ {1.0 - self.early_stop_eps}，终止后续循环。")
+                break  # 跳出 for cycle in range(...)
+
             # === 周期性遗传筛选（仅 periodic 模式）===
             if (
                 self.genetic_mode == "periodic"
@@ -254,6 +272,15 @@ class CombinedTrainer:
             ):
                 current_af, log = self._perform_genetic_selection(current_af, input_data, target)
                 results["genetic_logs"].append({"cycle": cycle + 1, **log})
+
+        # === 汇总总尝试次数 ===
+        total_attempts = 0
+        for cycle_log in results["cycles"]:
+            lg_att = cycle_log["layer_grow"].get("total_candidate_attempts", 0)
+            ge_att = cycle_log["graph_evo"].get("total_refinement_attempts", 0)
+            total_attempts += lg_att + ge_att
+
+        results["total_candidate_and_refinement_attempts"] = total_attempts
 
         # 保存最终模型
         final_path = os.path.join(self.save_dir, "final")

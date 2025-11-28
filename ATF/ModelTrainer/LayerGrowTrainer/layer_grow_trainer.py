@@ -69,6 +69,8 @@ class LayerGrowTrainer(ModelTrainer):
         save_best_model: bool = True,           # 👈 新增：是否保存最佳模型
         best_model_subfolder: str = "best",     # 👈 新增：最佳模型子目录
         final_model_subfolder: str = "final",   # 👈 新增：最终模型子目录
+        enable_early_stop: bool = True,          # ← 新增：是否启用早停
+        early_stop_eps: float = 1e-6,            # ← 新增：早停阈值
         **kwargs
     ) -> dict:
         """
@@ -217,6 +219,17 @@ class LayerGrowTrainer(ModelTrainer):
                     best_graph_processor_snapshot = copy.deepcopy(self.adaptoflux.graph_processor)
                     best_methods_snapshot = copy.deepcopy(self.adaptoflux.methods)
                     best_layer_count = results["layers_added"]
+                # ✅【新增】早停判断：如果当前准确率已达理论上限
+                if enable_early_stop and new_acc >= 1.0 - early_stop_eps:
+                    if self.verbose:
+                        logger.info(
+                            f"🎯 Early stopping triggered at layer {layer_idx + 1}: "
+                            f"accuracy={new_acc:.6f} ≥ {1.0 - early_stop_eps}. "
+                            f"Terminating layer growth."
+                        )
+                    layer_idx += 1  # 可选：是否计入该层（建议计入）
+                    results["layers_added"] += 1
+                    break  # 👈 立即跳出 while 循环，不再添加更多层
             else:
                 if on_retry_exhausted == "stop":
                     if self.verbose:

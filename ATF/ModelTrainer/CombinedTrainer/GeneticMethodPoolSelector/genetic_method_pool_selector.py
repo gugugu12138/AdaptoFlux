@@ -112,6 +112,7 @@ class GeneticMethodPoolSelector:
         self.crossover_rate = crossover_rate
         self.verbose = verbose
         self.fitness_metric = fitness_metric.lower()
+        
 
         # 验证 fitness_metric
         if self.fitness_metric not in ("accuracy", "loss"):

@@ -401,11 +401,17 @@ class GraphEvoTrainer(ModelTrainer):
         node_data = gp.graph.nodes[node_name]
         original_method_name = node_data.get("method_name")
         if original_method_name is None or original_method_name not in methods:
-            logger.warning(
-                "Node '%s' has no valid 'method_name'; falling back to all methods.",
-                node_name
+            error_msg = (
+                f"Node '{node_name}' has no valid 'method_name'.\n"
+                f"  - Current method_name: {original_method_name}\n"
+                f"  - Available methods: {sorted(methods.keys())}\n"
+                f"  - Node data: {node_data}"
             )
-            return all_method_names
+            logger.error("CRITICAL GRAPH ERROR:\n%s", error_msg)
+            # 打印完整堆栈（便于定位是哪个调用链导致的）
+            logger.error("Full traceback:\n%s", traceback.format_exc())
+            # 抛出异常，终止程序（除非外层有特殊处理）
+            raise RuntimeError(error_msg)
 
         # === 2. 提取原始类型 ===
         orig_info = methods[original_method_name]
@@ -1019,6 +1025,7 @@ class GraphEvoTrainer(ModelTrainer):
             }
 
             # 6. 【关键】重建 graph_processor 以识别新方法，并保留当前 layer 状态
+            adaptoflux_instance.path_generator.methods = adaptoflux_instance.methods # 确保 methods 已更新
             current_layer = adaptoflux_instance.graph_processor.layer
             adaptoflux_instance.graph_processor = adaptoflux_instance._create_graph_processor(
                 graph=adaptoflux_instance.graph

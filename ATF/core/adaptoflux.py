@@ -114,16 +114,16 @@ class AdaptoFlux:
                     data_type=feature_type
                 )
 
+        # 自动导入方法
+        if self.methods_path is not None:
+            self.import_methods_from_file(self.methods_path)
+
         # 初始化图处理器
         self.graph_processor = GraphProcessor(
             graph=graph,
             methods=self.methods,
             collapse_method=collapse_method
         )
-
-        # 自动导入方法
-        if self.methods_path is not None:
-            self.import_methods_from_file(self.methods_path)
         
         self.path_generator = PathGenerator(
             graph=self.graph_processor.graph,
@@ -259,6 +259,7 @@ class AdaptoFlux:
         :raises ValueError: 如果方法字典为空或值列表为空，则抛出异常
         """
         self.path_generator.graph = self.graph_processor.graph
+
         return self.path_generator.process_random_method(shuffle_indices=shuffle_indices)
 
     
@@ -272,6 +273,7 @@ class AdaptoFlux:
         :return: 新的 result 结构，包含更新后的 index_map、valid_groups 和 unmatched
         """
         self.path_generator.graph = self.graph_processor.graph
+
         return self.path_generator.replace_random_elements(result, n, shuffle_indices=shuffle_indices)
 
     def append_nx_layer(self, result, discard_unmatched='to_discard', discard_node_method_name="null"):
@@ -287,7 +289,7 @@ class AdaptoFlux:
                 'ignore' - 忽略这些未匹配项，不会进入 collapse
             discard_node_method_name: 如果 discard_unmatched == 'to_discard'，则用该名称作为丢弃节点的 method_name
         """
-
+        
         self.graph_processor.append_nx_layer(result, discard_unmatched, discard_node_method_name)
 
     def remove_last_nx_layer(self):
@@ -515,3 +517,14 @@ class AdaptoFlux:
         cloned.model_trainer = ModelTrainer(adaptoflux_instance=cloned)
 
         return cloned
+
+    def set_methods(self, new_methods: dict):
+        """
+        安全地更新方法池，并同步到所有子组件。
+        """
+        self.methods = new_methods
+        # ✅ 关键：同步更新子组件
+        if hasattr(self, 'graph_processor'):
+            self.graph_processor.methods = new_methods
+        if hasattr(self, 'path_generator'):
+            self.path_generator.methods = new_methods

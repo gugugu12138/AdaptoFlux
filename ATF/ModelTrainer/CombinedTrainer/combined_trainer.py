@@ -72,6 +72,7 @@ class CombinedTrainer:
         self.ge_train_kwargs = ge_train_kwargs or {}
 
         self._final_adaptoflux_instance = None
+        self._clean_initial_adaptoflux = copy.deepcopy(adaptoflux_instance)
 
     def _perform_genetic_selection(self, adaptoflux_instance, input_data, target) -> tuple:
         """
@@ -105,10 +106,10 @@ class CombinedTrainer:
         best_subpool = result["best_subpool"]
 
         # 构建新实例
-        selected_af = copy.deepcopy(adaptoflux_instance)
-        selected_af.methods = {
-            k: v for k, v in selected_af.methods.items() if k in best_subpool
-        }
+        selected_af = copy.deepcopy(self._clean_initial_adaptoflux)
+
+        new_methods = {k: v for k, v in selected_af.methods.items() if k in best_subpool}
+        selected_af.set_methods(new_methods)
 
         if self.verbose:
             logger.info(f"遗传筛选完成。选出 {len(best_subpool)} 个方法")
@@ -229,11 +230,21 @@ class CombinedTrainer:
             if final_acc > results["best_overall_accuracy"]:
                 results["best_overall_accuracy"] = final_acc
                 results["best_cycle"] = cycle + 1
-                best_path = os.path.join(self.save_dir, "best_overall")
-                current_af.save_model(folder=best_path)
-                results["best_model_path"] = best_path
 
-            results["cycles"].append(cycle_result)
+                # ✅ 保存到带 cycle 编号的唯一子目录
+                best_path = os.path.join(self.save_dir, f"best_overall_cycle_{cycle + 1}")
+                
+                current_af.save_model(folder=best_path)
+                results["best_model_path"] = best_path  # 记录最新最优路径（可选）
+
+                # ✅ 可选：记录所有历史最优路径
+                if "best_model_paths" not in results:
+                    results["best_model_paths"] = []
+                results["best_model_paths"].append({
+                    "cycle": cycle + 1,
+                    "accuracy": final_acc,
+                    "path": best_path
+                })
 
             # === 周期性遗传筛选（仅 periodic 模式）===
             if (
@@ -268,3 +279,28 @@ class CombinedTrainer:
             AdaptoFlux: 训练完成后的 AdaptoFlux 实例，如果尚未训练则为 None。
         """
         return self._final_adaptoflux_instance
+
+    def _validate_graph_method_consistency(self, adaptoflux_instance):
+        """
+        校验图中每个节点的 method_name 是否存在于当前方法池中。
+        如果发现非法引用，立即抛出异常。
+        """
+        graph = adaptoflux_instance.graph_processor.graph
+        methods = adaptoflux_instance.methods
+        
+        for node_id, node_data in graph.nodes(data=True):
+            # 跳过特殊节点（如root、collapse）
+            if node_id in ("root", "collapse"):
+                continue
+                
+            method_name = node_data.get("method_name")
+            if method_name is None:
+                raise ValueError(f"Node '{node_id}' has no 'method_name' attribute. Node data: {node_data}")
+                
+            if method_name not in methods:
+                raise ValueError(
+                    f"Node '{node_id}' references method '{method_name}', "
+                    f"which is not in the current method pool.\n"
+                    f"Available methods: {sorted(methods.keys())}\n"
+                    f"Node data: {node_data}"
+                )

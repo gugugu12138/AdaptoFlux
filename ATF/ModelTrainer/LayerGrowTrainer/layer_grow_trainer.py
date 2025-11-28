@@ -287,8 +287,10 @@ class LayerGrowTrainer(ModelTrainer):
         # === 评估最终模型性能 ===
         # 这部分应该总是在训练结束后执行，不依赖 save_model
         final_acc = self._evaluate_accuracy(input_data, target)
+        final_loss = self._evaluate_loss(input_data, target)
         results["final_model_accuracy"] = final_acc
         results["final_model_layers"] = results["layers_added"]
+        results["final_model_loss"] = final_loss
 
         # === 评估最佳模型性能 === (如果存在最佳模型)
         if best_graph_processor_snapshot is not None:
@@ -301,6 +303,7 @@ class LayerGrowTrainer(ModelTrainer):
             self.best_adaptoflux = copy.deepcopy(self.adaptoflux)  # 保存最佳模型的 AdaptoFlux 实例
             try:
                 best_acc_for_results = self._evaluate_accuracy(input_data, target) # 重新评估最佳模型
+                best_loss_for_results = self._evaluate_loss(input_data, target)
             finally:
                 # 恢复原始状态
                 self.adaptoflux.graph_processor = original_graph_processor
@@ -308,6 +311,7 @@ class LayerGrowTrainer(ModelTrainer):
 
             results["best_model_accuracy"] = best_acc_for_results # 使用重新评估的准确率
             results["best_model_layers"] = best_layer_count
+            results["best_model_loss"] = best_loss_for_results
 
         # 根据参数决定是否保存模型
         if save_model:

@@ -77,6 +77,7 @@ class GraphEvoTrainer(ModelTrainer):
         :param adaptoflux_instance: 已初始化的 AdaptoFlux 实例，作为优化的基础模板。
         :param num_initial_models: 多样初始化阶段生成的候选模型数量。
         :param max_refinement_steps: 单次精炼阶段允许的最大优化步数。
+        :param max_total_refinement_attempts: 整个训练过程中允许的最大候选方法评估次数（用于限制计算资源消耗）。若为 None 则不限制。
         :param compression_threshold: 模块化压缩阶段判定子图等效的 MSE 相似度阈值（值越小要求越严格）。
         :param max_init_layers: 初始化时每个候选模型最多添加的随机层数（仅在 init_mode="fixed" 时生效）。
         :param init_mode: 初始化模式，"fixed" 表示所有模型添加相同层数，"list" 表示按 init_layers_list 指定。
@@ -142,7 +143,6 @@ class GraphEvoTrainer(ModelTrainer):
 
         # 用于记录完整图结构快照（用于方法池进化）
         self.graph_snapshots: List[Any] = []
-
         
         self._strategy_map = {
             "random_single": self._refine_random_single_step,
@@ -310,6 +310,16 @@ class GraphEvoTrainer(ModelTrainer):
 
         # === 3. 主优化循环 ===
         for step in range(self.max_refinement_steps):
+
+            if (self.max_total_refinement_attempts is not None and
+                self._total_refinement_attempts >= self.max_total_refinement_attempts):
+                if self.verbose:
+                    logger.info(
+                        f"[Phase 2] Stopped early: reached max_total_refinement_attempts="
+                        f"{self.max_total_refinement_attempts} (at step {step})."
+                    )
+                break
+
             # 安全退出：防止超过最大步数（虽然策略函数可能一次执行多步）
             if steps_taken >= self.max_refinement_steps:
                 break
@@ -355,7 +365,8 @@ class GraphEvoTrainer(ModelTrainer):
             'final_loss': current_loss,              # 最终损失
             'final_accuracy': current_acc,           # 最终准确率
             'steps_taken': steps_taken,              # 实际执行步数
-            'improvement_made': improvement_made     # 是否有改进
+            'improvement_made': improvement_made,     # 是否有改进
+            'total_refinement_attempts': self._total_refinement_attempts,  # 前向推理次数
         }
 
     def _get_compatible_methods_for_node(
@@ -1035,6 +1046,7 @@ class GraphEvoTrainer(ModelTrainer):
         final_model_subfolder: str = "final",
         subgraph_selection_policy: str = "largest",
         skip_initialization: bool = False,
+        max_total_refinement_attempts: Optional[int] = None,  # <-- 新增参数
         **kwargs
     ) -> dict:
         """
@@ -1055,6 +1067,9 @@ class GraphEvoTrainer(ModelTrainer):
         :return: 一个包含训练过程信息的字典
         """
 
+        self.max_total_refinement_attempts = max_total_refinement_attempts
+        self._total_refinement_attempts = 0  # <-- 新增计数器
+        
         # 后面可能编写单任务使用多个实例的知识提取（消耗性能更高，但提取出来的知识应该效果更好），以及多任务适配
         # 后面添加可选参数，控制该轮训练得到的新知识是否直接加入方法池，或保存为图使用。
 
@@ -1306,11 +1321,22 @@ class GraphEvoTrainer(ModelTrainer):
 
         best_candidate = None
         best_loss = current_loss  # 初始化为当前损失，用于比较
+
+        attempts_in_step = 0
         
         # 遍历所有候选方法（跳过当前方法）
         for candidate_method_name in candidate_methods:
             if candidate_method_name == original_method_name:
                 continue
+
+            # --- 检查是否已达总尝试上限 ---
+            if (self.max_total_refinement_attempts is not None and
+                self._total_refinement_attempts >= self.max_total_refinement_attempts):
+                break
+
+            # --- 计数 +1 ---
+            self._total_refinement_attempts += 1
+            attempts_in_step += 1
 
             # 创建临时副本，避免污染原模型
             temp_af = copy.deepcopy(adaptoflux_instance)
@@ -1414,6 +1440,14 @@ class GraphEvoTrainer(ModelTrainer):
             for candidate_method_name in candidate_methods:
                 if candidate_method_name == original_method_name:
                     continue
+
+                # --- 检查并计数 ---
+                if (self.max_total_refinement_attempts is not None and
+                    self._total_refinement_attempts >= self.max_total_refinement_attempts):
+                    # 提前退出双层循环
+                    return improvement_made, current_loss, current_acc, total_replacements, processing_nodes
+
+                self._total_refinement_attempts += 1
 
                 # 创建临时副本进行安全评估，避免污染原模型
                 try:

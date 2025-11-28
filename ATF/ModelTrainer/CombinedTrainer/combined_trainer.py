@@ -91,7 +91,6 @@ class CombinedTrainer:
             "elite_ratio": 0.25,
             "mutation_rate": 0.1,
             "verbose": self.verbose,
-            "random_seed": 42
         }
         genetic_params = {**default_params, **self.genetic_config}
 

@@ -128,7 +128,7 @@ class AdaptoFlux:
         self.path_generator = PathGenerator(
             graph=self.graph_processor.graph,
             methods=self.methods,
-            type_equivalence_map=processed_type_equivalence_map
+            type_equivalence_map=type_equivalence_map
         )
 
     @property

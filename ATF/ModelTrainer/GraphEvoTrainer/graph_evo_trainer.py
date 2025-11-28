@@ -903,8 +903,9 @@ class GraphEvoTrainer(ModelTrainer):
                                 data_type=data_type)
             
             # === 重命名节点：使用与 append_nx_layer 一致的命名格式 ===
-            logger.info("Renaming nodes...")
-            logger.warning("图的重命名系统根据节点到root的路径层数进行命名，理论上不该出现问题，如出现问题，请联系开发者")
+            if self.verbose:
+                logger.info("Renaming nodes...")
+                logger.warning("图的重命名系统根据节点到root的路径层数进行命名，理论上不该出现问题，如出现问题，请联系开发者")
 
             # 在 g_full 中（已添加 root），计算每个节点到 root 的最短路径长度
             # 注意：g_full 是 DiGraph，边方向 root → node

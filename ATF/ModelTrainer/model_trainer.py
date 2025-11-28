@@ -7,6 +7,9 @@ import networkx as nx
 from ..ModelGenerator.model_generator import ModelGenerator
 from abc import ABC, abstractmethod
 import logging
+import traceback
+import sys
+
 
 logger = logging.getLogger(__name__)
 
@@ -124,8 +127,8 @@ class ModelTrainer(ABC):
             return float(loss)
 
         except Exception as e:
-            logger.error(f"Loss evaluation failed: {e}")
-            return float('inf')
+            logger.exception("Loss evaluation failed – terminating program.")  # ← 打印完整堆栈
+            sys.exit(1)  # ← 立即终止
 
 
     def _evaluate_accuracy(
@@ -200,8 +203,8 @@ class ModelTrainer(ABC):
             return accuracy
 
         except Exception as e:
-            logger.error(f"Accuracy evaluation failed: {e}")
-            return 0.0
+            logger.exception("Accuracy evaluation failed – terminating program.")  # ← 完整堆栈
+            sys.exit(1)  # ← 终止
 
     @abstractmethod
     def train(self, **kwargs):

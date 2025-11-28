@@ -265,8 +265,31 @@ class GraphProcessor:
 
             new_output = np.zeros((num_samples, output_count))
             for i, res in enumerate(results):
+                if len(res) != output_count:
+                    raise ValueError(
+                        f"Result at sample {i} has {len(res)} elements, but expected {output_count}. "
+                        f"Result: {res}"
+                    )
                 for j, val in enumerate(res):
-                    new_output[i, j] = val
+                    try:
+                        new_output[i, j] = val
+                    except ValueError as e:
+                        if "setting an array element with a sequence" in str(e):
+                            # 打印详细诊断信息
+                            logger.error(
+                                f"Failed to assign val to new_output[{i}, {j}].\n"
+                                f"  - val type: {type(val)}\n"
+                                f"  - val value: {val}\n"
+                                f"  - val shape (if array): {getattr(val, 'shape', 'N/A')}\n"
+                                f"  - val size (if array): {getattr(val, 'size', 'N/A')}\n"
+                                f"  - Expected: a scalar (int/float/np.number)\n"
+                                f"  - This usually means a method returned a vector/list instead of a scalar."
+                            )
+                        # 重新抛出异常（保持堆栈）或 sys.exit(1)
+                        raise  # ← 保留原始异常和堆栈
+                    except Exception as e:
+                        logger.error(f"Unexpected error at [{i}, {j}]: {e}, val={val}")
+                        raise
 
             node_outputs[node] = new_output
 

@@ -52,49 +52,13 @@ class EvolvedMethod:
         self.methods_ref = methods_ref        # 全局方法池引用
         self.metadata = metadata or {}
         self._processor: Optional[GraphProcessor] = None
-
-    def __call__(self, *inputs) -> List[Any]:
+        
+    def __call__(self, *inputs):
         """
-        执行该进化方法的前向推理。
+        将输入组织为列表，直接调用子图的 infer_with_graph_single，并透传其返回值。
+        不做任何标准化、拆分或格式转换。
         """
-        # === 新增：标准化所有输入为 (N, D) 二维数组 ===
-        standardized_inputs = []
-        for inp in inputs:
-            if isinstance(inp, (int, float, bool, np.number)):
-                # 标量 → 视为单样本单特征: (1, 1)
-                inp = np.array([[inp]])
-            elif isinstance(inp, np.ndarray):
-                if inp.ndim == 0:
-                    inp = inp[None, None]          # () → (1, 1)
-                elif inp.ndim == 1:
-                    inp = inp[:, None]             # (N,) → (N, 1)
-                elif inp.ndim >= 2:
-                    # 保留 (N, D)，忽略更高维（或报错）
-                    pass
-                else:
-                    raise ValueError(f"Unexpected input ndim: {inp.ndim}")
-            elif isinstance(inp, (list, tuple)):
-                # 尝试转为 array，再标准化
-                inp = np.asarray(inp)
-                if inp.ndim == 1:
-                    inp = inp[:, None]
-                elif inp.ndim == 0:
-                    inp = inp[None, None]
-                elif inp.ndim >= 2:
-                    pass
-                else:
-                    inp = np.array([[inp]], dtype=object)
-            else:
-                # 其他对象（如字符串、自定义类）→ (1, 1) object array
-                inp = np.array([[inp]], dtype=object)
-            standardized_inputs.append(inp)
-
-        # 确保所有输入有相同的行数 N（可选但推荐）
-        Ns = [x.shape[0] for x in standardized_inputs]
-        if len(set(Ns)) > 1:
-            raise ValueError(f"Inconsistent input batch sizes: {Ns}")
-
-        # === 初始化 processor（如未初始化）===
+        # === 懒初始化 processor ===
         if self._processor is None:
             self._processor = GraphProcessor(
                 graph=self.graph,
@@ -102,24 +66,44 @@ class EvolvedMethod:
                 collapse_method=CollapseMethod.IDENTITY
             )
 
-        # === 调用子图推理 ===
-        raw_outputs = self._processor.infer_with_graph(*standardized_inputs)
+        # === 将 *inputs 组织为 sample（list 或 tuple）===
+        sample = list(inputs)  # 也可以用 tuple(inputs)，取决于 infer_with_graph_single 的期望
 
-        # === 可选：对输出也做标准化（作为双重保险）===
-        standardized_outputs = []
-        for out in raw_outputs:
-            if isinstance(out, (int, float, bool, np.number)):
-                out = np.array([[out]])
-            elif isinstance(out, np.ndarray):
-                if out.ndim == 0:
-                    out = out[None, None]
-                elif out.ndim == 1:
-                    out = out[:, None]
+        result = self._processor.infer_with_graph_single(sample)
+
+        # 获取期望的输出数量
+        expected_output_count = self.metadata.get('output_count', 1)
+
+        # 情况 1: 期望单输出 → 直接返回（转为标量）
+        if expected_output_count == 1:
+            if isinstance(result, np.ndarray):
+                if result.ndim == 0:
+                    return float(result.item())
+                elif result.size == 1:
+                    return float(result.flat[0])
+                else:
+                    raise ValueError(f"Expected single output, got array of size {result.size}")
             else:
-                out = np.array([[out]], dtype=object)
-            standardized_outputs.append(out)
+                return float(result)
 
-        return standardized_outputs
+        # 情况 2: 期望多输出 → 必须拆分为 expected_output_count 个标量
+        else:
+            # 确保 result 可展平为标量序列
+            if isinstance(result, np.ndarray):
+                flat = result.flatten()
+            elif isinstance(result, (list, tuple)):
+                flat = np.array(result).flatten()
+            else:
+                raise TypeError(f"Unexpected result type: {type(result)}")
+
+            if flat.size != expected_output_count:
+                raise ValueError(
+                    f"Result has {flat.size} elements, but output_count={expected_output_count}. "
+                    f"Result: {result}"
+                )
+
+            # 转为 tuple of Python floats（最安全）
+            return tuple(float(x) for x in flat)
 
     @classmethod
     def from_files(cls, base_path: str):
@@ -194,14 +178,14 @@ class EvolvedMethod:
 
             # 4. 打印日志（中英双语，风格统一）
             internal_nodes = [n for n in self.graph.nodes() if n not in ("root", "collapse")]
-            logger.info(
+            logger.debug(
                 f"[Method Export] Evolved method: name='{self.name}', "
                 f"nodes={len(internal_nodes)}, edges={self.graph.number_of_edges()}, "
                 f"occurrence={self.metadata.get('occurrence_count', 'N/A')}. "
                 f"进化方法：名称='{self.name}'，内部节点数={len(internal_nodes)}，"
                 f"边数={self.graph.number_of_edges()}，出现次数={self.metadata.get('occurrence_count', 'N/A')}"
             )
-            logger.info(
+            logger.debug(
                 f"[File Saved] Successfully saved evolved method to: {base}.{{gexf,json,meta.json}}. "
                 f"文件已保存：进化方法已写入 {base}.{{gexf,json,meta.json}}"
             )

@@ -60,17 +60,28 @@ class ModelTrainer(ABC):
         'categorical_crossentropy': _categorical_crossentropy_loss.__func__
     }
 
-    def __init__(self, adaptoflux_instance, loss_fn='mse', task_type='regression'):
+    def __init__(
+        self,
+        adaptoflux_instance,
+        loss_fn='mse',
+        task_type='regression',
+        use_pipeline=False,      # ← 新增
+        num_workers=4            # ← 新增
+    ):
         """
         初始化训练器，绑定 AdaptoFlux 实例。
 
         :param adaptoflux_instance: 已初始化的 AdaptoFlux 对象
         :param loss_fn: 损失函数名 (字符串) 或可调用对象
         :param task_type: 任务类型 ('regression', 'binary_classification', 'multiclass_classification')
+        :param use_pipeline: 是否使用并行流水线推理（影响所有评估）
+        :param num_workers: 并行线程数（仅在 use_pipeline=True 时有效）
         """
         self.adaptoflux = adaptoflux_instance
         self.model_generator = ModelGenerator(adaptoflux_instance)
-        self.task_type = task_type  # ← 保存为实例属性，供 _evaluate_accuracy 使用
+        self.task_type = task_type
+        self.use_pipeline = use_pipeline      # ← 保存
+        self.num_workers = num_workers        # ← 保存
         self._set_loss_fn(loss_fn, task_type)
 
     def _set_loss_fn(self, loss_fn, task_type):
@@ -97,26 +108,22 @@ class ModelTrainer(ABC):
         self,
         input_data: np.ndarray,
         target: np.ndarray,
-        use_pipeline: bool = False,
-        num_workers: int = 4,
-        adaptoflux_instance=None  # ← 新增参数
+        adaptoflux_instance=None
     ) -> float:
         """
         核心机制的 "Evaluate" 步骤。
         在指定图结构上执行前向传播并计算损失。
 
-        :param input_ 用于评估的输入数据
+        :param input_data: 用于评估的输入数据
         :param target: 对应的标签
-        :param use_pipeline: 是否使用并行流水线推理
-        :param num_workers: 并行线程数（仅在 use_pipeline=True 时有效）
         :param adaptoflux_instance: 可选，临时指定的 AdaptoFlux 实例；若为 None，则使用 self.adaptoflux
-        :return: 损失值，失败时返回 float('inf')
+        :return: 损失值，失败时返回 float('inf')（但当前逻辑会直接终止程序）
         """
         try:
             af = adaptoflux_instance if adaptoflux_instance is not None else self.adaptoflux
 
-            if use_pipeline:
-                output = af.infer_with_task_parallel(values=input_data, num_workers=num_workers)
+            if self.use_pipeline:
+                output = af.infer_with_task_parallel(values=input_data, num_workers=self.num_workers)
             else:
                 output = af.infer_with_graph(values=input_data)
 
@@ -127,31 +134,25 @@ class ModelTrainer(ABC):
             return float(loss)
 
         except Exception as e:
-            logger.exception("Loss evaluation failed – terminating program.")  # ← 打印完整堆栈
-            sys.exit(1)  # ← 立即终止
-
+            logger.exception("Loss evaluation failed – terminating program.")
+            sys.exit(1)
 
     def _evaluate_accuracy(
         self,
         input_data: np.ndarray,
         target: np.ndarray,
-        use_pipeline: bool = False,
-        num_workers: int = 4,
         task_type: str = None,
-        adaptoflux_instance=None  # ← 新增参数
+        adaptoflux_instance=None
     ) -> float:
         """
         计算指定图结构的准确率（或回归伪准确率）。
 
-        :param input_ 输入数据
+        :param input_data: 输入数据
         :param target: 真实标签
-        :param use_pipeline: 是否使用并行推理
-        :param num_workers: 并行线程数
         :param task_type: 任务类型（None 表示使用 self.task_type）
         :param adaptoflux_instance: 可选，临时指定的 AdaptoFlux 实例；若为 None，则使用 self.adaptoflux
-        :return: 准确率 (0~1)，失败时返回 0.0
+        :return: 准确率 (0~1)，失败时程序终止
         """
-        # 确定任务类型
         if task_type is None:
             task_type = getattr(self, 'task_type', 'auto')
 
@@ -164,8 +165,8 @@ class ModelTrainer(ABC):
         try:
             af = adaptoflux_instance if adaptoflux_instance is not None else self.adaptoflux
 
-            if use_pipeline:
-                output = af.infer_with_task_parallel(values=input_data, num_workers=num_workers)
+            if self.use_pipeline:
+                output = af.infer_with_task_parallel(values=input_data, num_workers=self.num_workers)
             else:
                 output = af.infer_with_graph(values=input_data)
 
@@ -203,8 +204,8 @@ class ModelTrainer(ABC):
             return accuracy
 
         except Exception as e:
-            logger.exception("Accuracy evaluation failed – terminating program.")  # ← 完整堆栈
-            sys.exit(1)  # ← 终止
+            logger.exception("Accuracy evaluation failed – terminating program.")
+            sys.exit(1)
 
     @abstractmethod
     def train(self, **kwargs):

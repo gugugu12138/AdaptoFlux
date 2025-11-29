@@ -1,65 +1,86 @@
-# 暂时放这后面可能做成类
 import networkx as nx
 import matplotlib.pyplot as plt
+import os
 
-# 读取图
-G = nx.read_gexf("/kaggle/working/AdaptoFlux/models/best/graph.gexf")
+def visualize_graph_hierarchy(model_path: str, root: str = "root", figsize=(12, 8)):
+    """
+    从指定路径加载图（支持 .gexf 或 .json），并以指定 root 节点为根进行层次化可视化。
 
-# 指定根节点（请根据你的数据修改 root）
-# 如果不知道 root，可以选择一个度最高的节点，或手动指定
-root = "root"  # 替换为你的实际 root 节点名
-if root not in G:
-    # 如果没有明确的 root，可以用一个中心节点（例如度最大的节点）
-    root = max(dict(G.degree()), key=lambda x: dict(G.degree())[x])
-    print(f"使用度最大的节点作为根: {root}")
+    参数:
+        model_path (str): 图文件路径，支持 .gexf 或 .json（NetworkX node-link 格式）。
+        root (str): 期望的根节点名称。若不存在，自动选取度最大的节点。
+        figsize (tuple): 绘图区域大小。
 
-# 使用 BFS 计算每个节点到 root 的距离（层数）
-try:
-    # 对于有向图，可能需要转为无向图来 BFS
-    if G.is_directed():
-        bfs_dist = nx.shortest_path_length(G.to_undirected(), source=root)
+    注意:
+        - 若图不连通，仅保留包含 root 的连通分量。
+        - 对于有向图，BFS 层次计算时会转为无向图以保证连通性。
+    """
+    if not os.path.exists(model_path):
+        raise FileNotFoundError(f"模型文件不存在: {model_path}")
+
+    # 加载图
+    if model_path.endswith('.gexf'):
+        G = nx.read_gexf(model_path)
+    elif model_path.endswith('.json'):
+        import json
+        with open(model_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        G = nx.node_link_graph(data)
     else:
-        bfs_dist = nx.shortest_path_length(G, source=root)
-except nx.NetworkXNoPath:
-    print("图不连通，只考虑包含 root 的连通分量")
-    # 只保留 root 所在的连通分量
-    if G.is_directed():
-        connected_nodes = nx.node_connected_component(G.to_undirected(), root)
-    else:
-        connected_nodes = nx.node_connected_component(G, root)
-    G = G.subgraph(connected_nodes)
-    bfs_dist = nx.shortest_path_length(G.to_undirected() if G.is_directed() else G, source=root)
+        raise ValueError("仅支持 .gexf 或 .json 格式的图文件")
 
-# 按距离分层
-layers = {}
-for node, dist in bfs_dist.items():
-    layers.setdefault(dist, []).append(node)
+    # 检查并确定 root 节点
+    if root not in G:
+        root = max(dict(G.degree()), key=lambda x: dict(G.degree())[x])
+        print(f"指定的 root 节点 '{root}' 不存在，使用度最大的节点作为根: {root}")
 
-# 手动设置布局：x 坐标在每层内均匀分布，y 坐标为层数（距离）
-pos = {}
-for layer, nodes in layers.items():
-    pos.update({node: (i, -layer) for i, node in enumerate(nodes)})  # y = -layer 保证 root 在顶部
+    # 处理不连通图：仅保留 root 所在连通分量
+    try:
+        if G.is_directed():
+            bfs_dist = nx.shortest_path_length(G.to_undirected(), source=root)
+        else:
+            bfs_dist = nx.shortest_path_length(G, source=root)
+    except nx.NetworkXNoPath:
+        print("图不连通，仅保留包含 root 的连通分量")
+        undir_G = G.to_undirected() if G.is_directed() else G
+        connected_nodes = nx.node_connected_component(undir_G, root)
+        G = G.subgraph(connected_nodes).copy()
+        undir_G = G.to_undirected() if G.is_directed() else G
+        bfs_dist = nx.shortest_path_length(undir_G, source=root)
 
-# 设置节点颜色（可选：根据层设置不同颜色）
-node_colors = [bfs_dist[node] for node in G.nodes]
+    # 按 BFS 距离分层
+    layers = {}
+    for node, dist in bfs_dist.items():
+        layers.setdefault(dist, []).append(node)
 
-# 绘图
-plt.figure(figsize=(12, 8))
-nx.draw(
-    G, pos,
-    with_labels=True,
-    node_color=node_colors,
-    cmap='viridis',
-    node_size=600,
-    font_size=6,
-    font_color='black',
-    edge_color='gray',
-    arrows=True if G.is_directed() else False,
-    width=1.0,
-    alpha=0.9
-)
+    # 手动布局：每层节点均匀分布在 x 轴，y 轴为层数（负值使 root 在顶部）
+    pos = {}
+    for layer, nodes in layers.items():
+        # 可选：对每层节点排序以提升可读性（如按 ID）
+        nodes_sorted = sorted(nodes, key=str)
+        for i, node in enumerate(nodes_sorted):
+            pos[node] = (i - len(nodes_sorted) / 2, -layer)  # 居中对齐
 
-plt.title(f"Hierarchical Layout from Root: {root}")
-plt.axis('off')
-plt.tight_layout()
-plt.show()
+    # 节点颜色映射：按层深着色
+    node_colors = [bfs_dist[node] for node in G.nodes]
+
+    # 绘图
+    plt.figure(figsize=figsize)
+    nx.draw(
+        G, pos,
+        with_labels=True,
+        node_color=node_colors,
+        cmap='viridis',
+        node_size=600,
+        font_size=6,
+        font_color='black',
+        edge_color='gray',
+        arrows=True if G.is_directed() else False,
+        width=1.0,
+        alpha=0.9
+    )
+
+    plt.title(f"Hierarchical Layout from Root: {root}")
+    plt.axis('off')
+    plt.tight_layout()
+    plt.show()

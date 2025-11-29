@@ -118,8 +118,12 @@ class GeneticMethodPoolSelector:
         if self.fitness_metric not in ("accuracy", "loss"):
             raise ValueError("fitness_metric must be 'accuracy' or 'loss'")
 
-        if self.subpool_size > len(self.full_method_names):
-            raise ValueError(f"subpool_size ({subpool_size}) > total methods ({len(self.full_method_names)})")
+        self.subpool_size = min(subpool_size, len(self.full_method_names))
+        if subpool_size > len(self.full_method_names) and self.verbose:
+            logger.warning(
+                f"subpool_size ({subpool_size}) reduced to {self.subpool_size} "
+                f"due to limited methods ({len(self.full_method_names)})."
+            )
 
     def _create_individual(self) -> Set[str]:
         """
@@ -214,29 +218,34 @@ class GeneticMethodPoolSelector:
         return set(random.sample(list(union), self.subpool_size))
 
     def _mutate(self, individual: Set[str]) -> Set[str]:
-        """
-        对个体执行变异操作：随机替换部分方法。
-
-        具体步骤：
-          1. 从个体中随机移除 ``num_mutate`` 个方法（至少 1 个）；
-          2. 从不在当前个体中的剩余方法中随机选择相同数量的方法加入。
-
-        Args:
-            individual (Set[str]): 待变异的个体。
-
-        Returns:
-            Set[str]: 变异后的个体。
-        """
         mutated = set(individual)
         num_mutate = max(1, int(self.mutation_rate * self.subpool_size))
         to_remove = random.sample(list(mutated), min(num_mutate, len(mutated)))
         for m in to_remove:
             mutated.remove(m)
+        
         # 补充新方法
         candidates = list(set(self.full_method_names) - mutated)
         if candidates:
             to_add = random.sample(candidates, min(len(to_remove), len(candidates)))
             mutated.update(to_add)
+        
+        # 🔥【关键修复】：如果仍不足，强制补全到 subpool_size
+        if len(mutated) < self.subpool_size:
+            missing = self.subpool_size - len(mutated)
+            extra_candidates = list(set(self.full_method_names) - mutated)
+            if extra_candidates:
+                mutated.update(random.sample(extra_candidates, min(missing, len(extra_candidates))))
+        
+        # 再次兜底（极端情况下 full_method_names < subpool_size）
+        if len(mutated) > self.subpool_size:
+            mutated = set(random.sample(list(mutated), self.subpool_size))
+        elif len(mutated) < self.subpool_size:
+            # 如果实在凑不齐，至少警告（但不应发生，因 __init__ 已限制）
+            if self.verbose:
+                logger.warning(f"Mutated individual size ({len(mutated)}) < subpool_size ({self.subpool_size}). "
+                            f"Full pool size: {len(self.full_method_names)}")
+        
         return mutated
 
     def select(self) -> Dict[str, Any]:

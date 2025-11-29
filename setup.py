@@ -20,6 +20,7 @@ setup(
         "pygraphviz",
         "psutil",
         "tqdm",
+        "scikit-learn",
     ],
     classifiers=[
         "Programming Language :: Python :: 3.12",

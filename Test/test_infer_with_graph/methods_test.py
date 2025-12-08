@@ -1,7 +1,7 @@
 # methods.py
 import math
 import numpy as np
-from ATF.methods.decorators import method_profile  # 假设新装饰器已定义在此处
+from ATF.methods.decorators import method_profile
 
 
 @method_profile(
@@ -10,11 +10,15 @@ from ATF.methods.decorators import method_profile  # 假设新装饰器已定义
     output_types=['scalar'],
     group='arithmetic',
     weight=1.0,
-    vectorized=True  # 大多数简单数学函数可向量化
+    vectorized=True
 )
 def add(a):
-    """a + 1"""
-    return [a + 1]
+    """a + 1 (vectorized)"""
+    # a is (N,) or (N, 1)
+    a = np.asarray(a)
+    result = a + 1  # shape: (N,) or (N, 1)
+    # 确保输出为 (N,) —— 更通用
+    return np.squeeze(result)  # (N, 1) → (N,); (N,) unchanged
 
 
 @method_profile(
@@ -26,8 +30,10 @@ def add(a):
     vectorized=True
 )
 def multiply(a, b):
-    """a * b"""
-    return [a * b]
+    """a * b (vectorized)"""
+    a, b = np.asarray(a), np.asarray(b)
+    result = a * b
+    return np.squeeze(result)
 
 
 @method_profile(
@@ -39,8 +45,10 @@ def multiply(a, b):
     vectorized=True
 )
 def square(a):
-    """a ** 2"""
-    return [a ** 2]
+    """a ** 2 (vectorized)"""
+    a = np.asarray(a)
+    result = a ** 2
+    return np.squeeze(result)
 
 
 @method_profile(
@@ -52,8 +60,10 @@ def square(a):
     vectorized=True
 )
 def sum3(a, b, c):
-    """a + b + c"""
-    return [a + b + c]
+    """a + b + c (vectorized)"""
+    a, b, c = np.asarray(a), np.asarray(b), np.asarray(c)
+    result = a + b + c
+    return np.squeeze(result)
 
 
 @method_profile(
@@ -62,11 +72,15 @@ def sum3(a, b, c):
     output_types=['scalar', 'scalar'],
     group='identity',
     weight=0.5,
-    vectorized=False  # 可根据实际需求设为 True，如果支持批量输入
+    vectorized=True  # ✅ 现在支持向量化
 )
 def identity_multi_output(a):
     """
-    返回两个值：原值和其两倍
-    示例输出: [a, a * 2]
+    返回两个值：原值和其两倍 (vectorized)
+    输出 shape: (N, 2)
     """
-    return [a, a * 2]
+    a = np.asarray(a)  # shape (N,) or (N, 1)
+    a = np.squeeze(a)  # ensure (N,)
+    # 构造 (N, 2)
+    result = np.stack([a, a * 2], axis=-1)  # shape (N, 2)
+    return result

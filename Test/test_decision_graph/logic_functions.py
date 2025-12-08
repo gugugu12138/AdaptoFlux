@@ -1,7 +1,7 @@
 # logic_functions.py
-from ATF.methods.decorators import output_count
+from ATF.methods.decorators import method_profile
 
-@output_count(3)
+@method_profile(output_count=3, input_types=['scalar'], output_types=['scalar', 'scalar', 'scalar'])
 def classify_number(x):
     """
     判断 x 是正数、负数还是零，输出长度为 3 的列表。
@@ -19,7 +19,7 @@ def classify_number(x):
     else:
         return [None, None, x]
 
-@output_count(1)
+@method_profile(output_count=1, input_types=['scalar'], output_types=['scalar'])
 def identity(x):
     """
     直接返回输入值（不进行判断）

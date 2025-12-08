@@ -20,7 +20,15 @@ from ..ModelTrainer.model_trainer import ModelTrainer
 
 
 class AdaptoFlux:
-    def __init__(self, values = None, labels = None, methods_path = None, collapse_method=CollapseMethod.SUM, type_equivalence_map=None):
+    def __init__(
+        self,
+        values=None,
+        labels=None,
+        methods_path=None,
+        collapse_method=CollapseMethod.SUM,
+        type_equivalence_map=None,
+        input_types_list=None  # ← 新增参数
+    ):
         """
         初始化 AdaptoFlux 类的实例
         
@@ -30,12 +38,24 @@ class AdaptoFlux:
         :param methods_path: 存储方法路径的文件路径，默认为 "methods.py"
         """
         if values is not None and labels is not None:
-            # 检查 values 是二维的
-            assert len(values.shape) == 2, f"values 必须是二维的 (样本数, 特征维度)，但得到 shape={values.shape}"
-            
-            # 检查 labels 是一维的，并且样本数一致
-            assert len(labels.shape) == 1, f"labels 必须是一维的 (样本数,)，但得到 shape={labels.shape}"
-            assert values.shape[0] == labels.shape[0], f"values 和 labels 样本数量不一致：{values.shape[0]} vs {labels.shape[0]}"
+            # 1. labels 必须是一维
+            if hasattr(labels, 'shape'):
+                assert len(labels.shape) == 1, "labels 必须是一维"
+            else:
+                labels = np.asarray(labels)
+                assert labels.ndim == 1, "labels 转为 array 后必须是一维"
+
+            # 2. values 必须支持“按样本索引”（即 values[i] 有效）
+            if hasattr(values, '__getitem__') and hasattr(values, '__len__'):
+                num_samples = len(values)
+                assert num_samples == len(labels), "样本数量不一致"
+                # ✅ 允许 values 是 list[dict], list[np.ndarray], Dataset 等
+            else:
+                raise ValueError("values 必须是可索引的批量容器（如 list, np.ndarray, Dataset）")
+
+        # 3. 如果是 array-like，检查是否至少一维
+        if hasattr(values, 'shape'):
+            assert len(values.shape) >= 1, "values 至少应有一维（样本维）"
 
         # 存储输入数据
         self.values = values  # 原始数值列表
@@ -76,43 +96,48 @@ class AdaptoFlux:
         # 存储路径信息
         # self.paths = []  # 记录每个值对应的路径
         # self.max_probability_path = [] # 记录最高概率对应的路径
+
+        # 获取每个特征维度的数据类型
+        if input_types_list is not None:
+            # 用户显式提供了类型列表
+            if self.values is not None:
+                # 校验长度一致性
+                expected_dim = self.values.shape[1] if hasattr(self.values, 'shape') else len(self.values[0])
+                assert len(input_types_list) == expected_dim, \
+                    f"input_types_list 长度 ({len(input_types_list)}) 与特征维度 ({expected_dim}) 不匹配"
+            feature_types = list(input_types_list)
+        else:
+            # 原有自动推断逻辑（保持兼容）
+            feature_types = []
+            if self.values is not None:
+                if isinstance(self.values, pd.DataFrame):
+                    feature_types = [str(dtype) for dtype in self.values.dtypes]
+                elif self.values.dtype.names is not None:
+                    feature_types = [self.values.dtype.fields[name][0].name for name in self.values.dtype.names]
+                else:
+                    if len(self.values.shape) != 2:
+                        raise ValueError(...)
+                    if self.values.shape[1] == 0:
+                        raise ValueError(...)
+                    feature_types = [str(self.values.dtype)] * self.values.shape[1]
+
+            if len(feature_types) == 0:
+                raise ValueError("无法推断特征类型，且未提供 input_types_list")
+
+        # 构建初始图结构
         graph = nx.MultiDiGraph()
         graph.add_node("root") 
         graph.add_node('collapse')
 
-        # 获取每个特征维度的数据类型
-        feature_types = []  # 初始化为空列表
-
-        if self.values is not None:
-            if isinstance(self.values, pd.DataFrame):
-                feature_types = [str(dtype) for dtype in self.values.dtypes]
-            elif self.values.dtype.names is not None:  # structured array
-                feature_types = [self.values.dtype.fields[name][0].name for name in self.values.dtype.names]
-            else:
-                # 普通 ndarray：确保是二维且列数 > 0
-                if len(self.values.shape) != 2:
-                    raise ValueError(f"Input `values` must be 2D when not a DataFrame or structured array, got shape {self.values.shape}")
-                if self.values.shape[1] == 0:
-                    raise ValueError("Input `values` has zero feature dimensions (shape[1] == 0). At least one feature is required to initialize the graph.")
-                feature_types = [str(self.values.dtype)] * self.values.shape[1]
-
-            # === 新增：检查 feature_types 是否为空 ===
-            if len(feature_types) == 0:
-                raise ValueError(
-                    "Failed to infer any feature types from `values`. "
-                    "This usually happens when input data has zero columns. "
-                    "Please ensure `values` is a non-empty 2D array (e.g., shape (N, D) with D >= 1)."
-                )
-
-            # 添加 root -> collapse 边
-            for feature_index, feature_type in enumerate(feature_types):
-                graph.add_edge(
-                    "root",
-                    "collapse",
-                    output_index=feature_index,
-                    data_coord=feature_index,
-                    data_type=feature_type
-                )
+        # 添加 root -> collapse 边
+        for feature_index, feature_type in enumerate(feature_types):
+            graph.add_edge(
+                "root",
+                "collapse",
+                output_index=feature_index,
+                data_coord=feature_index,
+                data_type=feature_type
+            )
 
         # 自动导入方法
         if self.methods_path is not None:

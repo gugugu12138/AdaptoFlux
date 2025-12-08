@@ -184,133 +184,229 @@ class GraphProcessor:
 
     def infer_with_graph(self, values):
         """
-        使用图结构对输入数据进行推理。
-        """
+        使用图结构对输入数据进行推理，支持任意对象（非仅数值）。
         
+        参数:
+            values: 
+                - 若为 numpy array: 必须是 (N, D) shape，dtype 可为 object
+                - 若为 list: 必须是 [[feat0, feat1, ...], ...] 的二维结构
+        
+        返回:
+            collapsed_output: 1D numpy array of scalars (shape [N,])
+        """
+        import numpy as np
+
+        # === 1. 标准化输入为 list of lists（样本 × 输入特征）===
+        if isinstance(values, np.ndarray):
+            if values.ndim != 2:
+                raise ValueError(f"Input values must be 2D, got shape {values.shape}")
+            # 转为 list of lists，保留对象引用
+            input_samples = [list(row) for row in values]
+        elif isinstance(values, list):
+            if not all(isinstance(row, (list, tuple)) for row in values):
+                raise ValueError("Each sample in values must be a list/tuple of features.")
+            input_samples = [list(row) for row in values]
+        else:
+            raise TypeError("values must be a 2D numpy array or list of lists.")
+
+        num_samples = len(input_samples)
+        if num_samples == 0:
+            return np.array([])
+
+        # === 2. 初始化节点输出字典 ===
         node_outputs = {}
+        node_outputs["root"] = input_samples  # list of lists
+
+        # === 3. 拓扑排序（排除 root 和 collapse）===
         nodes_in_order = list(nx.topological_sort(self.graph))
-        nodes_in_order.remove("collapse")
-        if "root" in nodes_in_order:
-            nodes_in_order.remove("root")
+        nodes_in_order = [n for n in nodes_in_order if n not in {"root", "collapse"}]
 
-        node_outputs["root"] = values.copy()
-
+        # === 4. 逐节点执行 ===
         for node in nodes_in_order:
             node_data = self.graph.nodes[node]
-            method_name = node_data.get("method_name", None)
-        
-            # === 新增逻辑：处理缺失 is_passthrough 的老模型 ===
+            method_name = node_data.get("method_name")
+
+            # === 处理 is_passthrough（兼容老模型）===
             if "is_passthrough" not in node_data:
-                # 发出警告：老版本模型
-                logger.warning(
-                    f"⚠️ 节点 '{node}' 缺少 'is_passthrough' 属性，检测到老版本模型。"
-                    f"方法名: {method_name}。未来版本将取消对老模型的支持，请尽快升级模型格式。"
+                is_passthrough = (
+                    method_name is None or 
+                    (isinstance(method_name, str) and method_name.lower() == 'null')
                 )
-                # 推断 is_passthrough：method_name 为 None 或 'null'（不区分大小写）时视为 True
-                if method_name is None or (isinstance(method_name, str) and method_name.lower() == 'null'):
-                    is_passthrough = True
-                else:
-                    is_passthrough = False
             else:
                 is_passthrough = bool(node_data.get("is_passthrough", False))
 
+            # === 收集所有输入特征（按样本对齐）===
             predecessors = list(self.graph.predecessors(node))
-            inputs = []
+            if not predecessors:
+                raise ValueError(f"Node '{node}' has no predecessors.")
+
+            # 按边收集：每个输入边对应一个“输入特征列表”（长度 = num_samples）
+            input_feature_lists = []  # List[List[Any]]: [input_slot][sample_idx]
+
             for src in predecessors:
-                edges_from_src = self.graph[src][node]
+                edges_from_src = self.graph[src][node]  # Multi-edge dict
                 for edge_key in edges_from_src:
                     edge_data = edges_from_src[edge_key]
                     output_idx = edge_data.get("output_index")
-                    src_output = node_outputs[src]  # 假设拓扑序保证已计算
-                    if output_idx is not None:
-                        col = src_output[:, output_idx:output_idx+1]
-                    else:
-                        col = src_output
-                    inputs.append(col)
-            
-            if not inputs:
-                raise ValueError(f"节点 '{node}' 没有输入数据")
-            flat_input = np.hstack(inputs) if len(inputs) > 1 else inputs[0]
+                    src_output = node_outputs[src]  # list of lists
 
-            # === 处理 passthrough ===
+                    if output_idx is None:
+                        # 透传整个输出（罕见，通常用于 root）
+                        extracted = [sample_output for sample_output in src_output]
+                    else:
+                        # 提取第 output_idx 个输出特征
+                        extracted = [sample_output[output_idx] for sample_output in src_output]
+                    input_feature_lists.append(extracted)
+
+            # === 执行节点 ===
             if is_passthrough:
-                if len(predecessors) > 1:
-                    raise ValueError(f"节点 {node} 是 passthrough，但有多个前驱。")
-                node_outputs[node] = flat_input.copy()  # ✅ 正确透传
+                if len(input_feature_lists) != 1:
+                    raise ValueError(f"Passthrough node '{node}' must have exactly one input, got {len(input_feature_lists)}")
+                # 透传：输出 = 输入
+                node_outputs[node] = input_feature_lists[0]  # list of objects (one per sample)
                 continue
 
+            # === 正常方法执行 ===
             if method_name not in self.methods:
-                raise ValueError(f"未知方法名 {method_name}")
+                raise ValueError(f"Unknown method: {method_name}")
 
             method_info = self.methods[method_name]
             func = method_info["function"]
-            input_count = method_info["input_count"]
-            output_count = method_info["output_count"]
+            expected_input_count = method_info["input_count"]
+            expected_output_count = method_info["output_count"]
+            is_vectorized = method_info.get("vectorized", False)
 
-            num_samples = flat_input.shape[0]
-            results = []
+            if len(input_feature_lists) != expected_input_count:
+                raise ValueError(
+                    f"Node '{node}' method '{method_name}' expects {expected_input_count} inputs, "
+                    f"but got {len(input_feature_lists)} from edges."
+                )
 
-            for row in flat_input:
-                if len(row) != input_count:
-                    raise ValueError(
-                        f"Node '{node}' method '{method_name}' expects {input_count} inputs, "
-                        f"but got {len(row)}: {row}. This indicates a graph structure error."
-                    )
-                result = func(*row)
-                if isinstance(result, (int, float)):
-                    result = [result]
-                elif isinstance(result, np.ndarray):
-                    result = result.tolist()
-                results.append(result)
-
-            new_output = np.zeros((num_samples, output_count))
-            for i, res in enumerate(results):
-                if len(res) != output_count:
-                    raise ValueError(
-                        f"Result at sample {i} has {len(res)} elements, but expected {output_count}. "
-                        f"Result: {res}"
-                    )
-                for j, val in enumerate(res):
-                    try:
-                        new_output[i, j] = val
-                    except ValueError as e:
-                        if "setting an array element with a sequence" in str(e):
-                            # 打印详细诊断信息
-                            logger.error(
-                                f"Failed to assign val to new_output[{i}, {j}].\n"
-                                f"  - val type: {type(val)}\n"
-                                f"  - val value: {val}\n"
-                                f"  - val shape (if array): {getattr(val, 'shape', 'N/A')}\n"
-                                f"  - val size (if array): {getattr(val, 'size', 'N/A')}\n"
-                                f"  - Expected: a scalar (int/float/np.number)\n"
-                                f"  - This usually means a method returned a vector/list instead of a scalar."
-                            )
-                        # 重新抛出异常（保持堆栈）或 sys.exit(1)
-                        raise  # ← 保留原始异常和堆栈
-                    except Exception as e:
-                        logger.error(f"Unexpected error at [{i}, {j}]: {e}, val={val}")
-                        raise
-
-            node_outputs[node] = new_output
-
-        temp_result = []
-        for u, v, data in self.graph.in_edges("collapse", data=True):
-            if v == "collapse":
-                local_index = data.get('output_index')
-                global_coord = data.get('data_coord')
-                if local_index is None or global_coord is None:
-                    raise ValueError("缺少必要属性")
+            # 尝试向量化执行（仅当方法标记为 vectorized=True）
+            node_output_samples = None
+            if is_vectorized:
                 try:
-                    column_data = node_outputs[u][:, local_index]
-                    temp_result.append((global_coord, column_data))
-                except IndexError:
-                    raise ValueError(f"节点 {u} 输出维度不足，无法提取 output_index={local_index}")
+                    # === 尝试构建批量输入 ===
+                    batched_inputs = []
+                    for input_list in input_feature_lists:
+                        # 检查是否所有元素类型一致且可堆叠
+                        first = input_list[0]
+                        
+                        # 情况1: 全是标量（int/float/np.number）
+                        if all(isinstance(x, (int, float, np.number)) for x in input_list):
+                            batched = np.array(input_list)
+                        # 情况2: 全是 numpy 数组且 shape 一致
+                        elif all(isinstance(x, np.ndarray) for x in input_list):
+                            shapes = [x.shape for x in input_list]
+                            if all(s == shapes[0] for s in shapes):
+                                batched = np.stack(input_list, axis=0)  # (N, ...)
+                            else:
+                                raise ValueError("Array shapes mismatch, cannot vectorize")
+                        # 情况3: 其他类型（str, dict 等）→ 无法向量化
+                        else:
+                            raise ValueError("Non-numeric or mixed types, cannot vectorize")
+                            
+                        batched_inputs.append(batched)
+                    
+                    # === 批量调用方法 ===
+                    batched_outputs = func(*batched_inputs)  # 应返回 (N, output_count) 或 tuple of (N,)
+                    
+                    # === 标准化输出为 list of lists ===
+                    if isinstance(batched_outputs, tuple):
+                        # 多输出：每个是 (N,) 或 (N, ...)
+                        if len(batched_outputs) != expected_output_count:
+                            raise ValueError(f"Expected {expected_output_count} outputs, got {len(batched_outputs)}")
+                        # 转置: [(N,), (N,)] → [(out0_s0, out1_s0), ...]
+                        node_output_samples = []
+                        for i in range(num_samples):
+                            sample_outs = [batched_outputs[j][i] for j in range(expected_output_count)]
+                            # 如果输出是数组，保留为数组（不强制标量）
+                            node_output_samples.append(sample_outs)
+                    else:
+                        # 单输出或 (N, output_count)
+                        if batched_outputs.ndim == 1:
+                            # (N,) → 每个样本一个标量
+                            if expected_output_count != 1:
+                                raise ValueError(f"Expected {expected_output_count} outputs, but got 1D array")
+                            node_output_samples = [[x] for x in batched_outputs]
+                        elif batched_outputs.ndim == 2:
+                            # (N, output_count)
+                            if batched_outputs.shape[1] != expected_output_count:
+                                raise ValueError(f"Output shape {batched_outputs.shape} mismatches output_count={expected_output_count}")
+                            node_output_samples = batched_outputs.tolist()
+                        else:
+                            raise ValueError(f"Unsupported output ndim: {batched_outputs.ndim}")
+                            
+                except Exception as e:
+                    # 回退到逐样本模式（保持兼容性）
+                    logger.warning(
+                        f"Vectorized execution failed for method '{method_name}' (inputs: {[type(x[0]) for x in input_feature_lists]}), "
+                        f"fallback to sample-by-sample. Error: {e}"
+                    )
+                    is_vectorized = False  # 触发下方逐样本逻辑
 
-        temp_result.sort(key=lambda x: x[0])
-        collapse_result = [col for _, col in temp_result]
-        raw_output = np.column_stack(collapse_result)
-        collapsed_output = np.apply_along_axis(self.collapse_manager.collapse, axis=1, arr=raw_output)
-        return collapsed_output
+            # === 回退：逐样本执行（原逻辑）===
+            if not is_vectorized:
+                node_output_samples = []
+                for sample_idx in range(num_samples):
+                    sample_inputs = [input_list[sample_idx] for input_list in input_feature_lists]
+                    try:
+                        result = func(*sample_inputs)
+                    except Exception as e:
+                        raise RuntimeError(
+                            f"Error in method '{method_name}' at sample {sample_idx}:\n"
+                            f"  Inputs: {sample_inputs}\n"
+                            f"  Error: {e}"
+                        ) from e
+
+                    if not isinstance(result, (list, tuple)):
+                        result = [result]
+                    result = list(result)
+
+                    if len(result) != expected_output_count:
+                        raise ValueError(
+                            f"Method '{method_name}' returned {len(result)} outputs, "
+                            f"but expected {expected_output_count} (output_count)."
+                        )
+
+                    node_output_samples.append(result)
+
+            # 保存结果
+            node_outputs[node] = node_output_samples
+
+        # === 5. 聚合到 collapse 节点 ===
+        collapse_inputs = []  # List[Tuple[global_coord, List[Any]]]
+        for u, v, data in self.graph.in_edges("collapse", data=True):
+            local_idx = data.get("output_index")
+            global_coord = data.get("data_coord")
+            if local_idx is None or global_coord is None:
+                raise ValueError(f"Edge from {u} to collapse missing output_index or data_coord")
+
+            src_output = node_outputs[u]  # list of lists
+            feature_values = [sample_output[local_idx] for sample_output in src_output]
+            collapse_inputs.append((global_coord, feature_values))
+
+        if not collapse_inputs:
+            raise ValueError("No inputs connected to 'collapse' node.")
+
+        # 按 global_coord 排序以保证顺序一致
+        collapse_inputs.sort(key=lambda x: x[0])
+        all_features_per_sample = list(zip(*[feat_list for _, feat_list in collapse_inputs]))  # transpose
+
+        # === 6. 应用 collapse 函数 ===
+        collapsed_results = []
+        for sample_features in all_features_per_sample:
+            try:
+                # collapse 接收 list，返回任意对象（标量、向量、字符串等）
+                collapsed_val = self.collapse_manager.collapse(list(sample_features))
+                collapsed_results.append(collapsed_val)
+            except Exception as e:
+                raise RuntimeError(
+                    f"Error in collapse function with inputs {list(sample_features)}:\n{e}"
+                ) from e
+
+        # 返回结果列表（不强制转为 np.array）
+        return collapsed_results
     
     def infer_with_task_parallel(self, values, num_workers=4):
         from concurrent.futures import ThreadPoolExecutor
@@ -528,20 +624,12 @@ class GraphProcessor:
         返回:
             float or np.ndarray: 经过图结构处理后的结果（通过 collapse 输出）
         """
-        # 确保输入是一维数组
-        sample = np.array(sample)
-        assert len(sample.shape) == 1, "输入必须是一维数组"
-
-        # 扩展为二维 (1, 特征维度)，适配批量接口
-        values = sample.reshape(1, -1)
-
         # 选择推理方式
         if use_pipeline:
             result = self.infer_with_pipeline(values, num_workers=num_workers)
         else:
             result = self.infer_with_graph(values)
 
-        # 返回单个样本的结果（已经是 (1,) 或标量）
         return result[0]
     
     # 在 GraphProcessor 类中

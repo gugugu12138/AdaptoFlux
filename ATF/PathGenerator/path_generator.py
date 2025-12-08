@@ -28,7 +28,7 @@ class PathGenerator:
 
         # 使用标准格式定义默认映射
         default_mapping = {
-            "scalar": ["int32", "int64", "float32", "float64", "bool", "uint32", "uint64"]
+            "scalar": ["int32", "int64", "float32", "float64", "bool", "uint32", "uint64", "None"]
         }
         
         # 使用双向映射函数构建完整的映射表

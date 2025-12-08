@@ -119,26 +119,20 @@ for i, res in enumerate(results):
 
 import time
 
-def slow_matmul(a, b):
-    """逐样本：计算 100x100 矩阵乘法（模拟）"""
-    # 将标量扩展为矩阵（仅为制造计算负载）
-    A = np.full((100, 100), a)
-    B = np.full((100, 100), b)
-    return float(np.sum(A @ B))  # 返回标量
+def slow_exp_sum(a, b):
+    """逐样本：计算 exp(a) + exp(b)"""
+    return np.exp(a) + np.exp(b)  # 注意：这里用 np.exp 但仍是逐样本！
 
-def fast_matmul(a, b):
-    """向量化：批量计算"""
-    # a, b 是 (N,) 数组
-    A = np.full((len(a), 100, 100), a[:, None, None])  # (N, 100, 100)
-    B = np.full((len(b), 100, 100), b[:, None, None])
-    return np.sum(A @ B, axis=(1, 2))  # (N,)
+def fast_exp_sum(a, b):
+    """向量化：批量计算 exp(a) + exp(b)"""
+    return np.exp(a) + np.exp(b)  # a, b 是 (N,) 数组
 
 # ======================
 # 2. 注册方法
 # ======================
 methods = {
     "slow_exp": {
-        "function": slow_matmul,
+        "function": slow_exp_sum,
         "input_count": 2,
         "output_count": 1,
         "input_types": ["scalar", "scalar"],
@@ -146,7 +140,7 @@ methods = {
         "vectorized": False  # 逐样本
     },
     "fast_exp": {
-        "function": fast_matmul,
+        "function": fast_exp_sum,
         "input_count": 2,
         "output_count": 1,
         "input_types": ["scalar", "scalar"],

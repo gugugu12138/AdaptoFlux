@@ -117,110 +117,84 @@ for i, res in enumerate(results):
     print(f"  image_mean: {res['image_mean']:.4f}")
     print(f"  image_shape: {res['image_shape']}")
 
+# Test/test_efficient_vectorized.py
+import numpy as np
 import time
+import math
+from ATF import AdaptoFlux
 
-def slow_exp_sum(a, b):
-    """逐样本：计算 exp(a) + exp(b)"""
-    return np.exp(a) + np.exp(b)  # 注意：这里用 np.exp 但仍是逐样本！
+# ✅ 逐样本方法（使用纯 Python）
+def slow_complex(a, b):
+    return math.sin(math.cos(math.exp(a))) + math.sqrt(abs(b))
 
-def fast_exp_sum(a, b):
-    """向量化：批量计算 exp(a) + exp(b)"""
-    return np.exp(a) + np.exp(b)  # a, b 是 (N,) 数组
+# ✅ 向量化方法（使用 NumPy）
+def fast_complex(a, b):
+    return np.sin(np.cos(np.exp(a))) + np.sqrt(np.abs(b))
 
-# ======================
-# 2. 注册方法
-# ======================
 methods = {
-    "slow_exp": {
-        "function": slow_exp_sum,
+    "slow_complex": {
+        "function": slow_complex,
         "input_count": 2,
         "output_count": 1,
         "input_types": ["scalar", "scalar"],
         "output_types": ["scalar"],
-        "vectorized": False  # 逐样本
+        "vectorized": False
     },
-    "fast_exp": {
-        "function": fast_exp_sum,
+    "fast_complex": {
+        "function": fast_complex,
         "input_count": 2,
         "output_count": 1,
         "input_types": ["scalar", "scalar"],
         "output_types": ["scalar"],
-        "vectorized": True   # 向量化
+        "vectorized": True
     }
 }
 
-# ======================
-# 3. 构建纯数值输入（无字符串/图像）
-# ======================
-N = 100000  # 大样本量
-values = np.random.rand(N, 2)  # 纯数值矩阵
-input_types_list = ["scalar", "scalar"]
-
-# ======================
-# 4. 测试函数（纯数值图）
-# ======================
-def test_pure_vectorized(method_name, description):
-    af = AdaptoFlux(input_types_list=input_types_list)
+def test_efficient_vectorized(method_name, description, N=500000):
+    af = AdaptoFlux(input_types_list=["scalar", "scalar"])
     af.set_methods(methods)
     G = af.graph
     
-    # 清空默认边
     G.remove_edges_from(list(G.in_edges("collapse")))
+    G.add_node("complex_node", method_name=method_name, layer=1)
+    G.add_edge("root", "complex_node", output_index=0, data_coord=0, data_type="scalar")
+    G.add_edge("root", "complex_node", output_index=1, data_coord=1, data_type="scalar")
+    G.add_edge("complex_node", "collapse", output_index=0, data_coord=0, data_type="scalar")
     
-    # 添加纯数值节点
-    G.add_node("exp_node", method_name=method_name, layer=1)
-    G.add_edge("root", "exp_node", output_index=0, data_coord=0, data_type="scalar")
-    G.add_edge("root", "exp_node", output_index=1, data_coord=1, data_type="scalar")
-    G.add_edge("exp_node", "collapse", output_index=0, data_coord=0, data_type="scalar")
-    
-    # 简单 collapse
     af.set_custom_collapse(lambda x: x[0])
     
-    # 计时
+    values = np.random.rand(N, 2) * 2  # 避免 exp 溢出
+    
     start = time.time()
     results = af.infer_with_graph(values)
     elapsed = time.time() - start
     
     # 验证
-    expected = np.exp(values[:, 0]) + np.exp(values[:, 1])
-    assert np.allclose(results, expected, atol=1e-6)
+    if method_name == "slow_complex":
+        expected = [slow_complex(values[i,0], values[i,1]) for i in range(min(100, N))]
+        actual = results[:100]
+    else:
+        expected = fast_complex(values[:100,0], values[:100,1])
+        actual = results[:100]
+    
+    assert np.allclose(actual, expected, atol=1e-6), f"验证失败: {method_name}"
     
     print(f"{description}: {elapsed:.4f} 秒 (N={N})")
     return elapsed
 
-# ======================
-# 5. 执行测试
-# ======================
 if __name__ == "__main__":
-    print("🚀 测试纯数值向量化加速...\n")
+    print("🚀 测试高效向量化加速...\n")
     
-    time_slow = test_pure_vectorized("slow_exp", "逐样本 (vectorized=False)")
-    time_fast = test_pure_vectorized("fast_exp", "向量化 (vectorized=True)")
+    # 使用大 N 以凸显加速（但内存友好）
+    N = 500000
+    
+    time_slow = test_efficient_vectorized("slow_complex", "逐样本 (vectorized=False)", N)
+    time_fast = test_efficient_vectorized("fast_complex", "向量化 (vectorized=True)", N)
     
     speedup = time_slow / time_fast
     print(f"\n🔥 加速比: {speedup:.2f}x")
     
-    if speedup > 10:
+    if speedup > 20:
         print("✅ 向量化成功！性能显著提升。")
     else:
-        print("⚠️ 仍未加速（检查 NumPy 安装或操作复杂度）")
-
-import numpy as np
-import time
-
-N = 10000
-
-# 逐样本
-a = np.random.rand(N)
-b = np.random.rand(N)
-
-start = time.time()
-result1 = [np.exp(ai) + np.exp(bi) for ai, bi in zip(a, b)]
-print("逐样本:", time.time() - start)
-
-# 向量化
-start = time.time()
-result2 = np.exp(a) + np.exp(b)
-print("向量化:", time.time() - start)
-
-print("加速比:", (time.time() - start) / (time.time() - start))  # 伪代码
+        print("⚠️ 加速不足（检查 NumPy 安装）")

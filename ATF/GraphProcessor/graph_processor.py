@@ -308,7 +308,6 @@ class GraphProcessor:
                             
                         batched_inputs.append(batched)
                     
-                    # === 批量调用方法 ===
                     batched_outputs = func(*batched_inputs)  # 应返回 (N, output_count) 或 tuple of (N,)
                     
                     # === 标准化输出为 list of lists ===

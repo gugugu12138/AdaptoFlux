@@ -8,6 +8,7 @@ from typing import List, Dict, Set, Optional, Tuple  # add Set here if missing
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+_ALREADY_WARNED_OLD_MODEL = False
 
 class GraphProcessor:
     def __init__(self, graph: nx.MultiDiGraph, methods: dict, collapse_method=CollapseMethod.SUM):
@@ -240,8 +241,17 @@ class GraphProcessor:
             if "is_passthrough" not in node_data:
                 is_passthrough = (
                     method_name is None or 
-                    (isinstance(method_name, str) and method_name.lower() == 'null')
+                    (isinstance(method_name, str) and method_name.lower() == 'null') or
+                    (isinstance(method_name, str) and method_name.lower() == 'unmatched')
                 )
+                global _ALREADY_WARNED_OLD_MODEL
+                if not _ALREADY_WARNED_OLD_MODEL:
+                    logger.warning(
+                        f'当前使用的为老模型，节点 "{node}" 未显式标记 "is_passthrough"。'
+                        f'推断其为 passthrough={is_passthrough}。建议重训练或回退版本。'
+                        f'之后的版本可能取消对老版本的兼容'
+                    )
+                    _ALREADY_WARNED_OLD_MODEL = True
             else:
                 is_passthrough = bool(node_data.get("is_passthrough", False))
 
@@ -251,46 +261,57 @@ class GraphProcessor:
                 raise ValueError(f"Node '{node}' has no predecessors.")
 
             # === 收集所有输入特征（按 input_slot 对齐）===
-            input_pairs = []  # List[Tuple[int, List[Any]]]: (input_slot, feature_list_per_sample)
+            # === 收集所有输入特征 ===
+            input_pairs = []  # 用于新逻辑：(input_slot, extracted)
+            input_feature_lists_old = []  # 用于老逻辑：直接 append
+
+            has_input_slot = None  # None=未确定, True=有, False=无
 
             for src in predecessors:
                 edges_from_src = self.graph[src][node]  # MultiEdge dict
                 for edge_key, edge_data in edges_from_src.items():
                     output_idx = edge_data.get("output_index")
-                    input_slot = edge_data.get("input_slot")
-                    
-                    if input_slot is None:
-                        raise ValueError(
-                            f"Edge from '{src}' to '{node}' is missing 'input_slot' metadata. "
-                            "This is required for deterministic input ordering."
-                        )
-                    
-                    src_output = node_outputs[src]  # list of lists, shape [N, ?]
+                    input_slot = edge_data.get("input_slot")  # 可能为 None
+                    src_output = node_outputs[src]
 
                     if output_idx is None:
-                        # 透传整个输出（例如 root 节点）
                         extracted = [sample_output for sample_output in src_output]
                     else:
-                        # 提取指定输出索引
                         extracted = [sample_output[output_idx] for sample_output in src_output]
-                    
-                    input_pairs.append((input_slot, extracted))
 
-            # === 按 input_slot 排序，构建 input_feature_lists ===
-            input_pairs.sort(key=lambda x: x[0])
-            input_slots = [slot for slot, _ in input_pairs]
+                    # 判断是否使用 input_slot
+                    current_has_slot = input_slot is not None
 
-            # 校验：slot 编号应为 0, 1, 2, ..., K-1（无跳跃、无重复）
-            expected_slots = list(range(len(input_pairs)))
-            if input_slots != expected_slots:
-                raise ValueError(
-                    f"Node '{node}' has inconsistent input_slot indices. "
-                    f"Expected {expected_slots}, got {input_slots}. "
-                    "This usually indicates an error in graph construction."
-                )
+                    if has_input_slot is None:
+                        has_input_slot = current_has_slot
+                    elif has_input_slot != current_has_slot:
+                        raise ValueError(
+                            f"Node '{node}': mixed use of 'input_slot' in incoming edges. "
+                            "All edges must either have 'input_slot' or all must omit it."
+                        )
 
-            # 提取数据部分，按 slot 顺序排列
-            input_feature_lists = [data for _, data in input_pairs]
+                    if has_input_slot:
+                        if not isinstance(input_slot, int):
+                            raise ValueError(f"input_slot must be an integer, got {input_slot} (type {type(input_slot)})")
+                        input_pairs.append((input_slot, extracted))
+                    else:
+                        input_feature_lists_old.append(extracted)
+
+            # === 根据是否有 input_slot 选择路径 ===
+            if has_input_slot:
+                # --- 新逻辑：按 input_slot 排序 ---
+                input_pairs.sort(key=lambda x: x[0])
+                input_slots = [slot for slot, _ in input_pairs]
+                expected_slots = list(range(len(input_pairs)))
+                if input_slots != expected_slots:
+                    raise ValueError(
+                        f"Node '{node}' has inconsistent input_slot indices. "
+                        f"Expected {expected_slots}, got {input_slots}."
+                    )
+                input_feature_lists = [data for _, data in input_pairs]
+            else:
+                # --- 老逻辑：保持边遍历顺序 ---
+                input_feature_lists = input_feature_lists_old
 
             if is_passthrough:
                 if len(input_feature_lists) != 1:
@@ -500,46 +521,57 @@ class GraphProcessor:
                         raise ValueError(f"Node '{node}' has no predecessors.")
 
                     # === 收集所有输入特征（按 input_slot 对齐）===
-                    input_pairs = []  # List[Tuple[int, List[Any]]]: (input_slot, feature_list_per_sample)
+                    # === 收集所有输入特征 ===
+                    input_pairs = []  # 用于新逻辑：(input_slot, extracted)
+                    input_feature_lists_old = []  # 用于老逻辑：直接 append
+
+                    has_input_slot = None  # None=未确定, True=有, False=无
 
                     for src in predecessors:
                         edges_from_src = self.graph[src][node]  # MultiEdge dict
                         for edge_key, edge_data in edges_from_src.items():
                             output_idx = edge_data.get("output_index")
-                            input_slot = edge_data.get("input_slot")
-                            
-                            if input_slot is None:
-                                raise ValueError(
-                                    f"Edge from '{src}' to '{node}' is missing 'input_slot' metadata. "
-                                    "This is required for deterministic input ordering."
-                                )
-                            
-                            src_output = node_outputs[src]  # list of lists, shape [N, ?]
+                            input_slot = edge_data.get("input_slot")  # 可能为 None
+                            src_output = node_outputs[src]
 
                             if output_idx is None:
-                                # 透传整个输出（例如 root 节点）
                                 extracted = [sample_output for sample_output in src_output]
                             else:
-                                # 提取指定输出索引
                                 extracted = [sample_output[output_idx] for sample_output in src_output]
-                            
-                            input_pairs.append((input_slot, extracted))
 
-                    # === 按 input_slot 排序，构建 input_feature_lists ===
-                    input_pairs.sort(key=lambda x: x[0])
-                    input_slots = [slot for slot, _ in input_pairs]
+                            # 判断是否使用 input_slot
+                            current_has_slot = input_slot is not None
 
-                    # 校验：slot 编号应为 0, 1, 2, ..., K-1（无跳跃、无重复）
-                    expected_slots = list(range(len(input_pairs)))
-                    if input_slots != expected_slots:
-                        raise ValueError(
-                            f"Node '{node}' has inconsistent input_slot indices. "
-                            f"Expected {expected_slots}, got {input_slots}. "
-                            "This usually indicates an error in graph construction."
-                        )
+                            if has_input_slot is None:
+                                has_input_slot = current_has_slot
+                            elif has_input_slot != current_has_slot:
+                                raise ValueError(
+                                    f"Node '{node}': mixed use of 'input_slot' in incoming edges. "
+                                    "All edges must either have 'input_slot' or all must omit it."
+                                )
 
-                    # 提取数据部分，按 slot 顺序排列
-                    input_feature_lists = [data for _, data in input_pairs]
+                            if has_input_slot:
+                                if not isinstance(input_slot, int):
+                                    raise ValueError(f"input_slot must be an integer, got {input_slot} (type {type(input_slot)})")
+                                input_pairs.append((input_slot, extracted))
+                            else:
+                                input_feature_lists_old.append(extracted)
+
+                    # === 根据是否有 input_slot 选择路径 ===
+                    if has_input_slot:
+                        # --- 新逻辑：按 input_slot 排序 ---
+                        input_pairs.sort(key=lambda x: x[0])
+                        input_slots = [slot for slot, _ in input_pairs]
+                        expected_slots = list(range(len(input_pairs)))
+                        if input_slots != expected_slots:
+                            raise ValueError(
+                                f"Node '{node}' has inconsistent input_slot indices. "
+                                f"Expected {expected_slots}, got {input_slots}."
+                            )
+                        input_feature_lists = [data for _, data in input_pairs]
+                    else:
+                        # --- 老逻辑：保持边遍历顺序 ---
+                        input_feature_lists = input_feature_lists_old
 
                 # === 获取节点元信息 ===
                 node_data = self.graph.nodes[node]

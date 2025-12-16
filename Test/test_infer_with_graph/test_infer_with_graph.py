@@ -32,11 +32,11 @@ model.graph.add_node("mul_node")
 model.graph.nodes["mul_node"]["method_name"] = "multiply"
 
 # 添加边
-model.graph.add_edge("root", "add_node1", output_index=0, data_coord=0, input_slot=0)   # root 特征0 → add_node
-model.graph.add_edge("root", "add_node2", output_index=1, data_coord=1, input_slot=0)   # root 特征1 → add_node
-model.graph.add_edge("add_node1", "mul_node", output_index=0, data_coord=0, input_slot=0)             # add_node 输出 → mul_node
-model.graph.add_edge("add_node2", "mul_node", output_index=0, data_coord=1, input_slot=1)             # add_node 输出 → mul_node
-model.graph.add_edge("mul_node", "collapse", output_index=0, data_coord=0, input_slot=0)            # mul_node 输出 → collapse
+model.graph.add_edge("root", "add_node1", output_index=0, data_coord=0)   # root 特征0 → add_node
+model.graph.add_edge("root", "add_node2", output_index=1, data_coord=1)   # root 特征1 → add_node
+model.graph.add_edge("add_node1", "mul_node", output_index=0, data_coord=0)             # add_node 输出 → mul_node
+model.graph.add_edge("add_node2", "mul_node", output_index=0, data_coord=1)             # add_node 输出 → mul_node
+model.graph.add_edge("mul_node", "collapse", output_index=0, data_coord=0)            # mul_node 输出 → collapse
 
 # 设置坍缩方式为 SUM
 model.collapse_method = CollapseMethod.SUM

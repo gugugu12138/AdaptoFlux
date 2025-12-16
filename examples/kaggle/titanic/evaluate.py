@@ -87,7 +87,7 @@ model = load_titanic_for_adaptoflux(train_processed_path='examples/kaggle/titani
 
 model.set_custom_collapse(collapse_sum_positive)
 
-model.load_model(folder='models/best')
+model.load_model(folder='examples/kaggle/titanic/models/layer_grow/best')
 
 pred = model.infer_with_graph(model.values)
 

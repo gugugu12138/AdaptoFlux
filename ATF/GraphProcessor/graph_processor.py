@@ -4,6 +4,7 @@ from collections import Counter
 import math
 from ..CollapseManager.collapse_functions import CollapseFunctionManager, CollapseMethod
 import logging
+from typing import List, Dict, Set, Optional  # add Set here if missing
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -405,7 +406,7 @@ class GraphProcessor:
                 ) from e
 
         # 返回结果列表（不强制转为 np.array）
-        return collapsed_results
+        return np.array(collapsed_results)
     
     def infer_with_task_parallel(self, values, num_workers=4):
         from concurrent.futures import ThreadPoolExecutor
@@ -664,7 +665,7 @@ class GraphProcessor:
                     f"Error in collapse function with inputs {list(sample_features)}:\n{e}"
                 ) from e
 
-        return collapsed_results  # 返回 list，与 infer_with_graph 一致
+        return np.array(collapsed_results)  # 返回 list，与 infer_with_graph 一致
 
     def infer_with_graph_single(self, sample, use_pipeline=False, num_workers=4):
         # Step 1: 确保 sample 是 1D 可迭代（list/tuple/array）
@@ -732,19 +733,7 @@ class GraphProcessor:
         # === 3. 生成新 ID ===
         new_base_name = new_method_name  # ✅ 关键：定义 new_base_name
         
-        existing_indices = set()
-        prefix = f"{layer}_"
-        suffix = f"_{new_base_name}"
-        for nid in graph.nodes:
-            if nid.startswith(prefix) and nid.endswith(suffix):
-                idx_part = nid[len(prefix): -len(suffix)]
-                if idx_part.isdigit():
-                    existing_indices.add(int(idx_part))
-
-        new_index = 0
-        while new_index in existing_indices:
-            new_index += 1
-        new_node_id = f"{layer}_{new_index}_{new_base_name}"
+        new_node_id = self._generate_unique_node_id(layer, new_method_name)
 
         if new_node_id in graph:
             raise RuntimeError(f"Node ID collision: {new_node_id} already exists!")
@@ -843,3 +832,179 @@ class GraphProcessor:
                 if layer > max_layer:
                     max_layer = layer
         return max_layer
+
+    def replace_subgraph_with_method(
+        self,
+        subgraph_nodes: Set[str],
+        new_method_name: str
+    ) -> str:
+        if not subgraph_nodes:
+            raise ValueError("subgraph_nodes cannot be empty")
+        if new_method_name not in self.methods:
+            raise ValueError(f"Method '{new_method_name}' not in method pool.")
+
+        graph = self.graph
+
+        # 1. 外部输入边（src ∉ subgraph → node ∈ subgraph）
+        input_edges = []
+        for node in subgraph_nodes:
+            for src, _, key, data in graph.in_edges(node, keys=True, data=True):
+                if src not in subgraph_nodes:
+                    input_edges.append((src, key, data))
+
+        # 2. 外部输出边（node ∈ subgraph → dst ∉ subgraph）
+        output_edges = []
+        for node in subgraph_nodes:
+            for _, dst, key, data in graph.out_edges(node, keys=True, data=True):
+                if dst not in subgraph_nodes:
+                    output_edges.append((dst, key, data))
+
+        # 3. 删除子图
+        for node in subgraph_nodes:
+            if node in graph:
+                graph.remove_node(node)
+
+        # 4. 确定新节点 layer（取子图中最大 layer）
+        layer = 0
+        for node in subgraph_nodes:
+            if node in ("root", "collapse"):
+                continue
+            try:
+                node_layer = int(node.split('_', 1)[0])
+                layer = max(layer, node_layer)
+            except (ValueError, IndexError):
+                pass  # fallback to layer 0
+
+        # 5. 生成唯一 ID（模仿 replace_node_method）
+        new_node_id = self._generate_unique_node_id(layer, new_method_name)
+
+        # 6. 添加新节点
+        is_passthrough = (new_method_name == self.discard_node_method_name)
+        graph.add_node(new_node_id, method_name=new_method_name, is_passthrough=is_passthrough)
+
+        # 7. 重连输入边
+        for src, key, data in input_edges:
+            graph.add_edge(src, new_node_id, key=key, **data)
+
+        # 8. 重连输出边
+        for dst, key, data in output_edges:
+            graph.add_edge(new_node_id, dst, key=key, **data)
+
+        return new_node_id
+
+    def replace_subgraph_with_graph(
+        self,
+        subgraph_nodes: Set[str],
+        replacement_graph: nx.DiGraph,
+        root_placeholder: str = "root",
+        collapse_placeholder: str = "collapse"
+    ) -> List[str]:
+        """
+        用 replacement_graph 替换 subgraph_nodes。
+        replacement_graph 必须包含 root_placeholder 和 collapse_placeholder 节点。
+        内部节点将被重命名以符合 layer_index_method 格式。
+        """
+        if not subgraph_nodes:
+            raise ValueError("subgraph_nodes cannot be empty")
+        if root_placeholder not in replacement_graph or collapse_placeholder not in replacement_graph:
+            raise ValueError("replacement_graph must contain 'root' and 'collapse' nodes.")
+
+        graph = self.graph
+
+        # 1. 提取外部 I/O
+        input_edges = []   # (src, key, data)
+        output_edges = []  # (dst, key, data, orig_data_coord)
+        for node in subgraph_nodes:
+            for src, _, key, data in graph.in_edges(node, keys=True, data=True):
+                if src not in subgraph_nodes:
+                    input_edges.append((src, key, data))
+            for _, dst, key, data in graph.out_edges(node, keys=True, data=True):
+                if dst not in subgraph_nodes:
+                    output_edges.append((dst, key, data))
+
+        # 2. 删除子图
+        for node in subgraph_nodes:
+            if node in graph:
+                graph.remove_node(node)
+
+        # 3. 确定新子图的 base layer（取原最大 layer + 1）
+        base_layer = 0
+        for node in subgraph_nodes:
+            if node in ("root", "collapse"):
+                continue
+            try:
+                node_layer = int(node.split('_', 1)[0])
+                base_layer = max(base_layer, node_layer)
+            except:
+                pass
+        base_layer += 1
+
+        # 4. 重命名 replacement_graph 中的内部节点
+        # 构建映射：old_name → new_name（使用全局唯一命名）
+        node_mapping = {}
+        for node in internal_nodes:
+            method = replacement_graph.nodes[node].get('method_name')
+            if not method:
+                raise ValueError(f"Node '{node}' in replacement_graph missing 'method_name'")
+            # ✅ 关键修改：使用主图状态生成唯一 ID
+            new_name = self._generate_unique_node_id(base_layer, method)
+            node_mapping[node] = new_name
+
+        # 5. 执行重命名
+        renamed_replacement = nx.relabel_nodes(replacement_graph, node_mapping, copy=True)
+
+        # 6. 将重命名后的子图合并到主图（排除 root/collapse）
+        for node in internal_nodes:
+            new_node = node_mapping[node]
+            graph.add_node(new_node, **renamed_replacement.nodes[new_node])
+
+        for u, v, key, data in renamed_replacement.edges(keys=True, data=True):
+            if u != root_placeholder and v != collapse_placeholder:
+                graph.add_edge(u, v, key=key, **data)
+
+        # 7. 重连外部输入：原 input_edges → renamed_replacement 中 root 的输出
+        root_out_edges = list(renamed_replacement.out_edges(root_placeholder, keys=True, data=True))
+        if len(input_edges) != len(root_out_edges):
+            raise ValueError(f"Input edge count mismatch: {len(input_edges)} vs {len(root_out_edges)}")
+        for (src, key_in, data_in), (_, internal_node, key_r, data_r) in zip(input_edges, root_out_edges):
+            # 保留原 data_type, output_index; 使用 internal_node 的 data_coord
+            merged_data = {
+                'data_type': data_in.get('data_type', data_r.get('data_type', 'scalar')),
+                'output_index': data_in.get('output_index', 0),
+                'data_coord': data_r.get('data_coord', 0)
+            }
+            graph.add_edge(src, internal_node, key=key_in, **merged_data)
+
+        # 8. 重连外部输出：renamed_replacement 中 collapse 的输入 → 原 output_edges
+        collapse_in_edges = list(renamed_replacement.in_edges(collapse_placeholder, keys=True, data=True))
+        if len(output_edges) != len(collapse_in_edges):
+            raise ValueError(f"Output edge count mismatch: {len(output_edges)} vs {len(collapse_in_edges)}")
+        # 全局分配 data_coord（0,1,2,...）以保证 collapse 输入顺序确定
+        collapse_in_edges.sort(key=lambda x: x[2].get('data_coord', 0))  # 按原 replacement 的 data_coord 排序
+        for i, ((internal_node, _, key_r, data_r), (dst, key_out, data_out)) in enumerate(zip(collapse_in_edges, output_edges)):
+            merged_data = {
+                'data_type': data_out.get('data_type', data_r.get('data_type', 'scalar')),
+                'output_index': data_out.get('output_index', data_r.get('output_index', 0)),
+                'data_coord': i  # 全局重排
+            }
+            graph.add_edge(internal_node, dst, key=key_out, **merged_data)
+
+        return list(node_mapping.values())
+
+    def _generate_unique_node_id(self, layer: int, method_name: str) -> str:
+        """
+        生成符合 {layer}_{index}_{method_name} 格式的唯一节点 ID。
+        复用 replace_node_method 中的命名逻辑，供内部使用。
+        """
+        existing_indices = set()
+        prefix = f"{layer}_"
+        suffix = f"_{method_name}"
+        for nid in self.graph.nodes():
+            if nid.startswith(prefix) and nid.endswith(suffix):
+                idx_part = nid[len(prefix): -len(suffix)]
+                if idx_part.isdigit():
+                    existing_indices.add(int(idx_part))
+        new_index = 0
+        while new_index in existing_indices:
+            new_index += 1
+        return f"{layer}_{new_index}_{method_name}"

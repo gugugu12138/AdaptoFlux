@@ -48,7 +48,6 @@ class GraphEvoTrainer(ModelTrainer):
         refinement_strategy: str = "random_single",
         candidate_pool_mode: str = "group",
         fallback_mode: Optional[str] = None,
-        enable_compression: bool = False,
         enable_evolution: bool = True,
         evolution_sampling_frequency: int = 1,
         evolution_trigger_count: int = 3,
@@ -56,7 +55,13 @@ class GraphEvoTrainer(ModelTrainer):
         consensus_threshold: Optional[float] = None,  # <-- 新增
         methods_per_evolution: int = 1,
         min_subgraph_size_for_evolution: int = 2,  # <-- 新增参数
+
         verbose: bool = True,
+
+        enable_compression: bool = False,
+        compression_mode: str = "symbolic",  # 新增：默认为 symbolic
+        symbolic_compression_rules: Optional[List[Tuple[Any, Any]]] = None,  # 新增
+
         **kwargs
     ):
         """
@@ -109,18 +114,28 @@ class GraphEvoTrainer(ModelTrainer):
         self.candidate_pool_mode = candidate_pool_mode
         self.fallback_mode = fallback_mode or 'self'  
         self.refinement_strategy = refinement_strategy
-        self.enable_compression = enable_compression
         self.enable_evolution = enable_evolution
         self.evolution_sampling_frequency = evolution_sampling_frequency
         self.evolution_trigger_count = evolution_trigger_count
         self.evolution_cleanup_mode = evolution_cleanup_mode
-        self.consensus_threshold = consensus_threshold
-        self.methods_per_evolution = methods_per_evolution    
+
+        self.methods_per_evolution = methods_per_evolution
         self.verbose = verbose
+
+        # 模块化压缩相关
+        self.enable_compression = enable_compression
+        self.compression_mode = compression_mode
+        self.consensus_threshold = consensus_threshold
+        self.symbolic_compression_rules = symbolic_compression_rules or []
+
+        # 校验 compression_mode
+        if self.compression_mode not in {"symbolic", "numerical"}:
+            raise ValueError("compression_mode must be 'symbolic' or 'numerical'")
+            
 
         self.subgraph_sampler = kwargs.get('subgraph_sampler') or BFSSubgraphSampler(max_nodes=4)
         self.io_extractor = kwargs.get('io_extractor') or SubgraphIOExtractor()
-        self.replacer = kwargs.get('replacer') or SubgraphReplacer()
+        # self.replacer = kwargs.get('replacer') or SubgraphReplacer()
         self.equivalence_checker = kwargs.get('equivalence_checker') or MSEEquivalenceChecker(
             threshold=self.compression_threshold
         )
@@ -161,8 +176,6 @@ class GraphEvoTrainer(ModelTrainer):
         if self.fallback_mode not in valid_fallback_modes:
             raise ValueError(f"Invalid fallback_mode: {self.fallback_mode}")
 
-        if self.enable_compression == True and self.verbose:
-            logger.warning("模块化压缩为未完成的实验性功能，使用时大概率有严重bug，如无自行修改建议不要使用！")
 
     def _phase_diverse_initialization(self, input_data: np.ndarray, target: np.ndarray) -> Dict[str, Any]:
         """
@@ -465,81 +478,21 @@ class GraphEvoTrainer(ModelTrainer):
         return compatible_methods
 
     def _phase_modular_compression(self, adaptoflux_instance, input_data: np.ndarray, target: np.ndarray) -> Dict[str, Any]:
-        """
-        阶段四：模块化压缩 (Modular Compression)
-        识别图中可被替换的高效子图，用更小或更快的等效结构进行替代。
-
-        本阶段执行以下流程：
-        1. **子图采样**：使用配置的采样器（如 BFS）随机选取一个连通子图；
-        2. **I/O 提取**：执行原图，记录该子图的输入与输出数据；
-        3. **替代生成**：（当前简化为）选择一个候选方法（如 "add"）作为替代结构；
-        4. **等效性验证**：比较替代结构与原子图在相同输入下的输出是否足够相似；
-        5. **图结构替换**：若验证通过，则用替代结构（当前为单节点）替换原子图；
-        6. **记录高性能子图**：将被替换的原子图保存至 `high_performance_subgraphs`，供进化阶段使用。
-
-        注意：当前实现中，替代结构为**单个节点**，且候选方法固定为 "add"。
-        后续可扩展为训练一个小型替代子图以实现更优压缩。
-
-        :param adaptoflux_instance: 待优化的 AdaptoFlux 实例
-        :param input_data: 用于评估等效性的输入数据（小批量）
-        :param target: 对应的标签（用于最终性能评估，非等效性验证必需）
-        :return: 包含压缩后模型信息和压缩情况的字典，字段包括：
-                 - 'final_model': 压缩后的 AdaptoFlux 实例（可能未变）
-                 - 'final_loss': 压缩后的损失值
-                 - 'final_accuracy': 压缩后的准确率
-                 - 'compression_applied': bool，是否成功执行了压缩
-                 - 'compressed_subgraphs': int，本次压缩的子图数量（0 或 1）
-        """
         if not self.enable_compression:
             return self._return_original_result(adaptoflux_instance, input_data, target)
 
-        gp = adaptoflux_instance.graph_processor
-
-        # 1. 采样子图
-        subgraph = self.subgraph_sampler.sample(gp.graph)
-        if subgraph is None:
-            return self._return_original_result(adaptoflux_instance, input_data, target)
-
-        # 2. 提取 I/O
-        try:
-            sub_inputs, sub_outputs = self.io_extractor.extract(adaptoflux_instance, subgraph, input_data)
-        except Exception as e:
-            logger.warning(f"IO extraction failed: {e}")
-            return self._return_original_result(adaptoflux_instance, input_data, target)
-
-        # 3. 简化：直接选一个候选方法（如 "add"）作为替代（跳过训练）
-        candidate_method = "add"  # 后续可替换为训练逻辑
-        if candidate_method not in adaptoflux_instance.methods:
-            return self._return_original_result(adaptoflux_instance, input_data, target)
-
-        # 4. 验证等效性
-        # 构建临时单节点图并测试
-        temp_af = self._create_single_node_graph(adaptoflux_instance, candidate_method)
-        rep_output = temp_af.infer_with_graph(input_data)
-        orig_output = list(sub_outputs.values())[0]
-
-        if not self.equivalence_checker.is_equivalent(orig_output, rep_output):
-            return self._return_original_result(adaptoflux_instance, input_data, target)
-
-        # 5. 执行替换
-        try:
-            new_node_id = self.replacer.replace_with_node(gp, subgraph, candidate_method)
-            logger.info(f"Replaced subgraph with node '{new_node_id}' ({candidate_method})")
-
-            # 返回新结果
-            new_loss = self._evaluate_loss(input_data, target, adaptoflux_instance=adaptoflux_instance)
-            new_acc = self._evaluate_accuracy(input_data, target, adaptoflux_instance=adaptoflux_instance)
-            return {
-                'final_model': adaptoflux_instance,
-                'final_loss': new_loss,
-                'final_accuracy': new_acc,
-                'compression_applied': True,
-                'compressed_subgraphs': 1
-            }
-
-        except Exception as e:
-            logger.error(f"Replacement failed: {e}")
-            return self._return_original_result(adaptoflux_instance, input_data, target)
+        if self.compression_mode == "symbolic":
+            return self._phase_symbolic_compression(adaptoflux_instance, input_data, target)
+        elif self.compression_mode == "numerical":
+            if self.verbose:
+                logger.warning(
+                    "⚠️ Numerical modular compression is UNFINISHED and UNSAFE. "
+                    "It uses hard-coded 'add' replacement and is likely broken. "
+                    "Use symbolic compression with explicit rules instead."
+                )
+            return self._phase_numerical_compression_legacy(adaptoflux_instance, input_data, target)
+        else:
+            raise ValueError(f"Unknown compression_mode: {self.compression_mode}")
 
     def _return_original_result(self, adaptoflux_instance, input_data, target):
         """
@@ -1546,3 +1499,114 @@ class GraphEvoTrainer(ModelTrainer):
         except (ValueError, IndexError):
             logger.warning(f"Cannot parse layer from node_id: {node_id}. Using layer=0.")
             return 0
+
+    def _phase_numerical_compression_legacy(self, adaptoflux_instance, input_data: np.ndarray, target: np.ndarray) -> Dict[str, Any]:
+        """
+        【DEPRECATED】旧的数值压缩逻辑（MSE + 单节点替换）。
+        仅用于兼容性保留，不推荐使用。
+        """
+        gp = adaptoflux_instance.graph_processor
+        # 1. 采样子图
+        subgraph = self.subgraph_sampler.sample(gp.graph)
+        if subgraph is None:
+            return self._return_original_result(adaptoflux_instance, input_data, target)
+        # 2. 提取 I/O
+        try:
+            sub_inputs, sub_outputs = self.io_extractor.extract(adaptoflux_instance, subgraph, input_data)
+        except Exception as e:
+            logger.warning(f"IO extraction failed: {e}")
+            return self._return_original_result(adaptoflux_instance, input_data, target)
+        # 3. 简化：直接选一个候选方法（如 "add"）作为替代（跳过训练）
+        candidate_method = "add"  # 后续可替换为训练逻辑
+        if candidate_method not in adaptoflux_instance.methods:
+            return self._return_original_result(adaptoflux_instance, input_data, target)
+        # 4. 验证等效性
+        temp_af = self._create_single_node_graph(adaptoflux_instance, candidate_method)
+        rep_output = temp_af.infer_with_graph(input_data)
+        orig_output = list(sub_outputs.values())[0]
+        if not self.equivalence_checker.is_equivalent(orig_output, rep_output):
+            return self._return_original_result(adaptoflux_instance, input_data, target)
+        # 5. 执行替换
+        try:
+            new_node_id = self.replacer.replace_with_node(gp, subgraph, candidate_method)
+            logger.info(f"Replaced subgraph with node '{new_node_id}' ({candidate_method})")
+            new_loss = self._evaluate_loss(input_data, target, adaptoflux_instance=adaptoflux_instance)
+            new_acc = self._evaluate_accuracy(input_data, target, adaptoflux_instance=adaptoflux_instance)
+            return {
+                'final_model': adaptoflux_instance,
+                'final_loss': new_loss,
+                'final_accuracy': new_acc,
+                'compression_applied': True,
+                'compressed_subgraphs': 1
+            }
+        except Exception as e:
+            logger.error(f"Replacement failed: {e}")
+            return self._return_original_result(adaptoflux_instance, input_data, target)
+
+    def _phase_symbolic_compression(self, adaptoflux_instance, input_data: np.ndarray, target: np.ndarray) -> Dict[str, Any]:
+        if not self.symbolic_compression_rules:
+            if self.verbose:
+                logger.info("Symbolic compression skipped: no rules provided.")
+            return self._return_original_result(adaptoflux_instance, input_data, target)
+
+        gp = adaptoflux_instance.graph_processor
+        graph = gp.graph
+        total_compressed = 0
+
+        from networkx.algorithms.isomorphism import DiGraphMatcher
+
+        for src_subgraph, tgt_spec in self.symbolic_compression_rules:
+            # 定义匹配函数（基于 method_name + data_coord）
+            def node_match(n1, n2):
+                return n1.get('method_name') == n2.get('method_name')
+            def edge_match(e1, e2):
+                return (
+                    e1.get('output_index') == e2.get('output_index') and
+                    e1.get('data_type') == e2.get('data_type')
+                )
+
+            matcher = DiGraphMatcher(graph, src_subgraph, node_match=node_match, edge_match=edge_match)
+            matches = list(matcher.subgraph_isomorphisms_iter())
+            print(f"Found {len(matches)} matches for compression rule.")
+            if not matches:
+                continue
+
+            # 贪心非重叠匹配
+            used_nodes = set()
+            valid_matches = []
+            for mapping in sorted(matches, key=lambda m: -len(m)):
+                main_nodes = set(mapping.keys())
+                if main_nodes & used_nodes:
+                    continue
+                valid_matches.append(mapping)
+                used_nodes.update(main_nodes)
+
+            for mapping in valid_matches:
+                subgraph_nodes = set(mapping.keys())
+                try:
+                    if isinstance(tgt_spec, str):
+                        # ✅ 直接调用 gp 的新方法
+                        new_node_id = gp.replace_subgraph_with_method(subgraph_nodes, tgt_spec)
+                        logger.info(f"✅ Replaced subgraph with method node: {new_node_id}")
+                        total_compressed += 1
+                    elif isinstance(tgt_spec, nx.DiGraph):
+                        # ✅ 直接调用 gp 的新方法（子图替换子图）
+                        new_nodes = gp.replace_subgraph_with_graph(subgraph_nodes, tgt_spec)
+                        logger.info(f"✅ Replaced subgraph with graph: {len(new_nodes)} nodes inserted")
+                        total_compressed += 1
+                    else:
+                        logger.warning(f"Unsupported target spec type: {type(tgt_spec)}")
+                except Exception as e:
+                    logger.warning(f"Compression failed: {e}", exc_info=True)
+
+        # 评估
+        new_loss = self._evaluate_loss(input_data, target, adaptoflux_instance=adaptoflux_instance)
+        new_acc = self._evaluate_accuracy(input_data, target, adaptoflux_instance=adaptoflux_instance)
+
+        return {
+            'final_model': adaptoflux_instance,
+            'final_loss': new_loss,
+            'final_accuracy': new_acc,
+            'compression_applied': total_compressed > 0,
+            'compressed_subgraphs': total_compressed
+        }

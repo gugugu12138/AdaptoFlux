@@ -128,6 +128,7 @@ class ModelTrainer(ABC):
                 output = af.infer_with_graph(values=input_data)
 
             if output.shape[0] != target.shape[0]:
+                print(f"Output shape: {output.shape}, Target shape: {target.shape}")
                 raise ValueError(f"Output batch size {output.shape[0]} != target batch size {target.shape[0]}")
 
             loss = self.loss_fn(output, target)

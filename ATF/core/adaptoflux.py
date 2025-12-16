@@ -136,7 +136,8 @@ class AdaptoFlux:
                 "collapse",
                 output_index=feature_index,
                 data_coord=feature_index,
-                data_type=feature_type
+                data_type=feature_type,
+                input_slot=feature_index
             )
 
         # 自动导入方法

@@ -4,7 +4,7 @@ from collections import Counter
 import math
 from ..CollapseManager.collapse_functions import CollapseFunctionManager, CollapseMethod
 import logging
-from typing import List, Dict, Set, Optional  # add Set here if missing
+from typing import List, Dict, Set, Optional, Tuple  # add Set here if missing
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -45,17 +45,29 @@ class GraphProcessor:
         """
         向图中添加一层新节点。
         """
-        self.discard_node_method_name = discard_node_method_name
+        import logging
 
+        self.discard_node_method_name = discard_node_method_name
         self.layer += 1
         new_index_edge = 0
         method_counts = {method_name: 0 for method_name in self.methods}
         if discard_node_method_name not in method_counts:
             method_counts[discard_node_method_name] = 0
+
         v = "collapse"
         collapse_edges = list(self.graph.in_edges(v, data=True))
 
-        # 处理有效分组
+        # 转换 collapse_edges 为便于查找的映射：data_coord -> (u, data)
+        coord_to_edge = {}
+        for u, _, data in collapse_edges:
+            coord = data.get('data_coord')
+            if coord is None:
+                raise ValueError(f"Edge to 'collapse' missing 'data_coord': {data}")
+            if coord in coord_to_edge:
+                raise ValueError(f"Duplicate data_coord {coord} found in collapse edges!")
+            coord_to_edge[coord] = (u, data)
+
+        # === 1. 处理 valid_groups ===
         for method_name, groups in result['valid_groups'].items():
             if method_name == discard_node_method_name:
                 continue
@@ -65,35 +77,33 @@ class GraphProcessor:
                     new_target_node,
                     method_name=method_name,
                     layer=self.layer,
-                    is_passthrough=False   # ← 关键：显式标记
+                    is_passthrough=False
                 )
 
-                for u, _, data in collapse_edges:
-                    if data.get('data_coord') in group:
-                        self.graph.remove_edge(u, v)
-                        self.graph.add_edge(u, new_target_node, **data)
+                # 按 group 的原始顺序分配 input_slot
+                for input_slot, coord in enumerate(group):
+                    if coord not in coord_to_edge:
+                        raise ValueError(f"Coord {coord} in group not found in collapse edges!")
+                    u, orig_data = coord_to_edge[coord]
+                    self.graph.remove_edge(u, v)
+                    # 新增 input_slot 字段，保留其他属性
+                    new_edge_data = {**orig_data, 'input_slot': input_slot}
+                    self.graph.add_edge(u, new_target_node, **new_edge_data)
 
-                for local_output_index in range(self.methods[method_name]["output_count"]):
-                    self.graph.add_edge(new_target_node, v, output_index=local_output_index, data_coord=new_index_edge, data_type=self.methods[method_name]["output_types"][local_output_index])
+                # 添加输出边（到 collapse）
+                output_count = self.methods[method_name]["output_count"]
+                for local_output_index in range(output_count):
+                    self.graph.add_edge(
+                        new_target_node, v,
+                        output_index=local_output_index,
+                        data_coord=new_index_edge,
+                        data_type=self.methods[method_name]["output_types"][local_output_index]
+                    )
                     new_index_edge += 1
 
                 method_counts[method_name] += 1
-            
-            # # === 新增：检测无入边的新节点 ===
-            # for method_name, count in method_counts.items():
-            #     if method_name == "unmatched":
-            #         continue
-            #     for i in range(count):
-            #         new_node = f"{self.layer}_{i}_{method_name}"
-            #         if self.graph.in_degree(new_node) == 0:
-            #             print(f"[警告] 节点 '{new_node}' 没有入边！其属性为：")
-            #             print(dict(self.graph.nodes[new_node]))
-            #             print(result['valid_groups'])
 
-        # 收集所有输入边的 data_type
-        input_data_types = []
-        
-        # 处理 discard_node_method_name
+        # === 2. 处理 unmatched (discard) ===
         unmatched_groups = result.get('unmatched', [])
         if unmatched_groups and discard_unmatched == 'to_discard':
             for group in unmatched_groups:
@@ -102,24 +112,27 @@ class GraphProcessor:
                     node_name,
                     method_name=discard_node_method_name,
                     layer=self.layer,
-                    is_passthrough=True   # ← 关键：显式标记
+                    is_passthrough=True
                 )
 
-                # 收集所有输入边的 data_type，并重定向边
+                # 按 group 顺序分配 input_slot（透传节点也需要 input_slot！）
                 input_data_types = []
-                for u, _, data in collapse_edges:
-                    if data.get('data_coord') in group:
-                        input_data_types.append(data.get('data_type'))  # 提取原始边的数据类型
-                        self.graph.remove_edge(u, v)
-                        self.graph.add_edge(u, node_name, **data)
+                for input_slot, coord in enumerate(group):
+                    if coord not in coord_to_edge:
+                        raise ValueError(f"Coord {coord} in unmatched group not found in collapse edges!")
+                    u, orig_data = coord_to_edge[coord]
+                    input_data_types.append(orig_data.get('data_type'))
+                    self.graph.remove_edge(u, v)
+                    new_edge_data = {**orig_data, 'input_slot': input_slot}
+                    self.graph.add_edge(u, node_name, **new_edge_data)
 
-                # 按顺序为每条输入边创建一条输出边，继承其 data_type
+                # 透传节点：输出边数量 = 输入边数量，一一对应
                 for local_output_index, used_data_type in enumerate(input_data_types):
                     self.graph.add_edge(
                         node_name, v,
                         output_index=local_output_index,
                         data_coord=new_index_edge,
-                        data_type=used_data_type  # ← 使用对应输入边的类型
+                        data_type=used_data_type
                     )
                     new_index_edge += 1
 
@@ -135,19 +148,15 @@ class GraphProcessor:
                 "Data will be DROPPED (edges removed from 'collapse'). "
                 "Use at your own risk."
             )
-            # TODO: Add unit tests for 'ignore' mode (2025-10-18)
-            logging.warning("Experimental 'ignore' mode: unmatched data is dropped.")
-            # === 新增逻辑：彻底丢弃 unmatched 数据 ===
-            # 将 unmatched_groups 扁平化为一个集合，便于快速查找
+            # 扁平化 unmatched_coords
             unmatched_coords = set()
             for group in unmatched_groups:
                 unmatched_coords.update(group)
-
-            # 遍历原始 collapse 入边（已缓存），删除属于 unmatched 的边
+            # 删除对应边（不创建新节点）
             for u, _, data in collapse_edges:
                 if data.get('data_coord') in unmatched_coords:
-                    self.graph.remove_edge(u, v)
-            # 注意：不创建新节点，也不添加新边 → 数据被丢弃
+                    if self.graph.has_edge(u, v):
+                        self.graph.remove_edge(u, v)
 
         elif unmatched_groups:
             raise ValueError(f"未知的 discard_unmatched 值：{discard_unmatched}")
@@ -241,30 +250,57 @@ class GraphProcessor:
             if not predecessors:
                 raise ValueError(f"Node '{node}' has no predecessors.")
 
-            # 按边收集：每个输入边对应一个“输入特征列表”（长度 = num_samples）
-            input_feature_lists = []  # List[List[Any]]: [input_slot][sample_idx]
+            # === 收集所有输入特征（按 input_slot 对齐）===
+            input_pairs = []  # List[Tuple[int, List[Any]]]: (input_slot, feature_list_per_sample)
 
             for src in predecessors:
-                edges_from_src = self.graph[src][node]  # Multi-edge dict
-                for edge_key in edges_from_src:
-                    edge_data = edges_from_src[edge_key]
+                edges_from_src = self.graph[src][node]  # MultiEdge dict
+                for edge_key, edge_data in edges_from_src.items():
                     output_idx = edge_data.get("output_index")
-                    src_output = node_outputs[src]  # list of lists
+                    input_slot = edge_data.get("input_slot")
+                    
+                    if input_slot is None:
+                        raise ValueError(
+                            f"Edge from '{src}' to '{node}' is missing 'input_slot' metadata. "
+                            "This is required for deterministic input ordering."
+                        )
+                    
+                    src_output = node_outputs[src]  # list of lists, shape [N, ?]
 
                     if output_idx is None:
-                        # 透传整个输出（罕见，通常用于 root）
+                        # 透传整个输出（例如 root 节点）
                         extracted = [sample_output for sample_output in src_output]
                     else:
-                        # 提取第 output_idx 个输出特征
+                        # 提取指定输出索引
                         extracted = [sample_output[output_idx] for sample_output in src_output]
-                    input_feature_lists.append(extracted)
+                    
+                    input_pairs.append((input_slot, extracted))
 
-            # === 执行节点 ===
+            # === 按 input_slot 排序，构建 input_feature_lists ===
+            input_pairs.sort(key=lambda x: x[0])
+            input_slots = [slot for slot, _ in input_pairs]
+
+            # 校验：slot 编号应为 0, 1, 2, ..., K-1（无跳跃、无重复）
+            expected_slots = list(range(len(input_pairs)))
+            if input_slots != expected_slots:
+                raise ValueError(
+                    f"Node '{node}' has inconsistent input_slot indices. "
+                    f"Expected {expected_slots}, got {input_slots}. "
+                    "This usually indicates an error in graph construction."
+                )
+
+            # 提取数据部分，按 slot 顺序排列
+            input_feature_lists = [data for _, data in input_pairs]
+
             if is_passthrough:
                 if len(input_feature_lists) != 1:
                     raise ValueError(f"Passthrough node '{node}' must have exactly one input, got {len(input_feature_lists)}")
-                # 透传：输出 = 输入
-                node_outputs[node] = input_feature_lists[0]  # list of objects (one per sample)
+                
+                # input_feature_lists[0] is a list of N elements: [feat_sample0, feat_sample1, ..., feat_sampleN-1]
+                extracted_per_sample = input_feature_lists[0]  # length = N
+                
+                # ✅ 正确格式：每个样本一个 list（即使只有一个输出）
+                node_outputs[node] = [[feat] for feat in extracted_per_sample]
                 continue
 
             # === 正常方法执行 ===
@@ -463,24 +499,47 @@ class GraphProcessor:
                     if not predecessors:
                         raise ValueError(f"Node '{node}' has no predecessors.")
 
-                    input_feature_lists = []  # List[List[Any]]: [input_slot][sample_idx]
+                    # === 收集所有输入特征（按 input_slot 对齐）===
+                    input_pairs = []  # List[Tuple[int, List[Any]]]: (input_slot, feature_list_per_sample)
 
                     for src in predecessors:
-                        if src not in node_outputs:
-                            raise KeyError(f"Predecessor node '{src}' output not ready.")
-                        edges_from_src = self.graph[src][node]  # MultiDiGraph edge dict
-                        for edge_key in edges_from_src:
-                            edge_data = edges_from_src[edge_key]
+                        edges_from_src = self.graph[src][node]  # MultiEdge dict
+                        for edge_key, edge_data in edges_from_src.items():
                             output_idx = edge_data.get("output_index")
-                            src_output = node_outputs[src]  # list of lists
+                            input_slot = edge_data.get("input_slot")
+                            
+                            if input_slot is None:
+                                raise ValueError(
+                                    f"Edge from '{src}' to '{node}' is missing 'input_slot' metadata. "
+                                    "This is required for deterministic input ordering."
+                                )
+                            
+                            src_output = node_outputs[src]  # list of lists, shape [N, ?]
 
                             if output_idx is None:
-                                # 透传整个样本（每个样本是一个 list）
-                                extracted = [sample for sample in src_output]
+                                # 透传整个输出（例如 root 节点）
+                                extracted = [sample_output for sample_output in src_output]
                             else:
-                                # 提取第 output_idx 个特征（每个样本一个对象）
-                                extracted = [sample[output_idx] for sample in src_output]
-                            input_feature_lists.append(extracted)
+                                # 提取指定输出索引
+                                extracted = [sample_output[output_idx] for sample_output in src_output]
+                            
+                            input_pairs.append((input_slot, extracted))
+
+                    # === 按 input_slot 排序，构建 input_feature_lists ===
+                    input_pairs.sort(key=lambda x: x[0])
+                    input_slots = [slot for slot, _ in input_pairs]
+
+                    # 校验：slot 编号应为 0, 1, 2, ..., K-1（无跳跃、无重复）
+                    expected_slots = list(range(len(input_pairs)))
+                    if input_slots != expected_slots:
+                        raise ValueError(
+                            f"Node '{node}' has inconsistent input_slot indices. "
+                            f"Expected {expected_slots}, got {input_slots}. "
+                            "This usually indicates an error in graph construction."
+                        )
+
+                    # 提取数据部分，按 slot 顺序排列
+                    input_feature_lists = [data for _, data in input_pairs]
 
                 # === 获取节点元信息 ===
                 node_data = self.graph.nodes[node]
@@ -833,77 +892,15 @@ class GraphProcessor:
                     max_layer = layer
         return max_layer
 
-    def replace_subgraph_with_method(
-        self,
-        subgraph_nodes: Set[str],
-        new_method_name: str
-    ) -> str:
-        if not subgraph_nodes:
-            raise ValueError("subgraph_nodes cannot be empty")
-        if new_method_name not in self.methods:
-            raise ValueError(f"Method '{new_method_name}' not in method pool.")
-
-        graph = self.graph
-
-        # 1. 外部输入边（src ∉ subgraph → node ∈ subgraph）
-        input_edges = []
-        for node in subgraph_nodes:
-            for src, _, key, data in graph.in_edges(node, keys=True, data=True):
-                if src not in subgraph_nodes:
-                    input_edges.append((src, key, data))
-
-        # 2. 外部输出边（node ∈ subgraph → dst ∉ subgraph）
-        output_edges = []
-        for node in subgraph_nodes:
-            for _, dst, key, data in graph.out_edges(node, keys=True, data=True):
-                if dst not in subgraph_nodes:
-                    output_edges.append((dst, key, data))
-
-        # 3. 删除子图
-        for node in subgraph_nodes:
-            if node in graph:
-                graph.remove_node(node)
-
-        # 4. 确定新节点 layer（取子图中最大 layer）
-        layer = 0
-        for node in subgraph_nodes:
-            if node in ("root", "collapse"):
-                continue
-            try:
-                node_layer = int(node.split('_', 1)[0])
-                layer = max(layer, node_layer)
-            except (ValueError, IndexError):
-                pass  # fallback to layer 0
-
-        # 5. 生成唯一 ID（模仿 replace_node_method）
-        new_node_id = self._generate_unique_node_id(layer, new_method_name)
-
-        # 6. 添加新节点
-        is_passthrough = (new_method_name == self.discard_node_method_name)
-        graph.add_node(new_node_id, method_name=new_method_name, is_passthrough=is_passthrough)
-
-        # 7. 重连输入边
-        for src, key, data in input_edges:
-            graph.add_edge(src, new_node_id, key=key, **data)
-
-        # 8. 重连输出边
-        for dst, key, data in output_edges:
-            graph.add_edge(new_node_id, dst, key=key, **data)
-
-        return new_node_id
-
     def replace_subgraph_with_graph(
         self,
         subgraph_nodes: Set[str],
         replacement_graph: nx.DiGraph,
+        input_port_bindings: Dict[str, Tuple[str, str, dict]],   # port_name → (src, key, data)
+        output_port_bindings: Dict[str, Tuple[str, str, dict]],  # port_name → (dst, key, data)
         root_placeholder: str = "root",
         collapse_placeholder: str = "collapse"
     ) -> List[str]:
-        """
-        用 replacement_graph 替换 subgraph_nodes。
-        replacement_graph 必须包含 root_placeholder 和 collapse_placeholder 节点。
-        内部节点将被重命名以符合 layer_index_method 格式。
-        """
         if not subgraph_nodes:
             raise ValueError("subgraph_nodes cannot be empty")
         if root_placeholder not in replacement_graph or collapse_placeholder not in replacement_graph:
@@ -911,83 +908,89 @@ class GraphProcessor:
 
         graph = self.graph
 
-        # 1. 提取外部 I/O
-        input_edges = []   # (src, key, data)
-        output_edges = []  # (dst, key, data, orig_data_coord)
-        for node in subgraph_nodes:
-            for src, _, key, data in graph.in_edges(node, keys=True, data=True):
-                if src not in subgraph_nodes:
-                    input_edges.append((src, key, data))
-            for _, dst, key, data in graph.out_edges(node, keys=True, data=True):
-                if dst not in subgraph_nodes:
-                    output_edges.append((dst, key, data))
-
-        # 2. 删除子图
+        # 1. 删除子图
         for node in subgraph_nodes:
             if node in graph:
                 graph.remove_node(node)
 
-        # 3. 确定新子图的 base layer（取原最大 layer + 1）
-        base_layer = 0
+        # 2. 计算新 layer（基于 replacement_graph 中离 root 的距离）
+        internal_nodes = [n for n in replacement_graph.nodes() if n not in (root_placeholder, collapse_placeholder)]
+        
+        try:
+            dist_from_root = nx.single_source_shortest_path_length(replacement_graph, root_placeholder)
+        except Exception as e:
+            raise ValueError(f"Cannot compute layers from root: {e}")
+
+        # 提取所有合法的 layer 编号
+        valid_layers = []
         for node in subgraph_nodes:
             if node in ("root", "collapse"):
                 continue
-            try:
-                node_layer = int(node.split('_', 1)[0])
-                base_layer = max(base_layer, node_layer)
-            except:
-                pass
-        base_layer += 1
+            parts = node.split('_', 1)
+            if len(parts) >= 1:
+                try:
+                    layer = int(parts[0])
+                    valid_layers.append(layer)
+                except ValueError:
+                    continue  # 忽略无法解析 layer 的节点
 
-        # 4. 重命名 replacement_graph 中的内部节点
-        # 构建映射：old_name → new_name（使用全局唯一命名）
+        # 设定全局偏移：如果有合法 layer，取最小值；否则默认为 0
+        global_offset = min(valid_layers) if valid_layers else 0
+
+        # 3. 重命名节点
         node_mapping = {}
         for node in internal_nodes:
             method = replacement_graph.nodes[node].get('method_name')
             if not method:
-                raise ValueError(f"Node '{node}' in replacement_graph missing 'method_name'")
-            # ✅ 关键修改：使用主图状态生成唯一 ID
-            new_name = self._generate_unique_node_id(base_layer, method)
+                raise ValueError(f"Node '{node}' missing 'method_name'")
+            layer = global_offset + dist_from_root[node] - 1
+            new_name = self._generate_unique_node_id(layer, method)
             node_mapping[node] = new_name
 
-        # 5. 执行重命名
         renamed_replacement = nx.relabel_nodes(replacement_graph, node_mapping, copy=True)
 
-        # 6. 将重命名后的子图合并到主图（排除 root/collapse）
+        # 4. 添加内部节点和边
         for node in internal_nodes:
             new_node = node_mapping[node]
             graph.add_node(new_node, **renamed_replacement.nodes[new_node])
-
+        
         for u, v, key, data in renamed_replacement.edges(keys=True, data=True):
             if u != root_placeholder and v != collapse_placeholder:
                 graph.add_edge(u, v, key=key, **data)
 
-        # 7. 重连外部输入：原 input_edges → renamed_replacement 中 root 的输出
-        root_out_edges = list(renamed_replacement.out_edges(root_placeholder, keys=True, data=True))
-        if len(input_edges) != len(root_out_edges):
-            raise ValueError(f"Input edge count mismatch: {len(input_edges)} vs {len(root_out_edges)}")
-        for (src, key_in, data_in), (_, internal_node, key_r, data_r) in zip(input_edges, root_out_edges):
-            # 保留原 data_type, output_index; 使用 internal_node 的 data_coord
-            merged_data = {
-                'data_type': data_in.get('data_type', data_r.get('data_type', 'scalar')),
-                'output_index': data_in.get('output_index', 0),
-                'data_coord': data_r.get('data_coord', 0)
+        # 5. 重连输入：直接按 port_name 查找
+        for _, internal_node, key, data in renamed_replacement.out_edges(root_placeholder, keys=True, data=True):
+            port_name = data.get('port_name')
+            if not port_name:
+                raise ValueError("Replacement input edge missing 'port_name'")
+            if port_name not in input_port_bindings:
+                raise ValueError(f"No input binding for port: {port_name}")
+            src, key_in, orig_data = input_port_bindings[port_name]
+            merged = {
+                'data_type': orig_data.get('data_type', data.get('data_type', 'scalar')),
+                'output_index': orig_data.get('output_index', 0),
+                'input_slot': data.get('input_slot', orig_data.get('input_slot', 0)),
+                'data_coord': data.get('data_coord', 0),
+                'port_name': port_name
             }
-            graph.add_edge(src, internal_node, key=key_in, **merged_data)
+            graph.add_edge(src, internal_node, key=key_in, **merged)
 
-        # 8. 重连外部输出：renamed_replacement 中 collapse 的输入 → 原 output_edges
-        collapse_in_edges = list(renamed_replacement.in_edges(collapse_placeholder, keys=True, data=True))
-        if len(output_edges) != len(collapse_in_edges):
-            raise ValueError(f"Output edge count mismatch: {len(output_edges)} vs {len(collapse_in_edges)}")
-        # 全局分配 data_coord（0,1,2,...）以保证 collapse 输入顺序确定
-        collapse_in_edges.sort(key=lambda x: x[2].get('data_coord', 0))  # 按原 replacement 的 data_coord 排序
-        for i, ((internal_node, _, key_r, data_r), (dst, key_out, data_out)) in enumerate(zip(collapse_in_edges, output_edges)):
-            merged_data = {
-                'data_type': data_out.get('data_type', data_r.get('data_type', 'scalar')),
-                'output_index': data_out.get('output_index', data_r.get('output_index', 0)),
-                'data_coord': i  # 全局重排
+        # 6. 重连输出
+        for internal_node, _, key, data in renamed_replacement.in_edges(collapse_placeholder, keys=True, data=True):
+            port_name = data.get('port_name')
+            if not port_name:
+                raise ValueError("Replacement output edge missing 'port_name'")
+            if port_name not in output_port_bindings:
+                raise ValueError(f"No output binding for port: {port_name}")
+            dst, key_out, orig_data = output_port_bindings[port_name]
+            merged = {
+                'data_type': orig_data.get('data_type', data.get('data_type', 'scalar')),
+                'output_index': data.get('output_index', orig_data.get('output_index', 0)),
+                'input_slot': orig_data.get('input_slot', data.get('input_slot', 0)),
+                'data_coord': data.get('data_coord', 0),
+                'port_name': port_name
             }
-            graph.add_edge(internal_node, dst, key=key_out, **merged_data)
+            graph.add_edge(internal_node, dst, key=key_out, **merged)
 
         return list(node_mapping.values())
 

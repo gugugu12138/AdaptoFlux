@@ -1556,22 +1556,58 @@ class GraphEvoTrainer(ModelTrainer):
         from networkx.algorithms.isomorphism import DiGraphMatcher
 
         for src_subgraph, tgt_spec in self.symbolic_compression_rules:
-            # 定义匹配函数（基于 method_name + data_coord）
+            root_ph = "root"
+            collapse_ph = "collapse"
+
+            # === 1. 预处理 pattern：分离内部图 + 接口规范 ===
+            if root_ph not in src_subgraph or collapse_ph not in src_subgraph:
+                logger.warning("Pattern must contain 'root' and 'collapse'")
+                continue
+
+            # 内部图（用于匹配）
+            internal_nodes_pattern = [n for n in src_subgraph.nodes() if n not in (root_ph, collapse_ph)]
+            match_graph = src_subgraph.subgraph(internal_nodes_pattern).copy()
+
+            # 输入端口规范: port_name -> (target_node, input_slot)
+            input_ports = {}
+            for _, tgt, data in src_subgraph.out_edges(root_ph, data=True):
+                port_name = data.get('port_name')
+                input_slot = data.get('input_slot')
+                if port_name is None or input_slot is None:
+                    raise ValueError("Pattern input edge must have 'port_name' and 'input_slot'")
+                if port_name in input_ports:
+                    raise ValueError(f"Duplicate input port: {port_name}")
+                input_ports[port_name] = (tgt, input_slot)
+
+            # 输出端口规范: port_name -> (source_node, output_index)
+            output_ports = {}
+            for src, _, data in src_subgraph.in_edges(collapse_ph, data=True):
+                port_name = data.get('port_name')
+                output_index = data.get('output_index')
+                if port_name is None or output_index is None:
+                    raise ValueError("Pattern output edge must have 'port_name' and 'output_index'")
+                if port_name in output_ports:
+                    raise ValueError(f"Duplicate output port: {port_name}")
+                output_ports[port_name] = (src, output_index)
+
+            # === 2. 匹配内部图 ===
             def node_match(n1, n2):
                 return n1.get('method_name') == n2.get('method_name')
+            
             def edge_match(e1, e2):
                 return (
                     e1.get('output_index') == e2.get('output_index') and
                     e1.get('data_type') == e2.get('data_type')
                 )
 
-            matcher = DiGraphMatcher(graph, src_subgraph, node_match=node_match, edge_match=edge_match)
+            matcher = DiGraphMatcher(graph, match_graph, node_match=node_match, edge_match=edge_match)
             matches = list(matcher.subgraph_isomorphisms_iter())
-            print(f"Found {len(matches)} matches for compression rule.")
+            if self.verbose:
+                print(f"Found {len(matches)} matches for compression rule.")
             if not matches:
                 continue
 
-            # 贪心非重叠匹配
+            # 贪心非重叠
             used_nodes = set()
             valid_matches = []
             for mapping in sorted(matches, key=lambda m: -len(m)):
@@ -1581,17 +1617,52 @@ class GraphEvoTrainer(ModelTrainer):
                 valid_matches.append(mapping)
                 used_nodes.update(main_nodes)
 
+            # === 3. 处理每个匹配 ===
             for mapping in valid_matches:
                 subgraph_nodes = set(mapping.keys())
+
+                # 🔧 关键修复：构建 pattern_node -> host_node 的反向映射
+                pattern_to_host = {pattern_node: host_node for host_node, pattern_node in mapping.items()}
+
+                # --- 构建 input_port_bindings ---
+                input_bindings = {}
+                for port_name, (pattern_tgt, expected_slot) in input_ports.items():
+                    # ✅ 使用反向映射获取 host 节点
+                    host_tgt = pattern_to_host[pattern_tgt]
+                    candidates = []
+                    for src, _, key, data in graph.in_edges(host_tgt, keys=True, data=True):
+                        if src in subgraph_nodes:
+                            continue
+                        if data.get('input_slot') == expected_slot:
+                            candidates.append((src, key, data))
+                    if len(candidates) != 1:
+                        raise ValueError(f"Input port {port_name} (slot={expected_slot}): expected 1 edge, got {len(candidates)}")
+                    input_bindings[port_name] = candidates[0]
+
+                # --- 构建 output_port_bindings ---
+                output_bindings = {}
+                for port_name, (pattern_src, expected_idx) in output_ports.items():
+                    # ✅ 使用反向映射获取 host 节点
+                    host_src = pattern_to_host[pattern_src]
+                    candidates = []
+                    for _, dst, key, data in graph.out_edges(host_src, keys=True, data=True):
+                        if dst in subgraph_nodes:
+                            continue
+                        if data.get('output_index') == expected_idx:
+                            candidates.append((dst, key, data))
+                    if len(candidates) != 1:
+                        raise ValueError(f"Output port {port_name} (output={expected_idx}): expected 1 edge, got {len(candidates)}")
+                    output_bindings[port_name] = candidates[0]
+
+                # === 4. 调用替换 ===
                 try:
-                    if isinstance(tgt_spec, str):
-                        # ✅ 直接调用 gp 的新方法
-                        new_node_id = gp.replace_subgraph_with_method(subgraph_nodes, tgt_spec)
-                        logger.info(f"✅ Replaced subgraph with method node: {new_node_id}")
-                        total_compressed += 1
-                    elif isinstance(tgt_spec, nx.DiGraph):
-                        # ✅ 直接调用 gp 的新方法（子图替换子图）
-                        new_nodes = gp.replace_subgraph_with_graph(subgraph_nodes, tgt_spec)
+                    if isinstance(tgt_spec, nx.DiGraph):
+                        new_nodes = gp.replace_subgraph_with_graph(
+                            subgraph_nodes=subgraph_nodes,
+                            replacement_graph=tgt_spec,
+                            input_port_bindings=input_bindings,
+                            output_port_bindings=output_bindings
+                        )
                         logger.info(f"✅ Replaced subgraph with graph: {len(new_nodes)} nodes inserted")
                         total_compressed += 1
                     else:

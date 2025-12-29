@@ -227,8 +227,12 @@ class AdaptoFlux:
                     continue
                 # 获取函数所需的参数数量
                 input_count = len(inspect.signature(obj).parameters)
+                if input_count <= 0:
+                    raise ValueError(f"方法 {name} 的输入参数数量无效: {input_count}")
                 output_count = getattr(obj, "output_count", 1)
                 input_types = getattr(obj, "input_types", None)
+                if len(input_types) == 0:
+                    raise ValueError(f"方法 {name} 的 input_types 不能为空")
                 output_types = getattr(obj, "output_types", None)
                 group = getattr(obj, "group", "default")
                 weight = getattr(obj, "weight", 1.0)

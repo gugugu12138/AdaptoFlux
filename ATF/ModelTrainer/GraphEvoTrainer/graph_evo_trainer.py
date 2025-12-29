@@ -953,7 +953,7 @@ class GraphEvoTrainer(ModelTrainer):
                 'output_count': len(output_types),
                 'group': 'evolved',
                 'weight': 1.0,
-                'vectorized': True,
+                'vectorized': False, # 默认非向量化，由于进化方法大多较复杂，后续可手动调整
                 'is_evolved': True
             }
 

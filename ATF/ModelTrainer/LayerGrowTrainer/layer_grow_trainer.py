@@ -7,6 +7,7 @@ import copy
 from typing import Optional
 import os
 import json
+from typing import Callable, Union, Optional
 from ...PathGenerator.path_generator import PathGenerator
 from ...GraphProcessor.graph_processor import GraphProcessor
 
@@ -99,8 +100,8 @@ class LayerGrowTrainer(ModelTrainer):
         """
 
         best_score = -float('inf')
-        best_graph_snapshot = None
         best_graph_processor_snapshot = None
+        best_methods_snapshot = None
         best_layer_count = 0
         if self.verbose:
             logger.info(f"Starting LayerGrowTrainer. Max layers to grow: {max_layers}")

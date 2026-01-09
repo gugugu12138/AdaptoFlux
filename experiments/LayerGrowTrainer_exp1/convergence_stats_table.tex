@@ -1,0 +1,22 @@
+\begin{table}[h]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\texttt{max\_layers} & Avg Best Acc & Std Dev & Avg Layers Added & Avg Total Attempts & Failure Rate \\
+\hline
+5 & 0.665 & 0.042 & 5.0 & 6.5 & 0.0\% \\
+10 & 0.721 & 0.03 & 10.0 & 50.5 & 0.0\% \\
+15 & 0.732 & 0.036 & 15.0 & 160.5 & 0.0\% \\
+20 & 0.763 & 0.041 & 20.0 & 624.5 & 0.0\% \\
+25 & 0.769 & 0.028 & 22.9 & 1414.9 & 20.0\% \\
+30 & 0.777 & 0.025 & 26.3 & 1567.4 & 20.0\% \\
+35 & 0.78 & 0.022 & 21.7 & 2069.2 & 70.0\% \\
+40 & 0.776 & 0.02 & 23.3 & 2289.7 & 80.0\% \\
+45 & 0.783 & 0.024 & 19.6 & 2500.0 & 100.0\% \\
+50 & 0.77 & 0.032 & 18.7 & 2500.0 & 100.0\% \\
+\hline
+\end{tabular}
+\caption{Statistical results under different max\_layers settings. Failure rate is the percentage of runs where \texttt{total\_growth\_attempts=2500}.}
+\label{tab:convergence_stats}
+\end{table}

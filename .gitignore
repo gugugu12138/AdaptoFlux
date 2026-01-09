@@ -9,5 +9,15 @@ paper/
 .conda/
 .vscode/
 .VSCodeCounter/
-experiments/
 .github/
+
+models/
+exp_max_layers_*/
+exp3_results/
+saved_models/
+plots/
+no_eps/
+experiment_results/
+results/
+*.json
+*.svg

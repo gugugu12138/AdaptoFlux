@@ -1,0 +1,27 @@
+AdaptoFlux Experiment 1 Analysis Report
+============================
+
+Data Source: experiments\LayerGrowTrainer_exp1\experiment_results_summary.csv
+Generated: 2025-09-21 21:36:13.427674
+
+Key Findings:
+---------
+1. Performance Saturation: Peak average best accuracy (0.763) occurs at `max_layers=20`.
+2. Strategy Failure Boundary: At `max_layers=35`, failure rate surges to 70%, indicating search strategy collapse.
+3. Optimal Trade-off: `max_layers=20` offers the best balance. E.g., Run 10 achieved 0.827 accuracy with 1355 attempts.
+4. Path Dependency: Among 10 runs at `max_layers=20`, best accuracy ranged from 0.686 to 0.827, showing high sensitivity to early decisions.
+
+Detailed Statistics:
+---------
+ max_layers  avg_best_acc  std_best_acc  avg_layers_added  avg_total_attempts  failure_rate
+          5         0.665         0.042               5.0                 6.5             0
+         10         0.721         0.030              10.0                50.5             0
+         15         0.732         0.036              15.0               160.5             0
+         20         0.763         0.041              20.0               624.5             0
+         25         0.769         0.028              22.9              1414.9            20
+         30         0.777         0.025              26.3              1567.4            20
+         35         0.780         0.022              21.7              2069.2            70
+         40         0.776         0.020              23.3              2289.7            80
+         45         0.783         0.024              19.6              2500.0           100
+         50         0.770         0.032              18.7              2500.0           100
+

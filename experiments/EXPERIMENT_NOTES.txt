@@ -1,0 +1,7 @@
+NOTE: Reproducing Experiments 1–4 with v0.0.1
+
+The v0.0.1 implementation contained a potential bug in `replace_random_elements()` that could randomly drop nodes under certain conditions. However, this method was deprecated during the refactoring and is no longer invoked in any of the experiments reported in the paper. Therefore, the bug has no effect on the results.
+
+Due to restructuring of the random selection logic in later versions, identical random seeds will NOT produce identical execution traces in v0.0.1 vs. newer versions. This is an expected artifact of code evolution, not a flaw in the experimental design.
+
+All reported results are based on the actual v0.0.1 behavior as executed in the original experiments.

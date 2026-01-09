@@ -71,6 +71,7 @@ class LayerGrowTrainer(ModelTrainer):
         final_model_subfolder: str = "final",   # 👈 新增：最终模型子目录
         enable_early_stop: bool = True,          # ← 新增：是否启用早停
         early_stop_eps: float = 1e-6,            # ← 新增：早停阈值
+        best_model_metric: Union[str, Callable] = "loss",  # ← 新增：最佳模型判断标准 # 注：之前版本使用的是acc
         **kwargs
     ) -> dict:
         """
@@ -88,11 +89,16 @@ class LayerGrowTrainer(ModelTrainer):
         :param rollback_layers: 如果添加失败，回退的层数
         :param max_total_attempts: 全局最大增长尝试次数，防止无限循环。默认为 max_layers * 30
         :param model_save_path: 模型保存的文件夹路径。仅在 save_model=True 时生效。默认为 None（使用 'models'）
+        :param best_model_metric: 
+            用于选择最佳模型的评估指标。支持：
+            - 字符串：如 "loss"（最小化损失，默认）、"accuracy"（最大化准确率）
+            - 自定义函数：fn(input_data, target, adaptoflux_instance) -> float，
+            **返回值越大表示模型越好**。
         :param kwargs: 其他可选参数
         :return: 一个包含训练过程信息的字典
         """
 
-        best_acc = -1.0
+        best_score = -float('inf')
         best_graph_snapshot = None
         best_graph_processor_snapshot = None
         best_layer_count = 0
@@ -211,14 +217,39 @@ class LayerGrowTrainer(ModelTrainer):
                 results["layers_added"] += 1
                 base_loss = new_loss  # 更新 base_loss 用于下一层的比较
 
-                if new_acc > best_acc:
-                    if self.verbose:
-                        logger.info(f"🎉 New best accuracy: {best_acc:.4f} → {new_acc:.4f}, layers={results['layers_added']}")
-                    best_acc = new_acc
-                    # 保存图结构和方法池的快照
+                # === 计算当前模型的评分（用于 best model selection）===
+                try:
+                    if callable(best_model_metric):
+                        # 用户自定义函数：必须返回 float，越大越好
+                        score = best_model_metric(input_data, target, self.adaptoflux)
+                    else:
+                        # 内置字符串指标
+                        metric_name = best_model_metric.lower()
+                        if metric_name == "loss":
+                            score = -new_loss  # 转为“越大越好”
+                        elif metric_name == "accuracy":
+                            score = new_acc
+                        else:
+                            raise ValueError(f"Unsupported built-in metric: '{best_model_metric}'. "
+                                            f"Use 'loss', 'accuracy', or a custom callable.")
+                except Exception as e:
+                    logger.error(f"Failed to compute best_model_metric: {e}")
+                    score = -float('inf')  # 安全降级
+
+                # === 判断是否为新的 best model ===
+                if score > best_score:
+                    best_score = score
                     best_graph_processor_snapshot = copy.deepcopy(self.adaptoflux.graph_processor)
                     best_methods_snapshot = copy.deepcopy(self.adaptoflux.methods)
                     best_layer_count = results["layers_added"]
+                    if self.verbose:
+                        # 可选：打印更友好的日志
+                        if isinstance(best_model_metric, str) and best_model_metric == "loss":
+                            actual_value = new_loss
+                            logger.info(f"🎉 New best model (by '{best_model_metric}'): {actual_value:.6f}, layers={best_layer_count}")
+                        else:
+                            logger.info(f"🎉 New best model (by '{best_model_metric}'): score={score:.6f}, layers={best_layer_count}")
+
                 # ✅【新增】早停判断：如果当前准确率已达理论上限
                 if enable_early_stop and new_acc >= 1.0 - early_stop_eps:
                     if self.verbose:
@@ -227,8 +258,6 @@ class LayerGrowTrainer(ModelTrainer):
                             f"accuracy={new_acc:.6f} ≥ {1.0 - early_stop_eps}. "
                             f"Terminating layer growth."
                         )
-                    layer_idx += 1  # 可选：是否计入该层（建议计入）
-                    results["layers_added"] += 1
                     break  # 👈 立即跳出 while 循环，不再添加更多层
             else:
                 if on_retry_exhausted == "stop":

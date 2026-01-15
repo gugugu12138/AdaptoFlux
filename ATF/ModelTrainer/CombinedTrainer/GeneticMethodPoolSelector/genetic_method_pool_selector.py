@@ -156,7 +156,6 @@ class GeneticMethodPoolSelector:
         lg_trainer = LayerGrowTrainer(
             adaptoflux_instance=af_copy,
             max_attempts=self.lg_attempts,
-            decision_threshold=0.0,
             verbose=False
         )
 

@@ -67,7 +67,6 @@ model.set_custom_collapse(collapse_sum_positive)
 trainer = LayerGrowTrainer(
             adaptoflux_instance=model,
             max_attempts=10,
-            decision_threshold=0.0,
             verbose=True
         )
 

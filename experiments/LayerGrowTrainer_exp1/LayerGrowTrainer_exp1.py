@@ -144,7 +144,6 @@ def main():
     # 训练器参数（模板）
     common_trainer_params = {
         "max_attempts": 10,
-        "decision_threshold": 0.0,
         "verbose": True
     }
 

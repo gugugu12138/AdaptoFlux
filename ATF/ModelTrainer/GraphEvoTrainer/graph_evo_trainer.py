@@ -44,6 +44,8 @@ class GraphEvoTrainer(ModelTrainer):
         num_workers=4,           # ← 新增
         custom_loss_evaluator=None,      # ← 新增：自定义损失评估器
         custom_accuracy_evaluator=None,   # ← 新增：自定义准确率评估器
+        acceptance_strategy=None,  # ← 新增：自定义接受策略
+
         # 本类参数
         num_initial_models: int = 5,
         max_refinement_steps: int = 100,
@@ -111,7 +113,7 @@ class GraphEvoTrainer(ModelTrainer):
         """
 
         super().__init__(adaptoflux_instance, loss_fn, task_type, use_pipeline, num_workers,
-                         custom_loss_evaluator, custom_accuracy_evaluator)
+                         custom_loss_evaluator, custom_accuracy_evaluator, acceptance_strategy)
         self.num_initial_models = num_initial_models
         self.max_refinement_steps = max_refinement_steps
         self.compression_threshold = compression_threshold
@@ -1331,9 +1333,9 @@ class GraphEvoTrainer(ModelTrainer):
             # 尝试替换节点方法
             temp_gp.graph.nodes[target_node]['method_name'] = candidate_method_name
 
+            
             # 评估替换后的损失
             new_loss = self._evaluate_loss(input_data, target, adaptoflux_instance=temp_af)
-
 
             # 记录损失更低的最优候选
             if new_loss < best_loss:
@@ -1341,7 +1343,7 @@ class GraphEvoTrainer(ModelTrainer):
                 best_candidate = candidate_method_name
 
         # 如果找到更优方法，则应用到原图
-        if best_candidate and best_loss < current_loss:
+        if best_candidate and self._should_accept(current_loss, best_loss):
             # === 替换节点（自动更新 ID 和边） ===
             new_node_id = gp.replace_node_method(target_node, best_candidate)
             
@@ -1359,7 +1361,7 @@ class GraphEvoTrainer(ModelTrainer):
         else:
             # 无改进，返回原始状态
             return False, current_loss, 0.0, 0, processing_nodes
-
+        
     def _refine_full_sweep_step(
         self,
         adaptoflux_instance,
@@ -1456,7 +1458,7 @@ class GraphEvoTrainer(ModelTrainer):
                     continue
 
             # 如果找到更优方法，立即应用到原图（贪心策略）
-            if best_candidate and best_loss < current_loss:
+            if best_candidate and self._should_accept(current_loss, best_loss):
                 try:
                     # 使用图处理器的标准替换方法，确保图结构一致性（如边更新、ID刷新等）
                     new_node_id = gp.replace_node_method(target_node, best_candidate)

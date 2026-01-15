@@ -22,3 +22,4 @@ results/
 *.json
 *.svg
 best_models/
+experiments/embodied_bird/results/

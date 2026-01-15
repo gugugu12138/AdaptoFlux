@@ -68,7 +68,8 @@ class ModelTrainer(ABC):
         use_pipeline=False,      # ← 新增
         num_workers=4,           # ← 新增
         custom_loss_evaluator=None,      # ← 新增：自定义损失评估器
-        custom_accuracy_evaluator=None   # ← 新增：自定义准确率评估器
+        custom_accuracy_evaluator=None,   # ← 新增：自定义准确率评估器
+        acceptance_strategy=None  # ← 新增：自定义接受策略
     ):
         """
         初始化训练器，绑定 AdaptoFlux 实例。
@@ -88,8 +89,29 @@ class ModelTrainer(ABC):
         self.num_workers = num_workers        # ← 保存
         self.custom_loss_evaluator = custom_loss_evaluator
         self.custom_accuracy_evaluator = custom_accuracy_evaluator
+        self.acceptance_strategy = acceptance_strategy  # ← 保存策略
         self._set_loss_fn(loss_fn, task_type)
 
+    def _should_accept(self, old_loss: float, new_loss: float) -> bool:
+        """
+        判断是否接受新模型（例如新层）。
+        默认策略：贪心（new_loss < old_loss）。
+        
+        可通过子类重写，或在初始化时传入 acceptance_strategy 函数来自定义。
+        
+        :param old_loss: 旧模型的损失
+        :param new_loss: 新模型的损失
+        :return: True 表示接受，False 表示拒绝
+        """
+        if self.acceptance_strategy is not None:
+            try:
+                return bool(self.acceptance_strategy(old_loss, new_loss))
+            except Exception as e:
+                logger.warning(f"Custom acceptance strategy failed: {e}. Falling back to default.")
+        
+        # 默认策略：严格改进（贪心）
+        return new_loss < old_loss
+        
     def _set_loss_fn(self, loss_fn, task_type):
         """根据参数设置 self.loss_fn 方法。"""
         if callable(loss_fn):

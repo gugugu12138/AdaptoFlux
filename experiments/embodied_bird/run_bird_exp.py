@@ -35,7 +35,6 @@ def bird_acc(model, input_data, target):
 # === 关键：将 custom evaluators 放入 config 字典中 ===
 lg_config = {
     "max_attempts": 5,
-    "decision_threshold": 0.0,
     "verbose": False,
     # ↓ 这些会被传给 LayerGrowTrainer.__init__
     "custom_loss_evaluator": bird_loss,

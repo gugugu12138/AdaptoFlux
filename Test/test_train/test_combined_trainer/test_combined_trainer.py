@@ -16,9 +16,7 @@ def main():
     af = AdaptoFlux(values=X, labels=y, methods_path="Test/test_train/test_combined_trainer/method.py")  # 👈 关键！
 
     layer_grow_config = {
-        "max_layers": 2,          # 降低层数，加速测试
         "max_attempts": 2,
-        "decision_threshold": 0.0
     }
 
     graph_evo_config = {

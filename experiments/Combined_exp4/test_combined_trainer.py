@@ -89,7 +89,6 @@ logger.info("定义训练配置 / Defining training configurations")
 
 lg_config = {
     "max_attempts": 5,
-    "decision_threshold": 0.0,
     "verbose": False,
 }
 

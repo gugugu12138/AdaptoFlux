@@ -3,7 +3,7 @@
     "cycles": [
         {
             "layer_grow": {
-                "layers_added": 1,
+                "layers_added": 0,
                 "attempt_history": [
                     {
                         "layer": 1,
@@ -17,43 +17,21 @@
                             },
                             {
                                 "attempt": 2,
-                                "accepted": true,
-                                "new_loss": 0.6805819618935312,
-                                "new_acc": 0.004,
-                                "status": "accepted"
-                            }
-                        ]
-                    },
-                    {
-                        "layer": 2,
-                        "attempts": [
-                            {
-                                "attempt": 1,
                                 "accepted": false,
-                                "new_loss": 0.6805819618935312,
-                                "new_acc": 0.004,
-                                "status": "rejected"
-                            },
-                            {
-                                "attempt": 2,
-                                "accepted": false,
-                                "new_loss": 2.678257946514579,
-                                "new_acc": 0.0,
-                                "status": "rejected"
+                                "new_loss": null,
+                                "status": "empty_plan"
                             }
                         ]
                     }
                 ],
-                "total_growth_attempts": 2,
-                "total_candidate_attempts": 4,
+                "total_growth_attempts": 1,
+                "total_candidate_attempts": 2,
                 "rollback_count": 0,
                 "rollback_events": [],
+                "final_model_accuracy": 0.002,
+                "final_model_layers": 0,
+                "final_model_loss": 0.6829059743503053,
                 "final_model_saved": "Test/test_train/test_combined_trainer/log\\cycle_1\\layer_grow\\final",
-                "final_model_accuracy": 0.004,
-                "final_model_layers": 1,
-                "best_model_saved": "Test/test_train/test_combined_trainer/log\\cycle_1\\layer_grow\\best",
-                "best_model_accuracy": 0.004,
-                "best_model_layers": 1,
                 "training_log_saved": "Test/test_train/test_combined_trainer/log\\cycle_1\\layer_grow\\training_log.json"
             },
             "graph_evo": {
@@ -63,19 +41,20 @@
                         "cycle": 0,
                         "phase": "initialization_skipped",
                         "result": {
-                            "loss": 0.6805819618935312,
-                            "accuracy": 0.004,
+                            "loss": 0.6829059743503053,
+                            "accuracy": 0.002,
                             "model_used": "current_adaptoflux"
                         }
                     },
                     {
                         "cycle": 1,
                         "refinement": {
-                            "final_model": "<ATF.core.adaptoflux.AdaptoFlux object at 0x000002170E129F70>",
-                            "final_loss": 0.6805819618935312,
-                            "final_accuracy": 0.004,
+                            "final_model": "<ATF.core.adaptoflux.AdaptoFlux object at 0x000002722CBF1400>",
+                            "final_loss": 0.6829059743503053,
+                            "final_accuracy": 0.002,
                             "steps_taken": 0,
-                            "improvement_made": false
+                            "improvement_made": false,
+                            "total_refinement_attempts": 0
                         },
                         "evolution": {
                             "skipped": true,
@@ -85,11 +64,12 @@
                     {
                         "cycle": 2,
                         "refinement": {
-                            "final_model": "<ATF.core.adaptoflux.AdaptoFlux object at 0x000002170E129F70>",
-                            "final_loss": 0.6805819618935312,
-                            "final_accuracy": 0.004,
+                            "final_model": "<ATF.core.adaptoflux.AdaptoFlux object at 0x000002722CBF1400>",
+                            "final_loss": 0.6829059743503053,
+                            "final_accuracy": 0.002,
                             "steps_taken": 0,
-                            "improvement_made": false
+                            "improvement_made": false,
+                            "total_refinement_attempts": 0
                         },
                         "evolution": {
                             "skipped": true,
@@ -99,11 +79,12 @@
                     {
                         "cycle": 3,
                         "refinement": {
-                            "final_model": "<ATF.core.adaptoflux.AdaptoFlux object at 0x000002170E129F70>",
-                            "final_loss": 0.6805819618935312,
-                            "final_accuracy": 0.004,
+                            "final_model": "<ATF.core.adaptoflux.AdaptoFlux object at 0x000002722CBF1400>",
+                            "final_loss": 0.6829059743503053,
+                            "final_accuracy": 0.002,
                             "steps_taken": 0,
-                            "improvement_made": false
+                            "improvement_made": false,
+                            "total_refinement_attempts": 0
                         },
                         "evolution": {
                             "skipped": true,
@@ -113,11 +94,12 @@
                     {
                         "cycle": 4,
                         "refinement": {
-                            "final_model": "<ATF.core.adaptoflux.AdaptoFlux object at 0x000002170E129F70>",
-                            "final_loss": 0.6805819618935312,
-                            "final_accuracy": 0.004,
+                            "final_model": "<ATF.core.adaptoflux.AdaptoFlux object at 0x000002722CBF1400>",
+                            "final_loss": 0.6829059743503053,
+                            "final_accuracy": 0.002,
                             "steps_taken": 0,
-                            "improvement_made": false
+                            "improvement_made": false,
+                            "total_refinement_attempts": 0
                         },
                         "evolution": {
                             "skipped": true,
@@ -127,11 +109,12 @@
                     {
                         "cycle": 5,
                         "refinement": {
-                            "final_model": "<ATF.core.adaptoflux.AdaptoFlux object at 0x000002170E129F70>",
-                            "final_loss": 0.6805819618935312,
-                            "final_accuracy": 0.004,
+                            "final_model": "<ATF.core.adaptoflux.AdaptoFlux object at 0x000002722CBF1400>",
+                            "final_loss": 0.6829059743503053,
+                            "final_accuracy": 0.002,
                             "steps_taken": 0,
-                            "improvement_made": false
+                            "improvement_made": false,
+                            "total_refinement_attempts": 0
                         },
                         "evolution": {
                             "skipped": true,
@@ -142,19 +125,28 @@
                 "total_refinement_steps": 0,
                 "total_compressions": 0,
                 "total_methods_evolved": 0,
-                "best_accuracy": 0.004,
+                "best_accuracy": 0.002,
                 "best_accuracy_cycle": 0,
-                "best_model_snapshot": "<ATF.core.adaptoflux.AdaptoFlux object at 0x000002170E1EA2A0>",
+                "best_model_snapshot": "<ATF.core.adaptoflux.AdaptoFlux object at 0x000002722CBF1AF0>",
                 "best_model_cycle": 0,
                 "final_compression_applied": false,
                 "final_model_saved": "Test/test_train/test_combined_trainer/log\\cycle_1\\graph_evo\\final",
                 "best_model_saved": "Test/test_train/test_combined_trainer/log\\cycle_1\\graph_evo\\best",
-                "training_log_saved": "Test/test_train/test_combined_trainer/log\\cycle_1\\graph_evo\\graph_evo_training_log.json"
+                "training_log_saved": "Test/test_train/test_combined_trainer/log\\cycle_1\\graph_evo\\graph_evo_training_log.json",
+                "total_refinement_attempts": 0
             }
         }
     ],
     "final_model_path": "Test/test_train/test_combined_trainer/log\\final",
-    "best_overall_accuracy": 0.004,
+    "best_overall_accuracy": 0.002,
     "best_cycle": 1,
-    "best_model_path": "Test/test_train/test_combined_trainer/log\\best_overall"
+    "best_model_path": "Test/test_train/test_combined_trainer/log\\best_overall_cycle_1",
+    "best_model_paths": [
+        {
+            "cycle": 1,
+            "accuracy": 0.002,
+            "path": "Test/test_train/test_combined_trainer/log\\best_overall_cycle_1"
+        }
+    ],
+    "total_candidate_and_refinement_attempts": 2
 }

@@ -5,6 +5,7 @@ import os
 from typing import Optional, Dict, Any
 from ..LayerGrowTrainer.layer_grow_trainer import LayerGrowTrainer
 from ..GraphEvoTrainer.graph_evo_trainer import GraphEvoTrainer
+from ..model_trainer import ModelTrainer
 
 # 导入遗传选择器（可插拔）
 try:
@@ -17,7 +18,7 @@ except ImportError as e:
 logger = logging.getLogger(__name__)
 
 
-class CombinedTrainer:
+class CombinedTrainer(ModelTrainer):
     """
     组合训练器：实现 AdaptoFlux 的完整自进化闭环。
     支持可插拔的遗传筛选模块，用于控制方法池规模与质量。
@@ -36,19 +37,37 @@ class CombinedTrainer:
         num_evolution_cycles: int = 1,
         save_dir: Optional[str] = None,
         verbose: bool = True,
-        # === 遗传筛选可插拔配置 ===
-        genetic_mode: str = "disabled",           # "disabled", "once", "periodic"
-        genetic_interval: int = 1,                # 仅在 periodic 模式下生效
-        target_subpool_size: Optional[int] = None,  # 控制筛选后方法池大小
+        # === 遗传筛选配置 ===
+        genetic_mode: str = "disabled",
+        genetic_interval: int = 1,
+        target_subpool_size: Optional[int] = None,
         genetic_config: Optional[dict] = None,
         refine_only_new_layers: bool = False,
-        # === 新增：LayerGrowTrainer.train() 参数 ===
+        # === 子训练器 kwargs ===
         lg_train_kwargs: Optional[Dict[str, Any]] = None,
-        # === 新增：GraphEvoTrainer.train() 参数 ===
         ge_train_kwargs: Optional[Dict[str, Any]] = None,
         enable_early_stop: bool = True,
         early_stop_eps: float = 1e-6,
+        # === ModelTrainer 参数（新增）===
+        loss_fn='mse',
+        task_type='regression',
+        use_pipeline=False,
+        num_workers=4,
+        custom_loss_evaluator=None,
+        custom_accuracy_evaluator=None,
+        acceptance_strategy=None,  # ← 关键：统一策略
     ):
+        super().__init__(
+            adaptoflux_instance=adaptoflux_instance,
+            loss_fn=loss_fn,
+            task_type=task_type,
+            use_pipeline=use_pipeline,
+            num_workers=num_workers,
+            custom_loss_evaluator=custom_loss_evaluator,
+            custom_accuracy_evaluator=custom_accuracy_evaluator,
+            acceptance_strategy=acceptance_strategy
+        )
+
         if genetic_mode not in {"disabled", "once", "periodic"}:
             raise ValueError("genetic_mode must be one of: 'disabled', 'once', 'periodic'")
 
@@ -73,12 +92,12 @@ class CombinedTrainer:
         self.lg_train_kwargs = lg_train_kwargs or {}
         self.ge_train_kwargs = ge_train_kwargs or {}
 
-        self._final_adaptoflux_instance = None
-        self._clean_initial_adaptoflux = copy.deepcopy(adaptoflux_instance)
-
         # 早停配置
         self.enable_early_stop = enable_early_stop
         self.early_stop_eps = early_stop_eps
+
+        self._clean_initial_adaptoflux = copy.deepcopy(adaptoflux_instance)
+
 
     def _perform_genetic_selection(self, adaptoflux_instance, input_data, target) -> tuple:
         """
@@ -167,12 +186,16 @@ class CombinedTrainer:
 
             old_nodes = set(current_af.graph.nodes)  # 记录 LayerGrow 前的节点（即“旧节点”）
 
-            # init_params = {
-            #     k: v for k, v in self.layer_grow_config.items()
-            #     if k in {'max_attempts', 'decision_threshold', 'verbose'}
-            # }
-
             lg_config = self.layer_grow_config.copy()
+
+            # 自动注入通用配置（仅当子配置未提供时）
+            lg_config.setdefault('loss_fn', self.loss_fn)
+            lg_config.setdefault('task_type', self.task_type)
+            lg_config.setdefault('use_pipeline', self.use_pipeline)
+            lg_config.setdefault('num_workers', self.num_workers)
+            lg_config.setdefault('custom_loss_evaluator', self.custom_loss_evaluator)
+            lg_config.setdefault('custom_accuracy_evaluator', self.custom_accuracy_evaluator)
+            lg_config.setdefault('acceptance_strategy', self.acceptance_strategy)  # ← 核心！
 
             # LayerGrow
             lg_trainer = LayerGrowTrainer(
@@ -200,6 +223,14 @@ class CombinedTrainer:
 
             # === 2. GraphEvo（可选：仅精炼新节点）===
             ge_config = self.graph_evo_config.copy()
+
+            ge_config.setdefault('loss_fn', self.loss_fn)
+            ge_config.setdefault('task_type', self.task_type)
+            ge_config.setdefault('use_pipeline', self.use_pipeline)
+            ge_config.setdefault('num_workers', self.num_workers)
+            ge_config.setdefault('custom_loss_evaluator', self.custom_loss_evaluator)
+            ge_config.setdefault('custom_accuracy_evaluator', self.custom_accuracy_evaluator)
+            ge_config.setdefault('acceptance_strategy', self.acceptance_strategy)
 
             if self.refine_only_new_layers:
                 # 计算新节点：LayerGrow 后有、但之前没有的节点
@@ -288,7 +319,7 @@ class CombinedTrainer:
         final_path = os.path.join(self.save_dir, "final")
         current_af.save_model(folder=final_path)
         results["final_model_path"] = final_path
-        self._final_adaptoflux_instance = current_af
+        self.adaptoflux = current_af
 
         # 保存日志
         import json
@@ -298,16 +329,6 @@ class CombinedTrainer:
         results["training_log_saved"] = log_path
 
         return results
-
-    @property
-    def adaptoflux(self):
-        """
-        获取训练完成后的 AdaptoFlux 实例。
-
-        Returns:
-            AdaptoFlux: 训练完成后的 AdaptoFlux 实例，如果尚未训练则为 None。
-        """
-        return self._final_adaptoflux_instance
 
     def _validate_graph_method_consistency(self, adaptoflux_instance):
         """

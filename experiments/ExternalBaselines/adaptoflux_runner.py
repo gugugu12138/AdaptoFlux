@@ -44,7 +44,7 @@ def run_adaptoflux(X, y, methods_path, test_size=0.5, random_state=42,
     ge_train_kwargs = {"max_evo_cycles": 5}
     
     combined_config = {
-        "layer_grow_config": {"max_attempts": 10, "decision_threshold": 0.0, "rollback_layers": 2, "verbose": False},
+        "layer_grow_config": {"max_attempts": 10, "rollback_layers": 2, "verbose": False},
         "graph_evo_config": {"refinement_strategy": "full_sweep", "verbose": False},
         "num_evolution_cycles": 3,
         "target_subpool_size": 8,

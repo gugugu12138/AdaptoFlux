@@ -87,7 +87,6 @@ else:
 # --- 5. 训练配置（适配文本）---
 lg_config = {
     "max_attempts": 5,
-    "decision_threshold": 0.0,
     "loss_fn": "auto",
     "task_type": task_type,     # ← 关键：指定任务类型
     "verbose": True,

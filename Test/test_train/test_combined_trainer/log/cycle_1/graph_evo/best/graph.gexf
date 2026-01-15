@@ -1,46 +1,28 @@
 <?xml version='1.0' encoding='utf-8'?>
 <gexf xmlns="http://www.gexf.net/1.2draft" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.gexf.net/1.2draft http://www.gexf.net/1.2draft/gexf.xsd" version="1.2">
-  <meta lastmodifieddate="2025-11-15">
+  <meta lastmodifieddate="2026-01-15">
     <creator>NetworkX 3.4.2</creator>
   </meta>
   <graph defaultedgetype="directed" mode="static" name="">
     <attributes mode="static" class="edge">
-      <attribute id="3" title="output_index" type="long" />
-      <attribute id="4" title="data_coord" type="long" />
-      <attribute id="5" title="data_type" type="string" />
-      <attribute id="6" title="networkx_key" type="long" />
-    </attributes>
-    <attributes mode="static" class="node">
-      <attribute id="0" title="method_name" type="string" />
-      <attribute id="1" title="layer" type="long" />
-      <attribute id="2" title="is_passthrough" type="boolean" />
+      <attribute id="0" title="output_index" type="long" />
+      <attribute id="1" title="data_coord" type="long" />
+      <attribute id="2" title="data_type" type="string" />
+      <attribute id="3" title="input_slot" type="long" />
+      <attribute id="4" title="networkx_key" type="long" />
     </attributes>
     <nodes>
       <node id="root" label="root" />
       <node id="collapse" label="collapse" />
-      <node id="1_0_add_one" label="1_0_add_one">
-        <attvalues>
-          <attvalue for="0" value="add_one" />
-          <attvalue for="1" value="1" />
-          <attvalue for="2" value="false" />
-        </attvalues>
-      </node>
     </nodes>
     <edges>
-      <edge source="root" target="1_0_add_one" id="0">
+      <edge source="root" target="collapse" id="0">
         <attvalues>
+          <attvalue for="0" value="0" />
+          <attvalue for="1" value="0" />
+          <attvalue for="2" value="float32" />
           <attvalue for="3" value="0" />
           <attvalue for="4" value="0" />
-          <attvalue for="5" value="float32" />
-          <attvalue for="6" value="0" />
-        </attvalues>
-      </edge>
-      <edge source="1_0_add_one" target="collapse" id="1">
-        <attvalues>
-          <attvalue for="3" value="0" />
-          <attvalue for="4" value="0" />
-          <attvalue for="5" value="scalar" />
-          <attvalue for="6" value="0" />
         </attvalues>
       </edge>
     </edges>

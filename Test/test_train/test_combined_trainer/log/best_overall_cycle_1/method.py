@@ -6,7 +6,7 @@ from ATF.methods.decorators import method_profile
     output_types=['scalar'],
     group='math',
     weight=1.0,
-    vectorized=True
+    vectorized=False
 )
 def add_one(x):
     return [x + 1]
@@ -17,7 +17,7 @@ def add_one(x):
     output_types=['scalar'],
     group='math',
     weight=1.0,
-    vectorized=True
+    vectorized=False
 )
 def multiply(a, b):
     return [a * b]
@@ -28,7 +28,7 @@ def multiply(a, b):
     output_types=['scalar'],
     group='math',
     weight=1.0,
-    vectorized=True
+    vectorized=False
 )
 def identity(x):
     return [x]

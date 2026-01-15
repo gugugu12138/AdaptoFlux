@@ -82,7 +82,6 @@ class TestLayerGrowTrainer(unittest.TestCase):
         self.trainer = LayerGrowTrainer(
             adaptoflux_instance=self.adaptoflux,
             max_attempts=3,
-            decision_threshold=0.0,
             verbose=False
         )
         self.test_dir = "test_models"

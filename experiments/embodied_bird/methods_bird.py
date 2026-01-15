@@ -17,7 +17,7 @@ from experiments.embodied_bird.bird_state import BIRD_STATE
     vectorized=False
 )
 def identity(x):
-    """Pass-through function."""
+    """Pass-through function (including None)."""
     return [x]
 
 @method_profile(
@@ -29,6 +29,8 @@ def identity(x):
     vectorized=False
 )
 def add_values(x, y):
+    if x is None or y is None:
+        return [None]
     return [x + y]
 
 @method_profile(
@@ -40,6 +42,8 @@ def add_values(x, y):
     vectorized=False
 )
 def calculate_difference(a, b):
+    if a is None or b is None:
+        return [None]
     return [a - b]
 
 @method_profile(
@@ -51,6 +55,8 @@ def calculate_difference(a, b):
     vectorized=False
 )
 def multiply_values(x, y):
+    if x is None or y is None:
+        return [None]
     return [x * y]
 
 @method_profile(
@@ -62,7 +68,9 @@ def multiply_values(x, y):
     vectorized=False
 )
 def divide_values(x, y):
-    return [x / y if y != 0 else 0.0]
+    if x is None or y is None or y == 0:
+        return [None]
+    return [x / y]
 
 @method_profile(
     output_count=2,
@@ -73,7 +81,9 @@ def divide_values(x, y):
     vectorized=False
 )
 def fanout(x):
-    """Duplicate signal for graph connectivity."""
+    """Duplicate signal; if x is None, return [None, None]."""
+    if x is None:
+        return [None, None]
     return [x, x]
 
 @method_profile(
@@ -85,6 +95,8 @@ def fanout(x):
     vectorized=False
 )
 def relu(x):
+    if x is None:
+        return [None]
     return [max(0.0, x)]
 
 @method_profile(
@@ -96,6 +108,8 @@ def relu(x):
     vectorized=False
 )
 def sigmoid(x):
+    if x is None:
+        return [None]
     x = np.clip(x, -10.0, 10.0)
     return [1.0 / (1.0 + math.exp(-x))]
 
@@ -108,6 +122,8 @@ def sigmoid(x):
     vectorized=False
 )
 def absolute(x):
+    if x is None:
+        return [None]
     return [abs(x)]
 
 
@@ -117,25 +133,21 @@ def absolute(x):
     output_count=1,
     input_types=['scalar'],
     output_types=['scalar'],
-    group="action",          # ← 明确分组为 action
+    group="action",
     weight=1.0,
     vectorized=False
 )
 def jump(x):
     """
-    Action Pool member: triggers a jump in Flappy Bird.
-    - If input x is not None and not zero-like, activate jump.
-    - Uses global BIRD_STATE to communicate with environment.
-    - Returns [x] to maintain data flow continuity.
+    Trigger jump if x is not None and valid.
+    Always returns [x] to maintain data flow.
     """
-    # 触发条件：x 不为 None 且为有效数值（可扩展为 x > threshold）
     if x is not None and np.isfinite(x) and x != 0.0:
         BIRD_STATE.set_jump()
-    # 也可改为：if x is not None: （更宽松）
-    return [x]  # or [0.0] —— 保持图连通即可
+    return [x]
 
 
-# --- Optional: Logic Routing Functions (Inspired by your example) ---
+# --- Logic Routing Functions ---
 
 @method_profile(
     output_count=2,
@@ -146,11 +158,6 @@ def jump(x):
     vectorized=False
 )
 def gate_positive_negative(x):
-    """
-    Routes x to two outputs:
-    - First: x if x > 0, else None
-    - Second: x if x <= 0, else None
-    """
     if x is None:
         return [None, None]
     if x > 0:
@@ -167,12 +174,93 @@ def gate_positive_negative(x):
     vectorized=False
 )
 def threshold_gate(x):
-    """
-    Returns x if x > threshold, else None.
-    Can be used upstream of jump to control activation.
-    """
+    if x is None:
+        return [None]
     threshold = 0.5
-    if x is not None and x > threshold:
+    if x > threshold:
         return [x]
     else:
         return [None]
+
+
+# --- Input Extractors (Gated by input signal) ---
+
+@method_profile(
+    output_count=1,
+    input_types=['scalar'],
+    output_types=['scalar'],
+    group="input",
+    weight=1.0,
+    vectorized=False
+)
+def get_player_y(x):
+    if x is None:
+        return [None]
+    obs = BIRD_STATE.current_observation
+    if obs is None or len(obs) < 1:
+        return [None]
+    return [float(obs[0])]
+
+@method_profile(
+    output_count=1,
+    input_types=['scalar'],
+    output_types=['scalar'],
+    group="input",
+    weight=1.0,
+    vectorized=False
+)
+def get_player_vel(x):
+    if x is None:
+        return [None]
+    obs = BIRD_STATE.current_observation
+    if obs is None or len(obs) < 2:
+        return [None]
+    return [float(obs[1])]
+
+@method_profile(
+    output_count=1,
+    input_types=['scalar'],
+    output_types=['scalar'],
+    group="input",
+    weight=1.0,
+    vectorized=False
+)
+def get_next_pipe_dist(x):
+    if x is None:
+        return [None]
+    obs = BIRD_STATE.current_observation
+    if obs is None or len(obs) < 3:
+        return [None]
+    return [float(obs[2])]
+
+@method_profile(
+    output_count=1,
+    input_types=['scalar'],
+    output_types=['scalar'],
+    group="input",
+    weight=1.0,
+    vectorized=False
+)
+def get_next_pipe_top_y(x):
+    if x is None:
+        return [None]
+    obs = BIRD_STATE.current_observation
+    if obs is None or len(obs) < 4:
+        return [None]
+    return [float(obs[3])]
+
+@method_profile(
+    output_count=1,
+    input_types=['scalar'],
+    output_types=['scalar'],
+    group="input",
+    weight=1.0,
+    vectorized=False
+)
+def get_next_pipe_bottom_y(x):
+    if x is None:
+        return [None]
+    obs = BIRD_STATE.current_observation
+    if obs is None or len(obs) < 5:
+        return [None]
+    return [float(obs[4])]

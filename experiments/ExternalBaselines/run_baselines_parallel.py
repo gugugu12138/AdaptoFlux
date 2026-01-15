@@ -8,6 +8,7 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from .tasks.feynman_tasks import get_task, TASK_REGISTRY
 from .baselines.gplearn_runner import run_gplearn
 from .baselines.xgboost_runner import run_xgboost
+from .baselines.pysr_runner import run_pysr  # ← 新增
 
 NUM_REPEATS = 10
 COLLAPSE_MODES = ["first", "sum", "prod"]
@@ -21,6 +22,35 @@ def setup_worker():
     os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
     os.environ["NUMEXPR_NUM_THREADS"] = "1"
 
+def run_single_repeat(task_name: str, collapse_mode: str, repeat: int):
+    """
+    运行单个任务、单个 collapse_mode、单次 repeat
+    """
+    setup_worker()  # 确保子进程线程数限制
+    
+    from .adaptoflux_runner import run_adaptoflux
+    from .tasks.feynman_tasks import get_task
+
+    X, y, expr_str, var_names = get_task(task_name, n_samples=50, seed=42 + repeat)
+    save_dir = f"experiments/ExternalBaselines/saved_models/{task_name}/{collapse_mode}_run_{repeat}"
+    
+    start_time = time.time()
+    af_res = run_adaptoflux(
+        X, y, "experiments/ExternalBaselines/methods/methods_feynman.py",
+        random_state=42 + repeat,
+        collapse_mode=collapse_mode,
+        save_path=save_dir
+    )
+    af_res["runtime_sec"] = time.time() - start_time
+    af_res["repeat"] = repeat
+    af_res["collapse_mode"] = collapse_mode
+    af_res["task_name"] = task_name
+    
+    return {
+        "adaptoflux": af_res,
+        "ground_truth": expr_str
+    }
+
 
 def run_baselines_best_of_10():
     """
@@ -32,22 +62,27 @@ def run_baselines_best_of_10():
     
     for task_name in tasks:
         print(f"  - Running {task_name} (10 repeats)...")
-        best_gp = {"mse": float('inf'), "exact_match": False}
-        best_xb = {"mse": float('inf'), "exact_match": False}
+        best_gp = {"mse": float('inf')}
+        best_xb = {"mse": float('inf')}
+        best_ps = {"mse": float('inf')}  # ← 新增
         
         X, y, expr_str, _ = get_task(task_name, n_samples=50, seed=42)
         for repeat in range(NUM_REPEATS):
             gp_res = run_gplearn(X, y, random_state=42 + repeat)
             xb_res = run_xgboost(X, y, random_state=42 + repeat)
+            ps_res = run_pysr(X, y, random_state=42 + repeat)  # ← 新增
             
             if gp_res["mse"] < best_gp["mse"]:
                 best_gp = gp_res
             if xb_res["mse"] < best_xb["mse"]:
                 best_xb = xb_res
+            if ps_res["mse"] < best_ps["mse"]:
+                best_ps = ps_res  # ← 新增
                 
         baseline_results[task_name] = {
             "gplearn": best_gp,
             "xgboost": best_xb,
+            "pysr": best_ps,
             "ground_truth": expr_str
         }
     
@@ -188,33 +223,37 @@ def aggregate_and_save(all_atf_results, baseline_results):
 
 
 def main():
-    print("🚀 Starting fully parallel execution...")
-    
-    # 根据机器配置调整（建议 ≤ 物理核心数）
-    max_workers_total = min(16, os.cpu_count() or 16)
-    
+    print("🚀 Starting fully parallel execution (all repeats)...")
+
+    tasks = list(TASK_REGISTRY.keys())
+    max_workers_total = min(28, os.cpu_count() or 28)
+
     with ProcessPoolExecutor(max_workers=max_workers_total, initializer=setup_worker) as executor:
-        # 提交 Baseline 任务（1个）
+        # 1. 提交 Baseline（不变）
         future_baseline = executor.submit(run_baselines_best_of_10)
-        
-        # 提交 ATF 任务（3个 collapse modes）
-        future_atf = {
-            executor.submit(run_single_collapse_mode, mode): mode 
-            for mode in COLLAPSE_MODES
-        }
-        
-        # 收集 ATF 结果（先完成先处理）
-        all_atf_results = {}
-        for future in as_completed(future_atf):
-            mode, result = future.result()
-            all_atf_results[mode] = result
-            print(f"✅ Completed collapse mode: {mode}")
-        
-        # 等待 Baseline 完成
+
+        # 2. 【关键修改】提交所有 (mode, task, repeat) 组合
+        all_atf_futures = {}
+        for mode in COLLAPSE_MODES:
+            for task in tasks:
+                for repeat in range(NUM_REPEATS):
+                    future = executor.submit(run_single_repeat, task, mode, repeat)
+                    all_atf_futures[future] = (mode, task, repeat)
+
+        # 3. 收集所有 ATF 结果
+        all_atf_results = {mode: {task: [] for task in tasks} for mode in COLLAPSE_MODES}
+        for future in as_completed(all_atf_futures):
+            result = future.result()
+            mode = result["adaptoflux"]["collapse_mode"]
+            task = result["adaptoflux"]["task_name"]
+            all_atf_results[mode][task].append(result)
+            print(f"✅ Completed: {mode} | {task} | repeat {result['adaptoflux']['repeat']}")
+
+        # 4. 等待 baseline
         baseline_results = future_baseline.result()
         print("✅ Baselines completed!")
-    
-    # 聚合并保存
+
+    # 5. 聚合并保存（不变）
     aggregate_and_save(all_atf_results, baseline_results)
     print("\n🎉 All experiments completed!")
 

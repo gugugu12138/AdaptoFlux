@@ -36,13 +36,3 @@ def fanout(x):
 def identity(x):
     """Pass-through / identity operation. Essential for skip connections and variable-depth programs."""
     return [x]
-
-@method_profile(output_count=1, input_types=['scalar'], output_types=['scalar'])
-def reciprocal(x):
-    """Reciprocal operation: 1/x. Essential for division in product-mode symbolic regression."""
-    if x == 0:
-        return [0.0]  # or a large number like 1e6, but 0 is safer for MSE
-    try:
-        return [1.0 / x]
-    except (ZeroDivisionError, OverflowError):
-        return [0.0]

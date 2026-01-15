@@ -66,7 +66,9 @@ class ModelTrainer(ABC):
         loss_fn='mse',
         task_type='regression',
         use_pipeline=False,      # ← 新增
-        num_workers=4            # ← 新增
+        num_workers=4,           # ← 新增
+        custom_loss_evaluator=None,      # ← 新增：自定义损失评估器
+        custom_accuracy_evaluator=None   # ← 新增：自定义准确率评估器
     ):
         """
         初始化训练器，绑定 AdaptoFlux 实例。
@@ -76,12 +78,16 @@ class ModelTrainer(ABC):
         :param task_type: 任务类型 ('regression', 'binary_classification', 'multiclass_classification')
         :param use_pipeline: 是否使用并行流水线推理（影响所有评估）
         :param num_workers: 并行线程数（仅在 use_pipeline=True 时有效）
+        :param custom_loss_evaluator: 可调用对象，签名为 func(model, input_data, target) -> float
+        :param custom_accuracy_evaluator: 可调用对象，签名为 func(model, input_data, target) -> float
         """
         self.adaptoflux = adaptoflux_instance
         self.model_generator = ModelGenerator(adaptoflux_instance)
         self.task_type = task_type
         self.use_pipeline = use_pipeline      # ← 保存
         self.num_workers = num_workers        # ← 保存
+        self.custom_loss_evaluator = custom_loss_evaluator
+        self.custom_accuracy_evaluator = custom_accuracy_evaluator
         self._set_loss_fn(loss_fn, task_type)
 
     def _set_loss_fn(self, loss_fn, task_type):
@@ -119,9 +125,18 @@ class ModelTrainer(ABC):
         :param adaptoflux_instance: 可选，临时指定的 AdaptoFlux 实例；若为 None，则使用 self.adaptoflux
         :return: 损失值，失败时返回 float('inf')（但当前逻辑会直接终止程序）
         """
-        try:
-            af = adaptoflux_instance if adaptoflux_instance is not None else self.adaptoflux
 
+        af = adaptoflux_instance if adaptoflux_instance is not None else self.adaptoflux
+
+        # 优先使用自定义评估器（适用于具身任务）
+        if self.custom_loss_evaluator is not None:
+            try:
+                return float(self.custom_loss_evaluator(af, input_data, target))
+            except Exception as e:
+                logger.exception("Custom loss evaluation failed – terminating program.")
+                sys.exit(1)
+
+        try:
             if self.use_pipeline:
                 output = af.infer_with_task_parallel(values=input_data, num_workers=self.num_workers)
             else:
@@ -154,6 +169,17 @@ class ModelTrainer(ABC):
         :param adaptoflux_instance: 可选，临时指定的 AdaptoFlux 实例；若为 None，则使用 self.adaptoflux
         :return: 准确率 (0~1)，失败时程序终止
         """
+
+        af = adaptoflux_instance if adaptoflux_instance is not None else self.adaptoflux
+
+        # 优先使用自定义评估器
+        if self.custom_accuracy_evaluator is not None:
+            try:
+                return float(self.custom_accuracy_evaluator(af, input_data, target))
+            except Exception as e:
+                logger.exception("Custom accuracy evaluation failed – terminating program.")
+                sys.exit(1)
+
         if task_type is None:
             task_type = getattr(self, 'task_type', 'auto')
 
@@ -164,8 +190,6 @@ class ModelTrainer(ABC):
         }.get(task_type, task_type)
 
         try:
-            af = adaptoflux_instance if adaptoflux_instance is not None else self.adaptoflux
-
             if self.use_pipeline:
                 output = af.infer_with_task_parallel(values=input_data, num_workers=self.num_workers)
             else:

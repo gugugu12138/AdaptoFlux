@@ -24,6 +24,12 @@ class LayerGrowTrainer(ModelTrainer):
     def __init__(
         self,
         adaptoflux_instance,
+        loss_fn='mse',
+        task_type='regression',
+        use_pipeline=False,      # ← 新增
+        num_workers=4,           # ← 新增
+        custom_loss_evaluator=None,      # ← 新增：自定义损失评估器
+        custom_accuracy_evaluator=None,   # ← 新增：自定义准确率评估器
         max_attempts: int = 5,
         decision_threshold: float = 0.0,
         verbose: bool = True
@@ -37,7 +43,8 @@ class LayerGrowTrainer(ModelTrainer):
                                    threshold=0.0 表示贪心策略（必须严格变好）。
         :param verbose: 是否打印详细日志
         """
-        super().__init__(adaptoflux_instance)
+        super().__init__(adaptoflux_instance, loss_fn, task_type, use_pipeline, num_workers,
+                         custom_loss_evaluator, custom_accuracy_evaluator)
         self.max_attempts = max_attempts
         self.decision_threshold = decision_threshold
         self.verbose = verbose

@@ -32,31 +32,42 @@ def bird_acc(model, input_data, target):
     survival = run_bird_episode(model, action_interval=5, max_steps=5000)
     return float(survival / 5000.0)  # normalized [0, 1]
 
+# === 关键：将 custom evaluators 放入 config 字典中 ===
+lg_config = {
+    "max_attempts": 5,
+    "decision_threshold": 0.0,
+    "verbose": False,
+    # ↓ 这些会被传给 LayerGrowTrainer.__init__
+    "custom_loss_evaluator": bird_loss,
+    "custom_accuracy_evaluator": bird_acc,
+}
+
+ge_config = {
+    "verbose": False,
+    "init_mode": "fixed",
+    "max_init_layers": 5,
+    # ↓ 这些会被传给 GraphEvoTrainer.__init__
+    "custom_loss_evaluator": bird_loss,
+    "custom_accuracy_evaluator": bird_acc,
+}
+
 # Use existing CombinedTrainer with custom evaluators!
 trainer = CombinedTrainer(
     adaptoflux_instance=af,
-    custom_loss_evaluator=bird_loss,
-    custom_accuracy_evaluator=bird_acc,
-    use_pipeline=False,
-    loss_fn='mse',          # ← still initialized, but not used
-    task_type='regression', # ← dummy
-    # Add your config here (genetic_config, etc.)
-    num_evolution_cycles=5,
-    genetic_config={
-        "population_size": 10,
-        "generations": 3,
-        "subpool_size": 8,
-        "data_fraction": 1.0,
-        "elite_ratio": 0.3,
-        "mutation_rate": 0.2,
-    },
-    save_dir="experiments/embodied_bird/results"
+    layer_grow_config=lg_config,      # ← 包含 custom evaluators
+    graph_evo_config=ge_config,       # ← 包含 custom evaluators
+    num_evolution_cycles=3,
+    genetic_mode="disabled",
+    save_dir="experiments/embodied_bird/results",
+    verbose=True    
 )
+
+
 
 # Train! (input_data and target are dummy; not used)
 results = trainer.train(
     input_data=dummy_input,
-    target=None  # or np.array([0]) to satisfy shape check
+    target=np.array([0.0])  # or np.array([0]) to satisfy shape check
 )
 
 # Final evaluation

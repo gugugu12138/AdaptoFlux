@@ -3,7 +3,7 @@
 import math
 from ATF.methods.decorators import method_profile
 import numpy as np
-from .bird_state import BIRD_STATE  # ← 假设 bird_state.py 在同目录
+from experiments.embodied_bird.bird_state import BIRD_STATE
 
 
 # --- Function Pool (Pure, No Side Effects) ---
@@ -166,11 +166,12 @@ def gate_positive_negative(x):
     weight=1.0,
     vectorized=False
 )
-def threshold_gate(x, threshold=0.5):
+def threshold_gate(x):
     """
     Returns x if x > threshold, else None.
     Can be used upstream of jump to control activation.
     """
+    threshold = 0.5
     if x is not None and x > threshold:
         return [x]
     else:

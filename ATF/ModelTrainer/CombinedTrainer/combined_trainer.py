@@ -167,15 +167,17 @@ class CombinedTrainer:
 
             old_nodes = set(current_af.graph.nodes)  # 记录 LayerGrow 前的节点（即“旧节点”）
 
-            init_params = {
-                k: v for k, v in self.layer_grow_config.items()
-                if k in {'max_attempts', 'decision_threshold', 'verbose'}
-            }
+            # init_params = {
+            #     k: v for k, v in self.layer_grow_config.items()
+            #     if k in {'max_attempts', 'decision_threshold', 'verbose'}
+            # }
+
+            lg_config = self.layer_grow_config.copy()
 
             # LayerGrow
             lg_trainer = LayerGrowTrainer(
                 adaptoflux_instance=current_af,
-                **init_params
+                **lg_config
             )
 
             # 把 max_layers 传给 train()

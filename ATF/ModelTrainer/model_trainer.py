@@ -127,7 +127,6 @@ class ModelTrainer(ABC):
         """
 
         af = adaptoflux_instance if adaptoflux_instance is not None else self.adaptoflux
-
         # 优先使用自定义评估器（适用于具身任务）
         if self.custom_loss_evaluator is not None:
             try:

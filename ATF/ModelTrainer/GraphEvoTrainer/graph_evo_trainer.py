@@ -36,7 +36,15 @@ class GraphEvoTrainer(ModelTrainer):
 
     def __init__(
         self,
+        # 父类参数
         adaptoflux_instance,
+        loss_fn='mse',
+        task_type='regression',
+        use_pipeline=False,      # ← 新增
+        num_workers=4,           # ← 新增
+        custom_loss_evaluator=None,      # ← 新增：自定义损失评估器
+        custom_accuracy_evaluator=None,   # ← 新增：自定义准确率评估器
+        # 本类参数
         num_initial_models: int = 5,
         max_refinement_steps: int = 100,
         compression_threshold: float = 0.95,
@@ -102,7 +110,8 @@ class GraphEvoTrainer(ModelTrainer):
         :param kwargs: 其他可选组件，如自定义的 subgraph_sampler、io_extractor 等。
         """
 
-        super().__init__(adaptoflux_instance)
+        super().__init__(adaptoflux_instance, loss_fn, task_type, use_pipeline, num_workers,
+                         custom_loss_evaluator, custom_accuracy_evaluator)
         self.num_initial_models = num_initial_models
         self.max_refinement_steps = max_refinement_steps
         self.compression_threshold = compression_threshold

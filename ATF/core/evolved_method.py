@@ -84,7 +84,13 @@ class EvolvedMethod:
                 else:
                     raise ValueError(f"Expected single output, got array of size {result.size}")
             else:
-                return float(result)
+                val = result
+
+            # 允许 val 为 None
+            if val is None:
+                return None
+            else:
+                return float(val)
 
         # 情况 2: 期望多输出 → 必须拆分为 expected_output_count 个标量
         else:
@@ -103,7 +109,7 @@ class EvolvedMethod:
                 )
 
             # 转为 tuple of Python floats（最安全）
-            return tuple(float(x) for x in flat)
+            return tuple(float(x) if x is not None else None for x in flat)
 
     @classmethod
     def from_files(cls, base_path: str):

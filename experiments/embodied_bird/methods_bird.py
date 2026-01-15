@@ -264,3 +264,56 @@ def get_next_pipe_bottom_y(x):
     if obs is None or len(obs) < 5:
         return [None]
     return [float(obs[4])]
+
+@method_profile(
+    output_count=2,
+    input_types=['scalar'],
+    output_types=['scalar', 'scalar'],
+    group="function",
+    weight=1.0,
+    vectorized=False
+)
+def const_0_2(x):
+    """
+    Constant generator for 0.2 (pipe distance threshold).
+    If x is not None, returns [x, 0.2]; else [None, None].
+    """
+    if x is None:
+        return [None, None]
+    return [x, 0.2]
+
+
+@method_profile(
+    output_count=2,
+    input_types=['scalar'],
+    output_types=['scalar', 'scalar'],
+    group="function",
+    weight=1.0,
+    vectorized=False
+)
+def const_1_5(x):
+    """
+    Constant generator for 1.5 (velocity scaling factor).
+    If x is not None, returns [x, 1.5]; else [None, None].
+    """
+    if x is None:
+        return [None, None]
+    return [x, 1.5]
+
+
+@method_profile(
+    output_count=2,
+    input_types=['scalar'],
+    output_types=['scalar', 'scalar'],
+    group="function",
+    weight=1.0,
+    vectorized=False
+)
+def const_0_05(x):
+    """
+    Constant generator for 0.05 (safety margin below pipe gap).
+    If x is not None, returns [x, 0.05]; else [None, None].
+    """
+    if x is None:
+        return [None, None]
+    return [x, 0.05]

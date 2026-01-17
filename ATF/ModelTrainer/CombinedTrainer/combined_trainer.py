@@ -46,8 +46,6 @@ class CombinedTrainer(ModelTrainer):
         # === 子训练器 kwargs ===
         lg_train_kwargs: Optional[Dict[str, Any]] = None,
         ge_train_kwargs: Optional[Dict[str, Any]] = None,
-        enable_early_stop: bool = True,
-        early_stop_eps: float = 1e-6,
         # === ModelTrainer 参数（新增）===
         loss_fn='mse',
         task_type='regression',
@@ -91,10 +89,6 @@ class CombinedTrainer(ModelTrainer):
         # === 存储新增参数 ===
         self.lg_train_kwargs = lg_train_kwargs or {}
         self.ge_train_kwargs = ge_train_kwargs or {}
-
-        # 早停配置
-        self.enable_early_stop = enable_early_stop
-        self.early_stop_eps = early_stop_eps
 
         self._clean_initial_adaptoflux = copy.deepcopy(adaptoflux_instance)
 
@@ -154,8 +148,18 @@ class CombinedTrainer(ModelTrainer):
         self,
         input_data,
         target,
+        enable_early_stop: bool = True,
+        early_stop_eps: float = 1e-6,
         **kwargs
     ) -> Dict[str, Any]:
+        """
+        执行完整的自进化训练闭环。
+        早停配置会传递给子训练器。
+        """
+
+        use_early_stop = enable_early_stop
+        early_stop_threshold = early_stop_eps
+
         os.makedirs(self.save_dir, exist_ok=True)
 
         results = {
@@ -211,8 +215,8 @@ class CombinedTrainer(ModelTrainer):
                 "model_save_path": os.path.join(self.save_dir, f"cycle_{cycle+1}", "layer_grow"),
                 "save_best_model": True,
                 "max_layers": self.layer_grow_config.get("max_layers", 10),
-                "enable_early_stop": self.enable_early_stop,      # ← 添加
-                "early_stop_eps": self.early_stop_eps,            # ← 添加
+                "enable_early_stop": use_early_stop,      # ← 添加
+                "early_stop_eps": early_stop_threshold,            # ← 添加
                 **kwargs
             })
 
@@ -258,8 +262,8 @@ class CombinedTrainer(ModelTrainer):
                 "model_save_path": os.path.join(self.save_dir, f"cycle_{cycle+1}", "graph_evo"),
                 "save_best_model": True,
                 "skip_initialization": True,
-                "enable_early_stop": self.enable_early_stop,      # ← 添加
-                "early_stop_eps": self.early_stop_eps,            # ← 添加
+                "enable_early_stop": use_early_stop,      # ← 添加
+                "early_stop_eps": early_stop_threshold,            # ← 添加
                 **kwargs
             })
 
@@ -292,9 +296,9 @@ class CombinedTrainer(ModelTrainer):
             results["cycles"].append(cycle_result)
             
             # 在 cycle 循环末尾（保存最优模型之后）
-            if self.enable_early_stop and final_acc >= 1.0 - self.early_stop_eps:
+            if use_early_stop and final_acc >= 1.0 - early_stop_threshold:
                 if self.verbose:
-                    logger.info(f"🎯 全局早停触发：Cycle {cycle+1} 后准确率 = {final_acc:.6f} ≥ {1.0 - self.early_stop_eps}，终止后续循环。")
+                    logger.info(f"🎯 全局早停触发：Cycle {cycle+1} 后准确率 = {final_acc:.6f} ≥ {1.0 - early_stop_threshold}，终止后续循环。")
                 break  # 跳出 for cycle in range(...)
 
             # === 周期性遗传筛选（仅 periodic 模式）===

@@ -1,319 +1,55 @@
 # -*- coding: utf-8 -*-
-# File: experiments/embodied_bird/methods_bird.py
-import math
 from ATF.methods.decorators import method_profile
 import numpy as np
 from experiments.embodied_bird.bird_state import BIRD_STATE
 
+# === Input Methods (核心 + 干扰) ===
+@method_profile(input_types=['raw_signal'], output_types=['state_value'], group="input", weight=1.0)
+def get_player_y(x):
+    obs = BIRD_STATE.current_observation
+    return [float(obs[0])] if obs is not None and len(obs) > 0 else [None]
 
-# --- Function Pool (Pure, No Side Effects) ---
+@method_profile(input_types=['raw_signal'], output_types=['state_value'], group="input", weight=1.0)
+def get_player_vel(x):
+    obs = BIRD_STATE.current_observation
+    return [float(obs[1])] if obs is not None and len(obs) > 1 else [None]
 
-@method_profile(
-    output_count=1,
-    input_types=['scalar'],
-    output_types=['scalar'],
-    group="function",
-    weight=1.0,
-    vectorized=False
-)
-def identity(x):
-    """Pass-through function (including None)."""
-    return [x]
+@method_profile(input_types=['raw_signal'], output_types=['state_value'], group="input", weight=1.0)
+def get_next_pipe_bottom_y(x):  # 正确方法（用于修复）
+    obs = BIRD_STATE.current_observation
+    return [float(obs[4])] if obs is not None and len(obs) > 4 else [None]
 
-@method_profile(
-    output_count=1,
-    input_types=['scalar', 'scalar'],
-    output_types=['scalar'],
-    group="function",
-    weight=1.0,
-    vectorized=False
-)
-def add_values(x, y):
-    if x is None or y is None:
-        return [None]
-    return [x + y]
+@method_profile(input_types=['raw_signal'], output_types=['state_value'], group="input", weight=0.5)  # 干扰项
+def get_next_pipe_top_y(x):
+    obs = BIRD_STATE.current_observation
+    return [float(obs[3])] if obs is not None and len(obs) > 3 else [None]
 
-@method_profile(
-    output_count=1,
-    input_types=['scalar', 'scalar'],
-    output_types=['scalar'],
-    group="function",
-    weight=1.0,
-    vectorized=False
-)
-def calculate_difference(a, b):
-    if a is None or b is None:
-        return [None]
-    return [a - b]
+@method_profile(input_types=['raw_signal'], output_types=['state_value'], group="input", weight=0.5)  # 干扰项
+def get_next_pipe_dist(x):
+    obs = BIRD_STATE.current_observation
+    return [float(obs[2])] if obs is not None and len(obs) > 2 else [None]
 
-@method_profile(
-    output_count=1,
-    input_types=['scalar', 'scalar'],
-    output_types=['scalar'],
-    group="function",
-    weight=1.0,
-    vectorized=False
-)
-def multiply_values(x, y):
-    if x is None or y is None:
-        return [None]
-    return [x * y]
+# === Function Methods ===
+@method_profile(input_types=['state_value','state_value'], output_types=['computed_score'], group="function", weight=2.0)
+def predict_bird_y_next(bird_y, bird_vel):
+    return [bird_y + bird_vel * 1.5] if None not in (bird_y, bird_vel) else [None]
 
-@method_profile(
-    output_count=1,
-    input_types=['scalar', 'scalar'],
-    output_types=['scalar'],
-    group="function",
-    weight=1.0,
-    vectorized=False
-)
-def divide_values(x, y):
-    if x is None or y is None or y == 0:
-        return [None]
-    return [x / y]
+@method_profile(input_types=['state_value'], output_types=['computed_score'], group="function", weight=2.0)
+def compute_safe_lower_bound(pipe_y):
+    return [pipe_y - 0.05] if pipe_y is not None else [None]
 
-@method_profile(
-    output_count=2,
-    input_types=['scalar'],
-    output_types=['scalar', 'scalar'],
-    group="function",
-    weight=1.0,
-    vectorized=False
-)
-def fanout(x):
-    """Duplicate signal; if x is None, return [None, None]."""
-    if x is None:
-        return [None, None]
-    return [x, x]
+@method_profile(input_types=['computed_score','computed_score'], output_types=['computed_score'], group="function", weight=3.0)
+def is_below_safe_zone(pred_y, safe_bound):
+    return [pred_y - safe_bound] if None not in (pred_y, safe_bound) else [None]
 
-@method_profile(
-    output_count=1,
-    input_types=['scalar'],
-    output_types=['scalar'],
-    group="function",
-    weight=1.0,
-    vectorized=False
-)
-def relu(x):
-    if x is None:
-        return [None]
-    return [max(0.0, x)]
+# === Logic & Action ===
+@method_profile(input_types=['computed_score'], output_types=['logic_signal','logic_signal'], group="logic", weight=3.0)
+def gate_positive_negative(x):
+    if x is None: return [None, None]
+    return ([x, None] if x > 0 else [None, x])
 
-@method_profile(
-    output_count=1,
-    input_types=['scalar'],
-    output_types=['scalar'],
-    group="function",
-    weight=1.0,
-    vectorized=False
-)
-def sigmoid(x):
-    if x is None:
-        return [None]
-    x = np.clip(x, -10.0, 10.0)
-    return [1.0 / (1.0 + math.exp(-x))]
-
-@method_profile(
-    output_count=1,
-    input_types=['scalar'],
-    output_types=['scalar'],
-    group="function",
-    weight=1.0,
-    vectorized=False
-)
-def absolute(x):
-    if x is None:
-        return [None]
-    return [abs(x)]
-
-
-# --- Action Pool (Side Effects via BIRD_STATE) ---
-
-@method_profile(
-    output_count=1,
-    input_types=['scalar'],
-    output_types=['scalar'],
-    group="action",
-    weight=1.0,
-    vectorized=False
-)
+@method_profile(input_types=['logic_signal'], output_types=['logic_signal'], group="action", weight=10.0)
 def jump(x):
-    """
-    Trigger jump if x is not None and valid.
-    Always returns [x] to maintain data flow.
-    """
     if x is not None and np.isfinite(x) and x != 0.0:
         BIRD_STATE.set_jump()
-    return [x]
-
-
-# --- Logic Routing Functions ---
-
-@method_profile(
-    output_count=2,
-    input_types=['scalar'],
-    output_types=['scalar', 'scalar'],
-    group="logic",
-    weight=1.0,
-    vectorized=False
-)
-def gate_positive_negative(x):
-    if x is None:
-        return [None, None]
-    if x > 0:
-        return [x, None]
-    else:
-        return [None, x]
-
-@method_profile(
-    output_count=1,
-    input_types=['scalar'],
-    output_types=['scalar'],
-    group="logic",
-    weight=1.0,
-    vectorized=False
-)
-def threshold_gate(x):
-    if x is None:
-        return [None]
-    threshold = 0.5
-    if x > threshold:
-        return [x]
-    else:
-        return [None]
-
-
-# --- Input Extractors (Gated by input signal) ---
-
-@method_profile(
-    output_count=1,
-    input_types=['scalar'],
-    output_types=['scalar'],
-    group="input",
-    weight=1.0,
-    vectorized=False
-)
-def get_player_y(x):
-    if x is None:
-        return [None]
-    obs = BIRD_STATE.current_observation
-    if obs is None or len(obs) < 1:
-        return [None]
-    return [float(obs[0])]
-
-@method_profile(
-    output_count=1,
-    input_types=['scalar'],
-    output_types=['scalar'],
-    group="input",
-    weight=1.0,
-    vectorized=False
-)
-def get_player_vel(x):
-    if x is None:
-        return [None]
-    obs = BIRD_STATE.current_observation
-    if obs is None or len(obs) < 2:
-        return [None]
-    return [float(obs[1])]
-
-@method_profile(
-    output_count=1,
-    input_types=['scalar'],
-    output_types=['scalar'],
-    group="input",
-    weight=1.0,
-    vectorized=False
-)
-def get_next_pipe_dist(x):
-    if x is None:
-        return [None]
-    obs = BIRD_STATE.current_observation
-    if obs is None or len(obs) < 3:
-        return [None]
-    return [float(obs[2])]
-
-@method_profile(
-    output_count=1,
-    input_types=['scalar'],
-    output_types=['scalar'],
-    group="input",
-    weight=1.0,
-    vectorized=False
-)
-def get_next_pipe_top_y(x):
-    if x is None:
-        return [None]
-    obs = BIRD_STATE.current_observation
-    if obs is None or len(obs) < 4:
-        return [None]
-    return [float(obs[3])]
-
-@method_profile(
-    output_count=1,
-    input_types=['scalar'],
-    output_types=['scalar'],
-    group="input",
-    weight=1.0,
-    vectorized=False
-)
-def get_next_pipe_bottom_y(x):
-    if x is None:
-        return [None]
-    obs = BIRD_STATE.current_observation
-    if obs is None or len(obs) < 5:
-        return [None]
-    return [float(obs[4])]
-
-@method_profile(
-    output_count=2,
-    input_types=['scalar'],
-    output_types=['scalar', 'scalar'],
-    group="function",
-    weight=1.0,
-    vectorized=False
-)
-def const_0_2(x):
-    """
-    Constant generator for 0.2 (pipe distance threshold).
-    If x is not None, returns [x, 0.2]; else [None, None].
-    """
-    if x is None:
-        return [None, None]
-    return [x, 0.2]
-
-
-@method_profile(
-    output_count=2,
-    input_types=['scalar'],
-    output_types=['scalar', 'scalar'],
-    group="function",
-    weight=1.0,
-    vectorized=False
-)
-def const_1_5(x):
-    """
-    Constant generator for 1.5 (velocity scaling factor).
-    If x is not None, returns [x, 1.5]; else [None, None].
-    """
-    if x is None:
-        return [None, None]
-    return [x, 1.5]
-
-
-@method_profile(
-    output_count=2,
-    input_types=['scalar'],
-    output_types=['scalar', 'scalar'],
-    group="function",
-    weight=1.0,
-    vectorized=False
-)
-def const_0_05(x):
-    """
-    Constant generator for 0.05 (safety margin below pipe gap).
-    If x is not None, returns [x, 0.05]; else [None, None].
-    """
-    if x is None:
-        return [None, None]
-    return [x, 0.05]
+    return [1.0 if x is not None else 0.0]

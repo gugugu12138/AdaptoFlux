@@ -116,9 +116,9 @@ class AdaptoFlux:
                     feature_types = [self.values.dtype.fields[name][0].name for name in self.values.dtype.names]
                 else:
                     if len(self.values.shape) != 2:
-                        raise ValueError(...)
+                        raise ValueError("无法推断特征类型")
                     if self.values.shape[1] == 0:
-                        raise ValueError(...)
+                        raise ValueError("无法推断特征类型")
                     feature_types = [str(self.values.dtype)] * self.values.shape[1]
 
             if len(feature_types) == 0:

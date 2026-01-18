@@ -4,6 +4,7 @@ def method_profile(
     output_types=None,
     group: str = "default",
     weight: float = 1.0,
+    is_internal_decorator: bool = False,
     vectorized: bool = False
 ):
     """
@@ -17,6 +18,7 @@ def method_profile(
         output_types (list of str): 输出类型的列表
         group (str): 方法所属的功能组，用于逻辑分组
         weight (float): 在组内的选择概率权重，越大越可能被选中，该部分也可通过遗传算法优化
+        is_internal_decorator (bool): 是否为内部装饰器（用于系统内部逻辑）
         vectorized (bool): 是否为向量化函数（可接受批量输入）
     """
     def decorator(func):
@@ -35,6 +37,7 @@ def method_profile(
         func.output_types = resolved_output_types
         func.group = group
         func.weight = weight
+        func.is_internal_decorator = is_internal_decorator
         func.vectorized = vectorized
         return func
     return decorator

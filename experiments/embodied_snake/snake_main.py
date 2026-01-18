@@ -103,11 +103,6 @@ def run_headless(model, max_steps=1000):
 
 def main():
     print("=== AdaptoFlux Snake: Handcrafted Policy Demonstration ===")
-    
-    # Test Oracle for reference (optional)
-    from .oracle_snake import test_oracle
-    oracle_survival, oracle_score = test_oracle(action_interval=1, max_steps=1000)
-    print(f"Oracle reference: survival={oracle_survival}, score={oracle_score}\n")
 
     # Initialize AdaptoFlux with dummy input
     dummy_input = np.zeros((1, 6), dtype=np.float32)

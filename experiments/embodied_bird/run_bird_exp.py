@@ -19,6 +19,7 @@ def oracle_policy(obs):
         return 1
     else:
         return 0
+            
 # === 测试 Oracle 策略 ===
 def test_oracle(action_interval=5, max_steps=5000):
     env = gym.make("FlappyBird-v0", render_mode=None)
@@ -71,7 +72,7 @@ af = AdaptoFlux(
 )
 
 # 加载手工构建的初始图
-af.load_model("experiments/embodied_bird/initial_scaffold.json")  # 确保路径正确
+# af.load_model("experiments/embodied_bird/initial_scaffold.json")  # 确保路径正确
 
 # === 全局记录 ===
 SURVIVAL_HISTORY = []

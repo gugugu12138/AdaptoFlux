@@ -114,6 +114,7 @@ def main():
         collapse_method=CollapseMethod.IDENTITY
     )
 
+    # 如果想要验证演化能力，可以修改下面的模型的几个方法然后用图演单独跑，大部分情况是有效的，这里就不专门做一个了，意义不大，并且后面大概率会换成多节点联合演化
     # Load pre-constructed graph (should contain Action Pool nodes)
     model_path = "experiments/embodied_snake"
 

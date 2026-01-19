@@ -30,29 +30,22 @@ def test_oracle(action_interval=5, max_steps=5000, render=True):
                 next_pipe_top = obs[4]
                 next_pipe_bottom = obs[5]
 
-                # 检查是否为初始无效管道
-                is_initial_state = (next_pipe_top >= 0.99 and next_pipe_bottom <= 0.01)
-                is_pipe_far = next_pipe_dist > 0.95
+                # 判断是否为初始/无管道状态
+                is_initial = (next_pipe_dist >= 0.99)  # 管道尚未生成
 
-                if is_initial_state or is_pipe_far:
-                    # 初始阶段：维持安全高度（~0.4~0.6）
-                    if bird_y < 0.5:
+                if is_initial:
+                    # 初始阶段：防止掉太低
+                    if bird_y > 0.4:
                         action = 1
                         jump_count += 1
-                        print(">>> JUMP! (initial altitude control)")
+                        print(f">>> JUMP! (initial, Y={bird_y:.3f}, Vy={bird_vy:.3f})")
                 else:
                     # 真实管道阶段
-                    gap_center = (next_pipe_top + next_pipe_bottom) / 2.0
-                    SAFE_MARGIN = 0.07
-
-                    print(f"[ORACLE] Frame {frame} | Y: {bird_y:.3f} | Vy: {bird_vy:.3f} | "
-                          f"Gap: [{next_pipe_bottom:.3f}, {next_pipe_top:.3f}] | Dist: {next_pipe_dist:.3f}")
-
-                    # 只在必要时跳：防止撞下管 或 快速下落
-                    if bird_y < next_pipe_bottom + SAFE_MARGIN:
+                    SAFE_MARGIN = 0.05
+                    if bird_y > next_pipe_bottom + SAFE_MARGIN:
                         action = 1
                         jump_count += 1
-                        print(">>> JUMP! (avoid lower pipe)")
+                        print(f">>> JUMP! (avoid lower pipe, Y={bird_y:.3f})")
 
                 decision_steps += 1
 
@@ -96,7 +89,7 @@ af = AdaptoFlux(
 )
 
 # 加载手工构建的初始图
-af.load_model("experiments/embodied_bird/initial_scaffold.json")  # 确保路径正确
+af.load_model("experiments/embodied_bird")  # 确保路径正确
 
 # # === 全局记录 ===
 # SURVIVAL_HISTORY = []

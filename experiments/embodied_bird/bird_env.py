@@ -8,8 +8,10 @@ import flappy_bird_gymnasium
 # experiments/embodied_bird/bird_env.py
 
 def run_bird_episode(model, action_interval=5, max_steps=5000):
-    env = gym.make("FlappyBird-v0", render_mode=None)
+    env = gym.make("FlappyBird-v0", render_mode="human", use_lidar=False)
     obs, _ = env.reset()
+    print("Obs shape:", obs.shape)  # 应输出 (12,)
+    print("Obs:", obs)
     survival_time = 0
     total_deviation = 0.0
     step_count = 0

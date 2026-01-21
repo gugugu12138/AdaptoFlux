@@ -1,6 +1,7 @@
 # experiments/embodied_snake/snake_main.py
 # Purpose: Visual demonstration of a handcrafted AdaptoFlux graph in Snake environment
 # No training, no evolution — pure zero-shot execution.
+# 需要作为模块运行，请使用类似命令行d:/ATF/.conda/python.exe -m experiments.embodied_snake.snake_main   
 
 import numpy as np
 import logging
@@ -116,7 +117,7 @@ def main():
 
     # 如果想要验证演化能力，可以修改下面的模型的几个方法然后用图演单独跑，大部分情况是有效的，这里就不专门做一个了，意义不大，并且后面大概率会换成多节点联合演化
     # Load pre-constructed graph (should contain Action Pool nodes)
-    model_path = "experiments/embodied_snake"
+    model_path = "experiments/embodied_snake/snake.json"
 
     af.load_model(model_path)
     print("✅ Loaded handcrafted AdaptoFlux graph.")

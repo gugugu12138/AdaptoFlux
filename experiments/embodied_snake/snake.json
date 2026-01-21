@@ -1,0 +1,73 @@
+{
+  "directed": true,
+  "multigraph": true,
+  "graph": {},
+  "nodes": [
+    { "id": "root" },
+    { "id": "collapse" },
+
+    { "method_name": "get_head_x",      "layer": 1, "is_passthrough": false, "id": "1_0_get_head_x" },
+    { "method_name": "get_head_y",      "layer": 1, "is_passthrough": false, "id": "1_1_get_head_y" },
+    { "method_name": "get_food_x",      "layer": 1, "is_passthrough": false, "id": "1_2_get_food_x" },
+    { "method_name": "get_food_y",      "layer": 1, "is_passthrough": false, "id": "1_3_get_food_y" },
+    { "method_name": "get_dir_x",       "layer": 1, "is_passthrough": false, "id": "1_4_get_dir_x" },
+    { "method_name": "get_dir_y",       "layer": 1, "is_passthrough": false, "id": "1_5_get_dir_y" },
+
+    { "method_name": "is_danger_ahead", "layer": 2, "is_passthrough": false, "id": "2_0_is_danger_ahead" },
+    { "method_name": "is_danger_left",  "layer": 2, "is_passthrough": false, "id": "2_1_is_danger_left" },
+    { "method_name": "is_danger_right", "layer": 2, "is_passthrough": false, "id": "2_2_is_danger_right" },
+    { "method_name": "rel_food_x",      "layer": 2, "is_passthrough": false, "id": "2_3_rel_food_x" },
+    { "method_name": "rel_food_y",      "layer": 2, "is_passthrough": false, "id": "2_4_rel_food_y" },
+
+    { "method_name": "survival_decision","layer": 3, "is_passthrough": false, "id": "3_0_survival_decision" },
+
+    { "method_name": "turn_left",       "layer": 4, "is_passthrough": false, "id": "4_0_turn_left" },
+    { "method_name": "turn_right",      "layer": 4, "is_passthrough": false, "id": "4_1_turn_right" },
+    { "method_name": "go_straight",     "layer": 4, "is_passthrough": false, "id": "4_2_go_straight" }
+  ],
+  "edges": [
+    { "source": "root", "target": "1_0_get_head_x",      "output_index": 0, "data_coord": 0, "data_type": "float32", "key": 0 },
+    { "source": "root", "target": "1_1_get_head_y",      "output_index": 0, "data_coord": 1, "data_type": "float32", "key": 0 },
+    { "source": "root", "target": "1_2_get_food_x",      "output_index": 0, "data_coord": 2, "data_type": "float32", "key": 0 },
+    { "source": "root", "target": "1_3_get_food_y",      "output_index": 0, "data_coord": 3, "data_type": "float32", "key": 0 },
+    { "source": "root", "target": "1_4_get_dir_x",       "output_index": 0, "data_coord": 4, "data_type": "float32", "key": 0 },
+    { "source": "root", "target": "1_5_get_dir_y",       "output_index": 0, "data_coord": 5, "data_type": "float32", "key": 0 },
+
+    { "source": "1_0_get_head_x", "target": "2_0_is_danger_ahead", "output_index": 0, "data_coord": 0, "data_type": "head_x",      "key": 0 },
+    { "source": "1_1_get_head_y", "target": "2_0_is_danger_ahead", "output_index": 0, "data_coord": 1, "data_type": "head_y",      "key": 0 },
+    { "source": "1_4_get_dir_x",  "target": "2_0_is_danger_ahead", "output_index": 0, "data_coord": 2, "data_type": "dir_x",       "key": 0 },
+    { "source": "1_5_get_dir_y",  "target": "2_0_is_danger_ahead", "output_index": 0, "data_coord": 3, "data_type": "dir_y",       "key": 0 },
+
+    { "source": "1_0_get_head_x", "target": "2_1_is_danger_left",  "output_index": 0, "data_coord": 0, "data_type": "head_x",      "key": 0 },
+    { "source": "1_1_get_head_y", "target": "2_1_is_danger_left",  "output_index": 0, "data_coord": 1, "data_type": "head_y",      "key": 0 },
+    { "source": "1_4_get_dir_x",  "target": "2_1_is_danger_left",  "output_index": 0, "data_coord": 2, "data_type": "dir_x",       "key": 0 },
+    { "source": "1_5_get_dir_y",  "target": "2_1_is_danger_left",  "output_index": 0, "data_coord": 3, "data_type": "dir_y",       "key": 0 },
+
+    { "source": "1_0_get_head_x", "target": "2_2_is_danger_right", "output_index": 0, "data_coord": 0, "data_type": "head_x",      "key": 0 },
+    { "source": "1_1_get_head_y", "target": "2_2_is_danger_right", "output_index": 0, "data_coord": 1, "data_type": "head_y",      "key": 0 },
+    { "source": "1_4_get_dir_x",  "target": "2_2_is_danger_right", "output_index": 0, "data_coord": 2, "data_type": "dir_x",       "key": 0 },
+    { "source": "1_5_get_dir_y",  "target": "2_2_is_danger_right", "output_index": 0, "data_coord": 3, "data_type": "dir_y",       "key": 0 },
+
+    { "source": "1_0_get_head_x", "target": "2_3_rel_food_x",      "output_index": 0, "data_coord": 0, "data_type": "head_x",      "key": 0 },
+    { "source": "1_2_get_food_x", "target": "2_3_rel_food_x",      "output_index": 0, "data_coord": 1, "data_type": "food_x",      "key": 0 },
+
+    { "source": "1_1_get_head_y", "target": "2_4_rel_food_y",      "output_index": 0, "data_coord": 0, "data_type": "head_y",      "key": 0 },
+    { "source": "1_3_get_food_y", "target": "2_4_rel_food_y",      "output_index": 0, "data_coord": 1, "data_type": "food_y",      "key": 0 },
+
+    { "source": "2_0_is_danger_ahead", "target": "3_0_survival_decision", "output_index": 0, "data_coord": 0, "data_type": "danger_front",   "key": 0 },
+    { "source": "2_1_is_danger_left",  "target": "3_0_survival_decision", "output_index": 0, "data_coord": 1, "data_type": "danger_left",    "key": 0 },
+    { "source": "2_2_is_danger_right", "target": "3_0_survival_decision", "output_index": 0, "data_coord": 2, "data_type": "danger_right",   "key": 0 },
+    { "source": "2_3_rel_food_x",      "target": "3_0_survival_decision", "output_index": 0, "data_coord": 3, "data_type": "rel_food_x",     "key": 0 },
+    { "source": "2_4_rel_food_y",      "target": "3_0_survival_decision", "output_index": 0, "data_coord": 4, "data_type": "rel_food_y",     "key": 0 },
+    { "source": "1_4_get_dir_x",       "target": "3_0_survival_decision", "output_index": 0, "data_coord": 5, "data_type": "dir_x",          "key": 0 },
+    { "source": "1_5_get_dir_y",       "target": "3_0_survival_decision", "output_index": 0, "data_coord": 6, "data_type": "dir_y",          "key": 0 },
+
+    { "source": "3_0_survival_decision", "target": "4_0_turn_left",    "output_index": 0, "data_coord": 0, "data_type": "turn_left_signal",   "key": 0 },
+    { "source": "3_0_survival_decision", "target": "4_1_turn_right",   "output_index": 1, "data_coord": 1, "data_type": "turn_right_signal",  "key": 0 },
+    { "source": "3_0_survival_decision", "target": "4_2_go_straight",  "output_index": 2, "data_coord": 2, "data_type": "go_straight_signal", "key": 0 },
+
+    { "source": "4_0_turn_left",    "target": "collapse", "output_index": 0, "data_coord": 0, "data_type": "action_signal", "key": 0 },
+    { "source": "4_1_turn_right",   "target": "collapse", "output_index": 0, "data_coord": 1, "data_type": "action_signal", "key": 0 },
+    { "source": "4_2_go_straight",  "target": "collapse", "output_index": 0, "data_coord": 2, "data_type": "action_signal", "key": 0 }
+  ]
+}

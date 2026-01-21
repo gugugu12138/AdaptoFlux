@@ -393,53 +393,81 @@ class AdaptoFlux:
         if os.path.exists(self.methods_path):  # 确保源文件存在
             shutil.copy(self.methods_path, folder)  # 复制文件到目标文件夹
 
-    def load_model(self, folder="models"):
+    def load_model(self, path="models"):
         """
-        从指定文件夹加载保存的模型：图结构（.gexf 或 .json）文件。
+        从指定路径加载保存的模型：图结构（.gexf 或 .json）文件。
 
-        1. 检查目标文件夹是否存在。
-        2. 优先从 graph.gexf 加载图结构，若不存在则尝试 graph.json。
-        
+        支持两种用法：
+        - 传入文件夹路径（如 "models"）：自动查找 graph.gexf 或 graph.json。
+        - 传入具体文件路径（如 "models/custom.gexf"）：直接加载该文件。
+
         参数:
-            folder (str): 包含模型文件的文件夹路径，默认为 "models"。
+            path (str): 文件夹路径或具体模型文件路径（.gexf 或 .json），默认为 "models"。
         """
         import os
         import json
         import networkx as nx
         from networkx.readwrite import json_graph
 
-        if not os.path.exists(folder):
-            raise FileNotFoundError(f"模型文件夹不存在: {folder}")
-
         self.graph_processor.graph = None
 
-        # 尝试优先加载 .gexf 文件
-        gexf_file_path = os.path.join(folder, "graph.gexf")
-        json_file_path = os.path.join(folder, "graph.json")
+        # 判断 path 是文件还是目录
+        if os.path.isfile(path):
+            # 用户直接指定了文件
+            file_path = path
+            _, ext = os.path.splitext(file_path)
+            ext = ext.lower()
 
-        if os.path.exists(gexf_file_path):
             try:
-                self.graph_processor.set_graph(nx.read_gexf(gexf_file_path))
-                print("成功从 graph.gexf 加载图结构。")
+                if ext == '.gexf':
+                    self.graph_processor.set_graph(nx.read_gexf(file_path))
+                    print(f"成功从 {file_path} 加载 GEXF 图结构。")
+                elif ext == '.json':
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                    # 兼容 node-link 格式（edges 字段）
+                    self.graph_processor.set_graph(json_graph.node_link_graph(data, edges="edges"))
+                    print(f"成功从 {file_path} 加载 JSON 图结构。")
+                else:
+                    raise ValueError(f"不支持的文件格式: {ext}。仅支持 .gexf 或 .json。")
             except Exception as e:
-                print(f"读取 graph.gexf 失败: {e}")
-        elif os.path.exists(json_file_path):
-            try:
-                with open(json_file_path, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                self.graph_processor.set_graph(json_graph.node_link_graph(data, edges="edges"))
-                print("成功从 graph.json 加载图结构。")
-            except Exception as e:
-                print(f"读取 graph.json 失败: {e}")
+                raise RuntimeError(f"加载图文件失败 ({file_path}): {e}")
+
+        elif os.path.isdir(path):
+            # 原有逻辑：path 是文件夹
+            gexf_file = os.path.join(path, "graph.gexf")
+            json_file = os.path.join(path, "graph.json")
+
+            loaded = False
+            if os.path.exists(gexf_file):
+                try:
+                    self.graph_processor.set_graph(nx.read_gexf(gexf_file))
+                    print("成功从 graph.gexf 加载图结构。")
+                    loaded = True
+                except Exception as e:
+                    print(f"读取 graph.gexf 失败: {e}")
+
+            if not loaded and os.path.exists(json_file):
+                try:
+                    with open(json_file, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                    self.graph_processor.set_graph(json_graph.node_link_graph(data, edges="edges"))
+                    print("成功从 graph.json 加载图结构。")
+                    loaded = True
+                except Exception as e:
+                    print(f"读取 graph.json 失败: {e}")
+
+            if not loaded:
+                raise FileNotFoundError("在文件夹中未找到有效的 graph.gexf 或 graph.json 文件。")
+
         else:
-            raise FileNotFoundError("未找到 graph.gexf 或 graph.json 文件。")
+            raise FileNotFoundError(f"指定的路径既不是有效文件也不是目录: {path}")
 
-
-        # 确保图被成功加载
+        # 最终校验
         if self.graph_processor.graph is None:
-            raise RuntimeError("图结构加载失败。")
+            raise RuntimeError("图结构加载失败：未成功设置图对象。")
 
-        print(f"模型已成功从 '{folder}' 加载。")
+        print(f"模型已成功从 '{path}' 加载。")
         
     def get_graph_entropy(self):
         """

@@ -19,7 +19,7 @@ def method_profile(
         group (str): 方法所属的功能组，用于逻辑分组
         weight (float): 在组内的选择概率权重，越大越可能被选中，该部分也可通过遗传算法优化
         is_internal_decorator (bool): 是否为内部装饰器（用于系统内部逻辑）
-        vectorized (bool): 是否为向量化函数（可接受批量输入）
+        vectorized (bool): 是否为向量化函数（可接受批量输入），当前版本非常不建议启动该选项，几乎必然出现问题
     """
     def decorator(func):
         # 确定 output_types 列表

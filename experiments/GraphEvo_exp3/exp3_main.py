@@ -7,7 +7,6 @@ import logging
 from typing import Tuple, Callable, Dict, Any
 import json
 
-# ✅ 标准导入（依赖 pip install -e .）
 from ATF.core.adaptoflux import AdaptoFlux
 from ATF.ModelTrainer.GraphEvoTrainer.graph_evo_trainer import GraphEvoTrainer
 
@@ -63,7 +62,7 @@ def create_adaptoflux_variant(variant: str) -> AdaptoFlux:
             output_types=['scalar'] * out_count,
             group='math',
             weight=1.0,
-            vectorized=True
+            vectorized=False
         )
     return af
 

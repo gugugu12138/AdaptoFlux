@@ -23,6 +23,12 @@ from .Components import (
     MSEEquivalenceChecker
 )
 
+from .refinement_strategies import (
+    refine_random_single_step,
+    refine_full_sweep_step,
+    refine_multi_node_joint_step,
+)
+
 # 设置日志
 logger = logging.getLogger(__name__)
 
@@ -56,6 +62,7 @@ class GraphEvoTrainer(ModelTrainer):
         frozen_nodes: Optional[List[str]] = None,
         frozen_methods: Optional[List[str]] = None,
         refinement_strategy: str = "random_single",
+        custom_refinement_strategy_func: Optional[callable] = None,  # ← 新增
         candidate_pool_mode: str = "group",
         fallback_mode: Optional[str] = None,
         enable_evolution: bool = True,
@@ -99,7 +106,14 @@ class GraphEvoTrainer(ModelTrainer):
         :param init_layers_list: 当 init_mode="list" 时，指定每个候选模型的初始化层数，长度需 ≥ num_initial_models。
         :param frozen_nodes: 显式冻结的节点名称列表（如 ["root", "collapse"]），这些节点在精炼阶段不会被修改。
         :param frozen_methods: 显式冻结的方法名称列表（如 ["return_value"]），使用这些方法的节点将自动被冻结。
-        :param refinement_strategy: 精炼策略，"random_single"（随机单点优化）或 "full_sweep"（全图遍历优化）。
+        :param refinement_strategy: 精炼策略，可选值：
+            - "random_single"：随机单点优化；
+            - "full_sweep"：全图遍历优化；
+            - "multi_node_joint"：多节点联合优化（未实现，占位）；
+            - "custom"：使用 custom_refinement_strategy_func 提供的函数；
+            - 或直接传入一个 callable 函数对象。
+        :param custom_refinement_strategy_func: 当 refinement_strategy="custom" 时，
+            提供的自定义策略函数。函数签名需与 `_refine_random_single_step` 一致。
         :param candidate_pool_mode: 构建候选方法池的策略，"all"（所有方法）、"group"（同组方法）或 "self"（仅自身）。
         :param fallback_mode: 当无类型兼容方法时的兜底策略，"all"/"group_first"/"self"/"error"。
         :param enable_compression: 是否启用模块化压缩阶段。
@@ -123,8 +137,11 @@ class GraphEvoTrainer(ModelTrainer):
         self.frozen_nodes = set(frozen_nodes) if frozen_nodes else set()
         self.frozen_methods = set(frozen_methods) if frozen_methods else set()  # <-- 保存为集合
         self.candidate_pool_mode = candidate_pool_mode
-        self.fallback_mode = fallback_mode or 'self'  
+        self.fallback_mode = fallback_mode or 'self' 
+
         self.refinement_strategy = refinement_strategy
+        self.custom_refinement_strategy_func = custom_refinement_strategy_func
+
         self.enable_evolution = enable_evolution
         self.evolution_sampling_frequency = evolution_sampling_frequency
         self.evolution_trigger_count = evolution_trigger_count
@@ -170,14 +187,22 @@ class GraphEvoTrainer(ModelTrainer):
         # 用于记录完整图结构快照（用于方法池进化）
         self.graph_snapshots: List[Any] = []
         
+        # 原有 _strategy_map
         self._strategy_map = {
-            "random_single": self._refine_random_single_step,
-            "full_sweep": self._refine_full_sweep_step,
-            # 未来可加："weighted_sample": self._refine_weighted_sample_step,
+            "random_single": refine_random_single_step,
+            "full_sweep": refine_full_sweep_step,
+            "multi_node_joint": refine_multi_node_joint_step,
+            # TODO: 多节点联合优化（见下文）
         }
-        if self.refinement_strategy not in self._strategy_map:
-            raise ValueError(f"Unknown refinement_strategy: {self.refinement_strategy}. "
-                            f"Available: {list(self._strategy_map.keys())}")
+
+        # 新增：支持自定义函数
+        if custom_refinement_strategy_func is not None:
+            self._strategy_map["custom"] = custom_refinement_strategy_func
+            if refinement_strategy == "custom":
+                pass  # 合法
+        else:
+            if refinement_strategy == "custom":
+                raise ValueError("custom strategy requires custom_refinement_strategy_func")
 
         # 校验
         valid_pool_modes = {"all", "group", "self"}
@@ -363,7 +388,7 @@ class GraphEvoTrainer(ModelTrainer):
             #   step_inc: int → 本次实际消耗的“步数”（如 full_sweep 一次可能替换多个节点）
             #   updated_nodes: List[str] → 更新后的可处理节点列表（图结构可能变化）
             imp, new_loss, new_acc, step_inc, updated_nodes = strategy_func(
-                adaptoflux_instance, input_data, target, processing_nodes, current_loss, gp
+                self, adaptoflux_instance, input_data, target, processing_nodes, current_loss, gp
             )
 
             if imp:
@@ -1218,6 +1243,28 @@ class GraphEvoTrainer(ModelTrainer):
         else:
             results['final_compression_applied'] = False
 
+        # === 显式记录最终模型和最佳模型的 loss/acc 到 results 根层级 ===
+        # 1. 最终模型指标（使用当前 self.adaptoflux）
+        final_loss = self._evaluate_loss(input_data, target)
+        final_acc = self._evaluate_accuracy(input_data, target)
+        results['final_loss'] = final_loss
+        results['final_accuracy'] = final_acc
+
+        # 2. 最佳模型指标（如果存在）
+        if results['best_model_snapshot'] is not None:
+            best_af_temp = self.adaptoflux  # 临时保存
+            self.adaptoflux = results['best_model_snapshot']
+            try:
+                best_loss = self._evaluate_loss(input_data, target)
+                best_acc = self._evaluate_accuracy(input_data, target)
+                results['best_loss'] = best_loss
+                results['best_accuracy'] = best_acc  # 可能已存在，但确保一致性
+            finally:
+                self.adaptoflux = best_af_temp  # 恢复
+        else:
+            results['best_loss'] = float('inf')
+            results['best_accuracy'] = -1.0
+            
         # 保存模型
         if save_model:
             try:
@@ -1263,230 +1310,6 @@ class GraphEvoTrainer(ModelTrainer):
         results['total_refinement_attempts'] = self._total_refinement_attempts
 
         return results
-    
-    def _refine_random_single_step(
-        self,
-        adaptoflux_instance,
-        input_data: np.ndarray,
-        target: np.ndarray,
-        processing_nodes: List[str],
-        current_loss: float,
-        gp: Any  # GraphProcessor 实例
-    ) -> Tuple[bool, float, float, int, List[str]]:
-        """
-        【策略：随机单点优化】
-        在当前图中随机选择一个可优化的处理节点，尝试将其方法替换为所有兼容方法中的最优者（基于损失下降）。
-        仅执行一次替换尝试（即一个节点的一次优化），适用于轻量级、低开销的局部搜索。
-        注意：本函数会 in-place 修改 adaptoflux_instance 的图结构！
-
-        返回值说明：
-        - bool: 本轮是否成功改进（即找到更优方法）
-        - float: 改进后的损失值（若未改进则返回原损失）
-        - float: 改进后的准确率（若未改进则返回 0.0，调用方应忽略）
-        - int: 本次实际执行的优化步数（0 或 1）
-        - List[str]: 更新后的可处理节点列表（因图结构可能变化，需重新获取）
-
-        :param adaptoflux_instance: 当前待优化的 AdaptoFlux 实例
-        :param input_data: 用于评估的小批量输入数据
-        :param target: 对应的真实标签
-        :param processing_nodes: 当前图中所有可被优化的处理节点名称列表（已排除冻结节点）
-        :param current_loss: 当前模型的损失值（用于比较）
-        :param gp: 图处理器实例，用于访问和修改图结构
-        :return: (是否改进, 新损失, 新准确率, 步数增量, 更新后的节点列表)
-        """
-        # 若无可优化节点，直接返回无改进
-        if not processing_nodes:
-            return False, current_loss, 0.0, 0, processing_nodes
-
-        # 随机选择一个待优化节点
-        target_node = random.choice(processing_nodes)
-        original_method_name = gp.graph.nodes[target_node]['method_name']
-        
-        # 获取与该节点兼容的候选方法列表（基于组别或类型匹配）
-        candidate_methods = self._get_compatible_methods_for_node(
-            adaptoflux_instance, 
-            target_node
-        )
-
-        best_candidate = None
-        best_loss = current_loss  # 初始化为当前损失，用于比较
-
-        attempts_in_step = 0
-        
-        # 遍历所有候选方法（跳过当前方法）
-        for candidate_method_name in candidate_methods:
-            if candidate_method_name == original_method_name:
-                continue
-
-            # --- 检查是否已达总尝试上限 ---
-            if (self.max_total_refinement_attempts is not None and
-                self._total_refinement_attempts >= self.max_total_refinement_attempts):
-                break
-
-            # --- 计数 +1 ---
-            self._total_refinement_attempts += 1
-            attempts_in_step += 1
-
-            # 创建临时副本，避免污染原模型
-            temp_af = copy.deepcopy(adaptoflux_instance)
-            temp_gp = temp_af.graph_processor
-            # 尝试替换节点方法
-            temp_gp.graph.nodes[target_node]['method_name'] = candidate_method_name
-
-            
-            # 评估替换后的损失
-            new_loss = self._evaluate_loss(input_data, target, adaptoflux_instance=temp_af)
-
-            # 记录损失更低的最优候选
-            if new_loss < best_loss:
-                best_loss = new_loss
-                best_candidate = candidate_method_name
-
-        # 如果找到更优方法，则应用到原图
-        if best_candidate and self._should_accept(current_loss, best_loss):
-            # === 替换节点（自动更新 ID 和边） ===
-            new_node_id = gp.replace_node_method(target_node, best_candidate)
-            
-            # 注意：target_node 已被删除，后续操作应使用 new_node_id（但本策略不需要）
-            # 如果作者有空而且没忘记可能会在gp里面加一个刷新图节点id的方法提升可读性
-
-            # 重新评估准确率
-            new_acc = self._evaluate_accuracy(input_data, target, adaptoflux_instance=adaptoflux_instance)
-
-            # 重新获取处理节点列表（因为节点 ID 已变）
-            updated_nodes = [node for node in gp.graph.nodes() if gp._is_processing_node(node)]
-            
-            return True, best_loss, new_acc, 1, updated_nodes
-        
-        else:
-            # 无改进，返回原始状态
-            return False, current_loss, 0.0, 0, processing_nodes
-        
-    def _refine_full_sweep_step(
-        self,
-        adaptoflux_instance,
-        input_data: np.ndarray,
-        target: np.ndarray,
-        processing_nodes: List[str],
-        current_loss: float,
-        gp: Any
-    ) -> Tuple[bool, float, float, int, List[str]]:
-        """
-        【策略：完整遍历优化】
-        对当前图中所有可优化的处理节点进行一轮完整遍历。
-        对每个节点，尝试所有兼容方法，若发现能降低损失的替换，则立即应用（贪心策略）。
-        一轮中可能多次修改图结构，适用于更彻底的局部优化，但计算开销较大。
-        注意：本函数会 in-place 修改 adaptoflux_instance 的图结构！
-
-        返回值说明：
-        - bool: 本轮是否至少有一次成功改进
-        - float: 本轮结束后的最终损失值
-        - float: 本轮结束后的最终准确率
-        - int: 本轮总共执行的方法替换次数
-        - List[str]: 最终的可处理节点列表（可能因方法变更而动态变化）
-
-        :param adaptoflux_instance: 当前待优化的 AdaptoFlux 实例
-        :param input_data: 用于评估的小批量输入数据
-        :param target: 对应的真实标签
-        :param processing_nodes: 初始的可优化节点列表
-        :param current_loss: 当前损失（作为起点）
-        :param gp: 图处理器实例
-        :return: (是否改进, 最终损失, 最终准确率, 替换次数, 最终节点列表)
-        """
-        if not processing_nodes:
-            return False, current_loss, 0.0, 0, processing_nodes
-
-        # 随机打乱节点顺序，避免顺序偏差（例如总是先优化靠前的节点）
-        nodes_to_try = random.sample(processing_nodes, len(processing_nodes))
-        improvement_made = False
-        total_replacements = 0
-        current_acc = self._evaluate_accuracy(input_data, target, adaptoflux_instance=adaptoflux_instance)
-
-        # 遍历每一个待优化节点
-        for target_node in nodes_to_try:
-            # 检查节点是否仍然存在于图中（可能被之前的替换操作删除或重命名）
-            if target_node not in gp.graph.nodes:
-                if self.verbose:
-                    logger.debug(f"Node '{target_node}' no longer exists in graph; skipping.")
-                continue
-
-            original_method_name = gp.graph.nodes[target_node].get('method_name')
-            if original_method_name is None:
-                if self.verbose:
-                    logger.warning(f"Node '{target_node}' has no 'method_name'; skipping.")
-                continue
-
-            # 获取与该节点兼容的候选方法列表（考虑组别、类型兼容性及冻结规则）
-            candidate_methods = self._get_compatible_methods_for_node(
-                adaptoflux_instance,
-                target_node
-            )
-
-            best_candidate = None
-            best_loss = current_loss  # 以当前全局损失为基准进行比较
-
-            # 尝试所有兼容方法（跳过当前方法）
-            for candidate_method_name in candidate_methods:
-                if candidate_method_name == original_method_name:
-                    continue
-
-                # --- 检查并计数 ---
-                if (self.max_total_refinement_attempts is not None and
-                    self._total_refinement_attempts >= self.max_total_refinement_attempts):
-                    # 提前退出双层循环
-                    return improvement_made, current_loss, current_acc, total_replacements, processing_nodes
-
-                self._total_refinement_attempts += 1
-
-                # 创建临时副本进行安全评估，避免污染原模型
-                try:
-                    temp_af = copy.deepcopy(adaptoflux_instance)
-                    temp_gp = temp_af.graph_processor
-                    # 安全替换：使用图处理器的标准方法（会处理输入/输出类型变化）
-                    # 注意：这里我们模拟替换，但不实际调用 replace_node_method（因为只是评估）
-                    # 所以直接修改 method_name 是安全的，前提是不依赖边结构变化
-                    temp_gp.graph.nodes[target_node]['method_name'] = candidate_method_name
-
-                    new_loss = self._evaluate_loss(input_data, target, adaptoflux_instance=temp_af)
-
-                    if new_loss < best_loss:
-                        best_loss = new_loss
-                        best_candidate = candidate_method_name
-                except Exception as e:
-                    logger.warning(f"Failed to evaluate candidate method '{candidate_method_name}' "
-                                   f"for node '{target_node}': {e}")
-                    continue
-
-            # 如果找到更优方法，立即应用到原图（贪心策略）
-            if best_candidate and self._should_accept(current_loss, best_loss):
-                try:
-                    # 使用图处理器的标准替换方法，确保图结构一致性（如边更新、ID刷新等）
-                    new_node_id = gp.replace_node_method(target_node, best_candidate)
-                    # 更新当前损失和准确率
-                    current_loss = best_loss
-                    current_acc = self._evaluate_accuracy(input_data, target, adaptoflux_instance=adaptoflux_instance)
-                    improvement_made = True
-                    total_replacements += 1
-
-                    if self.verbose:
-                        logger.info(f"  Replacement {total_replacements}: Node '{target_node}' "
-                                    f"{original_method_name} → {best_candidate}, Loss: {current_loss:.6f}")
-
-                    # 重要：节点替换后，原 target_node 可能已被删除或重命名（new_node_id）
-                    # 因此需要重新获取当前所有处理节点，确保后续操作基于最新图状态
-                    processing_nodes = [
-                        node for node in gp.graph.nodes()
-                        if gp._is_processing_node(node)
-                    ]
-                    # 注意：nodes_to_try 是旧列表，但仅包含节点名，后续节点若仍存在仍可处理；
-                    # 若需更严格的一致性，可考虑 break 并重启本轮，但会增加开销，此处暂不处理。
-
-                except Exception as e:
-                    logger.error(f"Failed to apply method replacement for node '{target_node}': {e}")
-                    # 替换失败，跳过该节点，继续优化其他节点
-                    continue
-
-        return improvement_made, current_loss, current_acc, total_replacements, processing_nodes
         
     def build_candidate_pool(compatibility_mode, methods, original_method_name, all_method_names):
         if compatibility_mode == "all":
@@ -1692,3 +1515,5 @@ class GraphEvoTrainer(ModelTrainer):
             'compression_applied': total_compressed > 0,
             'compressed_subgraphs': total_compressed
         }
+
+    

@@ -1,1 +1,2 @@
 from .graph_evo_trainer import GraphEvoTrainer
+from .method_pool_evolver import MethodPoolEvolver

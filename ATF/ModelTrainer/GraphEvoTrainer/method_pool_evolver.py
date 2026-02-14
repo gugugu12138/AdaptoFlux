@@ -77,10 +77,6 @@ class MethodPoolEvolver:
         """
         # 打印警告：该功能仍在实验阶段 | Print warning: experimental feature
         if self.trainer.verbose:
-            logger.warning(
-                "MethodPoolEvolver is experimental. Report unexpected behavior to developers. | "
-                "MethodPoolEvolver 处于实验阶段，遇到异常行为请报告开发者"
-            )
             logger.info(
                 f"[Phase 3] Method Pool Evolution: Aligning nodes via (layer, in_coords, out_coords) "
                 f"across {len(snapshots)} snapshots... | "

@@ -838,7 +838,7 @@ class GraphProcessor:
 
         # === 6. 添加新节点 ===
         is_passthrough = (new_method_name == self.discard_node_method_name)
-        graph.add_node(new_node_id, method_name=new_method_name, is_passthrough=is_passthrough)
+        graph.add_node(new_node_id, method_name=new_method_name, layer=layer, is_passthrough=is_passthrough)
 
         # === 7. 重连入边（source -> new_node_id）===
         for src, _, key, data in in_edges:

@@ -18,13 +18,6 @@ from datetime import datetime
 
 from .method_pool_evolver import MethodPoolEvolver
 
-from .Components import (
-    BFSSubgraphSampler,
-    SubgraphIOExtractor,
-    SubgraphReplacer,
-    MSEEquivalenceChecker
-)
-
 from .refinement_strategies import (
     refine_random_single_step,
     refine_full_sweep_step,
@@ -164,12 +157,10 @@ class GraphEvoTrainer(ModelTrainer):
             raise ValueError("compression_mode must be 'symbolic' or 'numerical'")
             
 
-        self.subgraph_sampler = kwargs.get('subgraph_sampler') or BFSSubgraphSampler(max_nodes=4)
-        self.io_extractor = kwargs.get('io_extractor') or SubgraphIOExtractor()
+        self.subgraph_sampler = kwargs.get('subgraph_sampler')
+        self.io_extractor = kwargs.get('io_extractor')
         # self.replacer = kwargs.get('replacer') or SubgraphReplacer()
-        self.equivalence_checker = kwargs.get('equivalence_checker') or MSEEquivalenceChecker(
-            threshold=self.compression_threshold
-        )
+        self.equivalence_checker = kwargs.get('equivalence_checker')
 
         self.min_subgraph_size_for_evolution = min_subgraph_size_for_evolution
         if self.min_subgraph_size_for_evolution < 1:

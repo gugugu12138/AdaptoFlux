@@ -18,7 +18,7 @@ from ..GraphProcessor.graph_processor import GraphProcessor
 from ..PathGenerator.path_generator import PathGenerator
 from ..ModelTrainer.model_trainer import ModelTrainer
 
-
+# value 预期添加动态接口
 class AdaptoFlux:
     def __init__(
         self,

@@ -11,10 +11,6 @@ from sklearn.model_selection import train_test_split
 def collapse_first(values):
     return float(values[0])
 
-# 这个完全不行，没有实验价值
-# def collapse_mean(values):
-#     return float(np.mean(values))
-
 def collapse_sum(values):
     return float(np.sum(values))
 

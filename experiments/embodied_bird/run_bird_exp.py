@@ -91,75 +91,75 @@ af = AdaptoFlux(
 # 加载手工构建的初始图
 af.load_model("experiments/embodied_bird")  # 确保路径正确
 
-# # === 全局记录 ===
-# SURVIVAL_HISTORY = []
-# EVAL_COUNTER = 0
+# === 全局记录 ===
+SURVIVAL_HISTORY = []
+EVAL_COUNTER = 0
 
-# def evaluate_with_logging(model, action_interval=1, max_steps=5000):
-#     global EVAL_COUNTER
-#     survival, avg_deviation, jump_rate = run_bird_episode(model, action_interval, max_steps)
-#     EVAL_COUNTER += 1
-#     SURVIVAL_HISTORY.append({
-#         'eval_id': EVAL_COUNTER,
-#         'survival': survival,
-#         'avg_deviation': avg_deviation,
-#         'jump_rate': jump_rate
-#     })
-#     if EVAL_COUNTER % 10 == 0:
-#         print(f"[Eval {EVAL_COUNTER}] Survival: {survival}, Dev: {avg_deviation:.3f}")
-#     return survival, avg_deviation, jump_rate
+def evaluate_with_logging(model, action_interval=1, max_steps=5000):
+    global EVAL_COUNTER
+    survival, avg_deviation, jump_rate = run_bird_episode(model, action_interval, max_steps)
+    EVAL_COUNTER += 1
+    SURVIVAL_HISTORY.append({
+        'eval_id': EVAL_COUNTER,
+        'survival': survival,
+        'avg_deviation': avg_deviation,
+        'jump_rate': jump_rate
+    })
+    if EVAL_COUNTER % 10 == 0:
+        print(f"[Eval {EVAL_COUNTER}] Survival: {survival}, Dev: {avg_deviation:.3f}")
+    return survival, avg_deviation, jump_rate
 
-# # === 损失函数 ===
-# def bird_loss(model, input_data, target):
-#     survival, _, _ = evaluate_with_logging(model)
-#     loss = -survival
-#     return float(loss)  # 暂时移除 pipe_bottom 检查（因已修正初始图）
+# === 损失函数 ===
+def bird_loss(model, input_data, target):
+    survival, _, _ = evaluate_with_logging(model)
+    loss = -survival
+    return float(loss)  # 暂时移除 pipe_bottom 检查（因已修正初始图）
 
-# def bird_acc(model, input_data, target):
-#     survival, _, _ = evaluate_with_logging(model)
-#     return min(survival, 5000) / 5000.0
+def bird_acc(model, input_data, target):
+    survival, _, _ = evaluate_with_logging(model)
+    return min(survival, 5000) / 5000.0
 
-# # === 配置纯 GraphEvo ===
-# lg_config = {"max_attempts": 0}
-# ge_config = {
-#     "verbose": False,
-#     "init_mode": "loaded",
-#     "max_init_layers": 5
-# }
+# === 配置纯 GraphEvo ===
+lg_config = {"max_attempts": 0}
+ge_config = {
+    "verbose": False,
+    "init_mode": "loaded",
+    "max_init_layers": 5
+}
 
-# trainer = CombinedTrainer(
-#     adaptoflux_instance=af,
-#     layer_grow_config=lg_config,
-#     graph_evo_config=ge_config,
-#     num_evolution_cycles=5,
-#     genetic_mode="disabled",
-#     save_dir="experiments/embodied_bird/results_guided",
-#     verbose=True,
-#     custom_loss_evaluator=bird_loss,
-#     custom_accuracy_evaluator=bird_acc,
-#     task_type="regression",
-# )
+trainer = CombinedTrainer(
+    adaptoflux_instance=af,
+    layer_grow_config=lg_config,
+    graph_evo_config=ge_config,
+    num_evolution_cycles=5,
+    genetic_mode="disabled",
+    save_dir="experiments/embodied_bird/results_guided",
+    verbose=True,
+    custom_loss_evaluator=bird_loss,
+    custom_accuracy_evaluator=bird_acc,
+    task_type="regression",
+)
 
-# os.makedirs("experiments/embodied_bird/results_guided", exist_ok=True)
+os.makedirs("experiments/embodied_bird/results_guided", exist_ok=True)
 
-# # === 执行训练 ===
-# print("Starting Human-Guided Graph Evolution...")
-# results = trainer.train(
-#     input_data=dummy_input,
-#     target=np.array([0.0]),
-#     enable_early_stop=False
-# )
+# === 执行训练 ===
+print("Starting Human-Guided Graph Evolution...")
+results = trainer.train(
+    input_data=dummy_input,
+    target=np.array([0.0]),
+    enable_early_stop=False
+)
 
 # === 最终评估 ===
 final_survival, _, _ = run_bird_episode(trainer.adaptoflux, action_interval=5)
 print(f"\nFinal survival: {final_survival} frames")
 print(f"Oracle survival: {oracle_survival} frames")
 
-# # === 保存结果 ===
-# history_path = "experiments/embodied_bird/results_guided/survival_history.json"
-# with open(history_path, "w") as f:
-#     json.dump(SURVIVAL_HISTORY, f, indent=2)
+# === 保存结果 ===
+history_path = "experiments/embodied_bird/results_guided/survival_history.json"
+with open(history_path, "w") as f:
+    json.dump(SURVIVAL_HISTORY, f, indent=2)
     
-# if SURVIVAL_HISTORY:
-#     best = max(SURVIVAL_HISTORY, key=lambda x: x['survival'])
-#     print(f"Best survival: {best['survival']} (Eval #{best['eval_id']})")
+if SURVIVAL_HISTORY:
+    best = max(SURVIVAL_HISTORY, key=lambda x: x['survival'])
+    print(f"Best survival: {best['survival']} (Eval #{best['eval_id']})")

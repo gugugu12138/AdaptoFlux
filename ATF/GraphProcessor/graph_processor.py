@@ -193,6 +193,8 @@ class GraphProcessor:
         self.layer -= 1
         return self.graph
 
+
+    # 该部分存在技术残留导致的全量中间缓存，作者有时间可能会改
     def infer_with_graph(self, values):
         """
         使用图结构对输入数据进行推理，支持任意对象（非仅数值）。

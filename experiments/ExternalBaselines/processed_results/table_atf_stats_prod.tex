@@ -1,0 +1,19 @@
+\begin{table}[h]
+\centering
+\caption{AdaptoFlux performance with collapse=prod (10 independent runs)}
+\label{tab:atf_full_stats_prod}
+\begin{tabular}{lcccccc}
+\toprule
+Task & MSE (Mean $\pm$ Std) & Median & Min & Success Rate (\%) & Runtime (s) $\pm$ Std \\
+\midrule
+E_mc2 & $2.64e-11 \pm 7.80e-12$ & $2.53e-11$ & $1.59e-11$ & 0.0 & $0.07 \pm 0.01$ \\
+F_ma & $2.88e-12 \pm 1.96e-12$ & $2.42e-12$ & $1.93e-13$ & 100.0 & $0.02 \pm 0.00$ \\
+KE & $1.31e+03 \pm 1.86e+03$ & $8.29e-11$ & $2.27e-11$ & 0.0 & $2.61 \pm 3.14$ \\
+Coulomb & $5.65e+01 \pm 6.85e+01$ & $2.25e+01$ & $9.40e+00$ & 0.0 & $9.20 \pm 3.30$ \\
+IdealGas & $1.28e+05 \pm 2.04e+05$ & $5.55e+04$ & $2.25e+04$ & 0.0 & $15.17 \pm 7.40$ \\
+OhmsLaw & $8.04e-13 \pm 5.15e-13$ & $5.89e-13$ & $2.21e-13$ & 100.0 & $0.02 \pm 0.00$ \\
+Acceleration & $2.36e+02 \pm 5.36e+02$ & $1.73e+01$ & $5.38e+00$ & 0.0 & $11.62 \pm 4.05$ \\
+Power & $2.65e-12 \pm 1.41e-12$ & $2.07e-12$ & $8.05e-13$ & 100.0 & $0.02 \pm 0.00$ \\
+\bottomrule
+\end{tabular}
+\end{table}

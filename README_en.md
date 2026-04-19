@@ -10,6 +10,7 @@ Key Features:
 - **High Interpretability & Flexibility**: Explicit graph structure facilitates understanding and debugging, suitable for symbolic regression, few-shot modeling, game AI, and other scenarios.
 
 > Note: This documentation contains non-real-time information and may include occasional errors.
+And it may be rewritten later.
 
 ---
 

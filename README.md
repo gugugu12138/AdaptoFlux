@@ -91,7 +91,7 @@ from ATF.core.adaptoflux import method_profile
     output_types=['scalar'],
     group='math',
     weight=1.0,
-    vectorized=True
+    vectorized=False
 )
 def add_one(a):
     """将输入值加一"""

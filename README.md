@@ -74,6 +74,7 @@ cd AdaptoFlux
 
 ```bash
 pip install -r requirements.txt
+pip install -e .
 ```
 
 # 修改方法池

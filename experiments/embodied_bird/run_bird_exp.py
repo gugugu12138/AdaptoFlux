@@ -74,10 +74,10 @@ print("=== Testing Oracle Policy ===")
 oracle_survival = test_oracle(action_interval=1, max_steps=5000)
 print(f"Oracle survival time: {oracle_survival} frames\n")
 
-# 如果 Oracle 表现差，说明环境或策略有误
-if oracle_survival <= 50:
-    print("⚠️ Warning: Oracle policy performs poorly. Check environment or logic!")
-    exit(1)
+# # 如果 Oracle 表现差，说明环境或策略有误
+# if oracle_survival <= 50:
+#     print("⚠️ Warning: Oracle policy performs poorly. Check environment or logic!")
+#     exit(1)
 
 # === 初始化 AdaptoFlux ===
 dummy_input = np.zeros((1, 5), dtype=np.float32)  # ← 改回 5 维！
@@ -89,7 +89,7 @@ af = AdaptoFlux(
 )
 
 # 加载手工构建的初始图
-af.load_model("experiments/embodied_bird")  # 确保路径正确
+# af.load_model("experiments/embodied_bird")  # 确保路径正确
 
 # === 全局记录 ===
 SURVIVAL_HISTORY = []

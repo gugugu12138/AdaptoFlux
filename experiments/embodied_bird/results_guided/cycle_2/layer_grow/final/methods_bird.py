@@ -4,6 +4,7 @@ import numpy as np
 from experiments.embodied_bird.bird_state import BIRD_STATE
 
 # === Input Methods (核心 + 干扰) ===
+# === Input Methods (核心 + 干扰) ===
 @method_profile(input_types=['raw_signal'], output_types=['state_value'], group="input", weight=1.0)
 def get_player_y(x):
     obs = BIRD_STATE.current_observation

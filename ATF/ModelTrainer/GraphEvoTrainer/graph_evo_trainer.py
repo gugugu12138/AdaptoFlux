@@ -693,7 +693,7 @@ class GraphEvoTrainer(ModelTrainer):
             # 【✅ 新增早停逻辑】
             if enable_early_stop and current_acc >= 1.0 - early_stop_eps:
                 if self.verbose:
-                    logger.info(f"🎯 Early stopping triggered at cycle {cycle}: accuracy={current_acc:.6f} >= {1.0 - eps}")
+                    logger.info(f"🎯 Early stopping triggered at cycle {cycle}: accuracy={current_acc:.6f} >= {1.0 - early_stop_eps}")
                 results['evo_cycles_completed'] = cycle
                 break  # 立即终止后续进化轮次
 

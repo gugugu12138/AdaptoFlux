@@ -65,7 +65,7 @@ conda activate AdaptoFlux
 2. Clone the repository:
 
 ```bash
-git clone https://github.com/gugugu12138/AdaptoFlux.git
+git clone xxxx.git
 cd AdaptoFlux
 ```
 

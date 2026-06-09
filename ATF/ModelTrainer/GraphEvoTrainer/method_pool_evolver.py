@@ -834,29 +834,30 @@ class MethodPoolEvolver:
     # 工具方法（关键修复）| Utility Methods (Critical Fixes)
     # -------------------------------------------------------------------------
     
-    def get_node_layer(self, node_id: str, graph: nx.DiGraph) -> int:
+    def get_node_layer(self, node_id: str, graph: Optional[nx.DiGraph] = None) -> int:
         """
         安全提取节点层号（带回退机制）
-        Safely extract node layer with fallback mechanisms
         
-        优先级 | Priority:
-            1. 节点属性 'layer'（最可靠）
-               Node attribute 'layer' (most reliable)
-            2. 从节点ID解析 "{层}_{索引}_{方法}"
-               Parse from node ID format "{layer}_{index}_{method}"
-            3. 默认层 0（带警告）
-               Default layer 0 (with warning)
-        
-        修复原实现缺失的 get_node_layer() | Fixes missing get_node_layer() in original implementation
+        优先级:
+            1. 特殊节点 ("root", "collapse") 返回 -1
+            2. 节点属性 'layer'（最可靠，创建节点时显式赋值）
+            3. 从节点ID解析 "{层}_{索引}_{方法}"
+            4. 默认层 0（带警告）
         """
+        target_graph = graph if graph is not None else self.graph
+        
         if node_id in ("root", "collapse"):
-            return -1  # 特殊节点设为 -1 | Special nodes set to -1
+            return -1 
         
-        # 优先级 1: 节点属性 | Priority 1: Node attribute
-        if 'layer' in graph.nodes[node_id]:
-            return graph.nodes[node_id]['layer']
+        # 优先级 1: 节点属性
+        node_data = target_graph.nodes.get(node_id, {})
+        if 'layer' in node_data:
+            try:
+                return int(node_data['layer'])
+            except (ValueError, TypeError):
+                pass # 如果属性存在但无法转为 int，则回退到 ID 解析
         
-        # 优先级 2: 从ID解析 | Priority 2: Parse from ID
+        # 优先级 2: 从ID解析
         try:
             return int(node_id.split('_')[0])
         except (ValueError, IndexError):

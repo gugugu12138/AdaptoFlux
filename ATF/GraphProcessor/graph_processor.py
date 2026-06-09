@@ -813,15 +813,9 @@ class GraphProcessor:
 
         # === 2. 解析旧 ID 获取 layer 和 index 前缀 ===
         # 旧 ID 格式: {layer}_{index}_{method_name} 或 {layer}_{index}_unmatched
-        id_parts = old_node_id.split('_', 2)  # 最多 split 成 3 部分
-        if len(id_parts) < 3:
-            raise ValueError(f"Invalid node ID format: '{old_node_id}'")
-        
-        layer_str, index_str, _ = id_parts
-        try:
-            layer = int(layer_str)
-        except ValueError:
-            raise ValueError(f"Invalid layer in node ID: '{old_node_id}'")
+        layer = self.get_node_layer(old_node_id)
+        if layer < 0:
+            raise ValueError(f"Cannot extract valid layer from node ID: '{old_node_id}'")
 
         # === 3. 生成新 ID ===
         new_base_name = new_method_name  # ✅ 关键：定义 new_base_name
@@ -915,15 +909,12 @@ class GraphProcessor:
 
         return method_counter
 
-    def get_max_layer_from_graph(self):
+    def get_max_layer_from_graph(self) -> int:
         max_layer = 0
-        for node in self.graph.nodes:
-            if node == 'root' or node == 'collapse':
-                continue
-            if isinstance(node, str) and '_' in node:
-                layer = int(node.split('_')[0])
-                if layer > max_layer:
-                    max_layer = layer
+        for node in self.graph.nodes():
+            layer = self.get_node_layer(node)
+            if layer > max_layer:
+                max_layer = layer
         return max_layer
 
     def replace_subgraph_with_graph(
@@ -958,15 +949,9 @@ class GraphProcessor:
         # 提取所有合法的 layer 编号
         valid_layers = []
         for node in subgraph_nodes:
-            if node in ("root", "collapse"):
-                continue
-            parts = node.split('_', 1)
-            if len(parts) >= 1:
-                try:
-                    layer = int(parts[0])
-                    valid_layers.append(layer)
-                except ValueError:
-                    continue  # 忽略无法解析 layer 的节点
+            layer = self.get_node_layer(node)
+            if layer >= 0:  # 自动排除了 root/collapse 返回的 -1
+                valid_layers.append(layer)
 
         # 设定全局偏移：如果有合法 layer，取最小值；否则默认为 0
         global_offset = min(valid_layers) if valid_layers else 0
@@ -1045,3 +1030,36 @@ class GraphProcessor:
         while new_index in existing_indices:
             new_index += 1
         return f"{layer}_{new_index}_{method_name}"
+
+    def get_node_layer(self, node_id: str, graph: Optional[nx.DiGraph] = None) -> int:
+        """
+        安全提取节点层号（带回退机制）
+        
+        优先级:
+            1. 特殊节点 ("root", "collapse") 返回 -1
+            2. 节点属性 'layer'（最可靠，创建节点时显式赋值）
+            3. 从节点ID解析 "{层}_{索引}_{方法}"
+            4. 默认层 0（带警告）
+        """
+        target_graph = graph if graph is not None else self.graph
+        
+        if node_id in ("root", "collapse"):
+            return -1 
+        
+        # 优先级 1: 节点属性
+        node_data = target_graph.nodes.get(node_id, {})
+        if 'layer' in node_data:
+            try:
+                return int(node_data['layer'])
+            except (ValueError, TypeError):
+                pass # 如果属性存在但无法转为 int，则回退到 ID 解析
+        
+        # 优先级 2: 从ID解析
+        try:
+            return int(node_id.split('_')[0])
+        except (ValueError, IndexError):
+            logger.warning(
+                f"Cannot parse layer from node '{node_id}'. Using default layer 0. | "
+                f"无法从节点 '{node_id}' 解析层号，使用默认层 0"
+            )
+            return 0

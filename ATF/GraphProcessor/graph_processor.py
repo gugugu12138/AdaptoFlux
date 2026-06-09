@@ -813,15 +813,9 @@ class GraphProcessor:
 
         # === 2. 解析旧 ID 获取 layer 和 index 前缀 ===
         # 旧 ID 格式: {layer}_{index}_{method_name} 或 {layer}_{index}_unmatched
-        id_parts = old_node_id.split('_', 2)  # 最多 split 成 3 部分
-        if len(id_parts) < 3:
-            raise ValueError(f"Invalid node ID format: '{old_node_id}'")
-        
-        layer_str, index_str, _ = id_parts
-        try:
-            layer = int(layer_str)
-        except ValueError:
-            raise ValueError(f"Invalid layer in node ID: '{old_node_id}'")
+        layer = self.get_node_layer(old_node_id)
+        if layer < 0:
+            raise ValueError(f"Cannot extract valid layer from node ID: '{old_node_id}'")
 
         # === 3. 生成新 ID ===
         new_base_name = new_method_name  # ✅ 关键：定义 new_base_name
@@ -915,27 +909,12 @@ class GraphProcessor:
 
         return method_counter
 
-    def get_max_layer_from_graph(self):
+    def get_max_layer_from_graph(self) -> int:
         max_layer = 0
         for node in self.graph.nodes():
-            try:
-                # 尝试从节点 ID 中提取数字前缀 (例如 "1_pack" -> 1)
-                layer = int(str(node).split('_')[0])
-                if layer > max_layer:
-                    max_layer = layer
-            except (ValueError, IndexError):
-                # 如果节点 ID 不以数字开头（如 'root', 'collapse', 'input_0'）
-                # 尝试从节点的数据字典中读取 'layer' 属性
-                node_data = self.graph.nodes.get(node, {})
-                if 'layer' in node_data:
-                    try:
-                        layer = int(node_data['layer'])
-                        if layer > max_layer:
-                            max_layer = layer
-                    except (ValueError, TypeError):
-                        pass
-                # 如果都没有，则默认该节点为第 0 层或忽略
-                continue
+            layer = self.get_node_layer(node)
+            if layer > max_layer:
+                max_layer = layer
         return max_layer
 
     def replace_subgraph_with_graph(
@@ -970,15 +949,9 @@ class GraphProcessor:
         # 提取所有合法的 layer 编号
         valid_layers = []
         for node in subgraph_nodes:
-            if node in ("root", "collapse"):
-                continue
-            parts = node.split('_', 1)
-            if len(parts) >= 1:
-                try:
-                    layer = int(parts[0])
-                    valid_layers.append(layer)
-                except ValueError:
-                    continue  # 忽略无法解析 layer 的节点
+            layer = self.get_node_layer(node)
+            if layer >= 0:  # 自动排除了 root/collapse 返回的 -1
+                valid_layers.append(layer)
 
         # 设定全局偏移：如果有合法 layer，取最小值；否则默认为 0
         global_offset = min(valid_layers) if valid_layers else 0
@@ -1058,29 +1031,30 @@ class GraphProcessor:
             new_index += 1
         return f"{layer}_{new_index}_{method_name}"
 
-    def get_node_layer(self, node_id: str, graph: nx.DiGraph) -> int:
+    def get_node_layer(self, node_id: str, graph: Optional[nx.DiGraph] = None) -> int:
         """
         安全提取节点层号（带回退机制）
-        Safely extract node layer with fallback mechanisms
         
-        优先级 | Priority:
-            1. 节点属性 'layer'（最可靠）
-               Node attribute 'layer' (most reliable)
-            2. 从节点ID解析 "{层}_{索引}_{方法}"
-               Parse from node ID format "{layer}_{index}_{method}"
-            3. 默认层 0（带警告）
-               Default layer 0 (with warning)
-        
-        修复原实现缺失的 get_node_layer() | Fixes missing get_node_layer() in original implementation
+        优先级:
+            1. 特殊节点 ("root", "collapse") 返回 -1
+            2. 节点属性 'layer'（最可靠，创建节点时显式赋值）
+            3. 从节点ID解析 "{层}_{索引}_{方法}"
+            4. 默认层 0（带警告）
         """
+        target_graph = graph if graph is not None else self.graph
+        
         if node_id in ("root", "collapse"):
-            return -1  # 特殊节点设为 -1 | Special nodes set to -1
+            return -1 
         
-        # 优先级 1: 节点属性 | Priority 1: Node attribute
-        if 'layer' in graph.nodes[node_id]:
-            return graph.nodes[node_id]['layer']
+        # 优先级 1: 节点属性
+        node_data = target_graph.nodes.get(node_id, {})
+        if 'layer' in node_data:
+            try:
+                return int(node_data['layer'])
+            except (ValueError, TypeError):
+                pass # 如果属性存在但无法转为 int，则回退到 ID 解析
         
-        # 优先级 2: 从ID解析 | Priority 2: Parse from ID
+        # 优先级 2: 从ID解析
         try:
             return int(node_id.split('_')[0])
         except (ValueError, IndexError):

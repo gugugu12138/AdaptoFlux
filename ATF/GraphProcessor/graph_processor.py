@@ -1057,3 +1057,35 @@ class GraphProcessor:
         while new_index in existing_indices:
             new_index += 1
         return f"{layer}_{new_index}_{method_name}"
+
+    def get_node_layer(self, node_id: str, graph: nx.DiGraph) -> int:
+        """
+        安全提取节点层号（带回退机制）
+        Safely extract node layer with fallback mechanisms
+        
+        优先级 | Priority:
+            1. 节点属性 'layer'（最可靠）
+               Node attribute 'layer' (most reliable)
+            2. 从节点ID解析 "{层}_{索引}_{方法}"
+               Parse from node ID format "{layer}_{index}_{method}"
+            3. 默认层 0（带警告）
+               Default layer 0 (with warning)
+        
+        修复原实现缺失的 get_node_layer() | Fixes missing get_node_layer() in original implementation
+        """
+        if node_id in ("root", "collapse"):
+            return -1  # 特殊节点设为 -1 | Special nodes set to -1
+        
+        # 优先级 1: 节点属性 | Priority 1: Node attribute
+        if 'layer' in graph.nodes[node_id]:
+            return graph.nodes[node_id]['layer']
+        
+        # 优先级 2: 从ID解析 | Priority 2: Parse from ID
+        try:
+            return int(node_id.split('_')[0])
+        except (ValueError, IndexError):
+            logger.warning(
+                f"Cannot parse layer from node '{node_id}'. Using default layer 0. | "
+                f"无法从节点 '{node_id}' 解析层号，使用默认层 0"
+            )
+            return 0

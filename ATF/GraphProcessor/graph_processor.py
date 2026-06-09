@@ -917,13 +917,25 @@ class GraphProcessor:
 
     def get_max_layer_from_graph(self):
         max_layer = 0
-        for node in self.graph.nodes:
-            if node == 'root' or node == 'collapse':
-                continue
-            if isinstance(node, str) and '_' in node:
-                layer = int(node.split('_')[0])
+        for node in self.graph.nodes():
+            try:
+                # 尝试从节点 ID 中提取数字前缀 (例如 "1_pack" -> 1)
+                layer = int(str(node).split('_')[0])
                 if layer > max_layer:
                     max_layer = layer
+            except (ValueError, IndexError):
+                # 如果节点 ID 不以数字开头（如 'root', 'collapse', 'input_0'）
+                # 尝试从节点的数据字典中读取 'layer' 属性
+                node_data = self.graph.nodes.get(node, {})
+                if 'layer' in node_data:
+                    try:
+                        layer = int(node_data['layer'])
+                        if layer > max_layer:
+                            max_layer = layer
+                    except (ValueError, TypeError):
+                        pass
+                # 如果都没有，则默认该节点为第 0 层或忽略
+                continue
         return max_layer
 
     def replace_subgraph_with_graph(

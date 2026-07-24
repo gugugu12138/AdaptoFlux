@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='utf-8'?>
+<gexf xmlns="http://www.gexf.net/1.2draft" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.gexf.net/1.2draft http://www.gexf.net/1.2draft/gexf.xsd" version="1.2">
+  <meta lastmodifieddate="2026-07-24">
+    <creator>NetworkX 3.4.2</creator>
+  </meta>
+  <graph defaultedgetype="directed" mode="static" name="">
+    <attributes mode="static" class="edge">
+      <attribute id="3" title="output_index" type="long" />
+      <attribute id="4" title="data_coord" type="long" />
+      <attribute id="5" title="data_type" type="string" />
+      <attribute id="6" title="input_slot" type="long" />
+      <attribute id="7" title="networkx_key" type="long" />
+    </attributes>
+    <attributes mode="static" class="node">
+      <attribute id="0" title="method_name" type="string" />
+      <attribute id="1" title="layer" type="long" />
+      <attribute id="2" title="is_passthrough" type="boolean" />
+    </attributes>
+    <nodes>
+      <node id="root" label="root" />
+      <node id="collapse" label="collapse" />
+      <node id="2_0_read_current_pos" label="2_0_read_current_pos">
+        <attvalues>
+          <attvalue for="0" value="read_current_pos" />
+          <attvalue for="1" value="2" />
+          <attvalue for="2" value="false" />
+        </attvalues>
+      </node>
+      <node id="2_0_null" label="2_0_null">
+        <attvalues>
+          <attvalue for="0" value="null" />
+          <attvalue for="1" value="2" />
+          <attvalue for="2" value="true" />
+        </attvalues>
+      </node>
+      <node id="1_1_move_towards_target" label="1_1_move_towards_target">
+        <attvalues>
+          <attvalue for="0" value="move_towards_target" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="false" />
+        </attvalues>
+      </node>
+      <node id="1_0_cos_op" label="1_0_cos_op">
+        <attvalues>
+          <attvalue for="0" value="cos_op" />
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="false" />
+        </attvalues>
+      </node>
+    </nodes>
+    <edges>
+      <edge source="root" target="1_1_move_towards_target" id="0">
+        <attvalues>
+          <attvalue for="3" value="1" />
+          <attvalue for="4" value="1" />
+          <attvalue for="5" value="scalar" />
+          <attvalue for="6" value="0" />
+          <attvalue for="7" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="root" target="1_0_cos_op" id="1">
+        <attvalues>
+          <attvalue for="3" value="0" />
+          <attvalue for="4" value="0" />
+          <attvalue for="5" value="scalar" />
+          <attvalue for="6" value="0" />
+          <attvalue for="7" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="2_0_read_current_pos" target="collapse" id="2">
+        <attvalues>
+          <attvalue for="3" value="0" />
+          <attvalue for="4" value="0" />
+          <attvalue for="5" value="scalar" />
+          <attvalue for="7" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="2_0_null" target="collapse" id="3">
+        <attvalues>
+          <attvalue for="3" value="0" />
+          <attvalue for="4" value="1" />
+          <attvalue for="5" value="scalar" />
+          <attvalue for="7" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="1_1_move_towards_target" target="2_0_null" id="4">
+        <attvalues>
+          <attvalue for="3" value="0" />
+          <attvalue for="4" value="1" />
+          <attvalue for="5" value="scalar" />
+          <attvalue for="6" value="0" />
+          <attvalue for="7" value="0" />
+        </attvalues>
+      </edge>
+      <edge source="1_0_cos_op" target="2_0_read_current_pos" id="5">
+        <attvalues>
+          <attvalue for="3" value="0" />
+          <attvalue for="4" value="0" />
+          <attvalue for="5" value="scalar" />
+          <attvalue for="6" value="0" />
+          <attvalue for="7" value="0" />
+        </attvalues>
+      </edge>
+    </edges>
+  </graph>
+</gexf>

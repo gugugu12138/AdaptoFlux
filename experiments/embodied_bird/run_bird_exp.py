@@ -10,6 +10,8 @@ logging.basicConfig(level=logging.INFO)
             
 import time  # 用于控制帧率
 
+# d:/Research/ATF/.conda/python.exe -m experiments.embodied_bird.run_bird_exp  
+
 def test_oracle(action_interval=5, max_steps=5000, render=True):
     render_mode = "human" if render else None
     env = gym.make("FlappyBird-v0", use_lidar=False, render_mode=render_mode)
@@ -120,7 +122,7 @@ def bird_acc(model, input_data, target):
     return min(survival, 5000) / 5000.0
 
 # === 配置纯 GraphEvo ===
-lg_config = {"max_attempts": 0}
+lg_config = {"max_attempts": 2500}
 ge_config = {
     "verbose": False,
     "init_mode": "loaded",

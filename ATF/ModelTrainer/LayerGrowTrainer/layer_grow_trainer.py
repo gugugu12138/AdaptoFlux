@@ -32,7 +32,8 @@ class LayerGrowTrainer(ModelTrainer):
         custom_accuracy_evaluator=None,   # ← 新增：自定义准确率评估器
         acceptance_strategy=None,  # ← 新增：自定义接受策略
         max_attempts: int = 5,
-        verbose: bool = True
+        verbose: bool = True,
+        **kwargs
     ):
         """
         初始化 LayerGrowTrainer。

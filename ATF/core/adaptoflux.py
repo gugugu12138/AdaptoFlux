@@ -375,7 +375,7 @@ class AdaptoFlux:
 
         # 确保文件夹存在，如果不存在则创建
         if self.methods_path and os.path.exists(self.methods_path):
-            os.makedirs(folder)
+            os.makedirs(folder, exist_ok=True)
 
         # 保存图结构到 graph.gexf（可读性强）
         gexf_file_path = os.path.join(folder, "graph.gexf")

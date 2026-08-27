@@ -2,6 +2,8 @@ import numpy as np
 import random
 import os
 import sys
+import logging
+from datetime import datetime
 
 # 确保项目根目录在 sys.path 中
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -12,6 +14,33 @@ if project_root not in sys.path:
 from ATF.core.adaptoflux import AdaptoFlux
 from ATF.ModelTrainer.GraphEvoTrainer.graph_evo_trainer import GraphEvoTrainer
 from experiments.minimal_stateful_comparison.env import STATE
+
+# ==============================================================================
+# 0. 日志配置 (修复缓冲问题，确保日志文件不为空)
+# ==============================================================================
+log_dir = "experiments/minimal_stateful_comparison/logs"
+os.makedirs(log_dir, exist_ok=True)
+log_filename = os.path.join(log_dir, f"experiment_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
+
+# 显式配置 logger，解决 basicConfig 的缓冲和潜在冲突问题
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# 清除可能存在的旧 handlers (防止重复打印)
+for handler in logger.handlers[:]:
+    logger.removeHandler(handler)
+
+formatter = logging.Formatter('%(asctime)s - %(message)s')
+
+# 1. 文件 Handler
+file_handler = logging.FileHandler(log_filename, encoding='utf-8')
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
+
+# 2. 控制台 Handler
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setFormatter(formatter)
+logger.addHandler(console_handler)
 
 # ==============================================================================
 # 1. 评估函数
@@ -49,7 +78,7 @@ def run_single_experiment(config_name, methods_path, run_id, base_seed):
     random.seed(seed)
     np.random.seed(seed)
     
-    print(f"\n[{config_name.upper()}] Starting Run {run_id+1}/10 (Seed: {seed})...")
+    logging.info(f"\n[{config_name.upper()}] Starting Run {run_id+1}/10 (Seed: {seed})...")
     
     dummy_input = np.array([[0.0, 0.0]], dtype=np.float32)
     
@@ -100,7 +129,7 @@ def run_single_experiment(config_name, methods_path, run_id, base_seed):
     final_loss, final_acc = evaluate_stateful_model(trainer.adaptoflux, num_episodes=100, max_steps=4)
     
     is_success = final_acc >= 0.95
-    print(f"[{config_name.upper()}] Run {run_id+1} Finished. Final Acc: {final_acc*100:.1f}% | {'✅ SUCCESS' if is_success else '❌ FAILED'}")
+    logging.info(f"[{config_name.upper()}] Run {run_id+1} Finished. Final Acc: {final_acc*100:.1f}% | {'✅ SUCCESS' if is_success else '❌ FAILED'}")
     
     return is_success, final_acc
 
@@ -119,9 +148,9 @@ if __name__ == "__main__":
     results_summary = {}
     
     for config_name, methods_path in configs:
-        print("\n" + "="*70)
-        print(f"STARTING EXPERIMENT: {config_name.upper()} ({NUM_RUNS} Runs)")
-        print("="*70)
+        logging.info("\n" + "="*70)
+        logging.info(f"STARTING EXPERIMENT: {config_name.upper()} ({NUM_RUNS} Runs)")
+        logging.info("="*70)
         
         success_count = 0
         acc_list = []
@@ -139,9 +168,16 @@ if __name__ == "__main__":
         }
         
     # 打印最终对比报告
-    print("\n" + "="*70)
-    print("FINAL COMPARISON REPORT (10 Independent Runs)")
-    print("="*70)
+    logging.info("\n" + "="*70)
+    logging.info("FINAL COMPARISON REPORT (10 Independent Runs)")
+    logging.info("="*70)
     for config_name, stats in results_summary.items():
-        print(f"[{config_name.upper()}] Success Rate: {stats['success_count']}/{NUM_RUNS} "
+        logging.info(f"[{config_name.upper()}] Success Rate: {stats['success_count']}/{NUM_RUNS} "
               f"({stats['success_rate']*100:.1f}%) | Avg Final Acc: {stats['avg_acc']*100:.2f}%")
+    
+    logging.info("="*70)
+    logging.info(f"✅ All experiments finished. Log saved to: {log_filename}")
+    logging.info("="*70)
+
+    # 🔥 核心修复：强制刷新缓冲区并关闭所有文件句柄，确保内容完整写入磁盘
+    logging.shutdown()

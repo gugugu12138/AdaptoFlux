@@ -24,3 +24,4 @@ results/
 best_models/
 experiments/embodied_bird/results/
 !experiments/embodied_snake/snake.json
+!experiments/minimal_stateful_comparison/results

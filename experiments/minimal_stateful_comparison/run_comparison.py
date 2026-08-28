@@ -4,6 +4,7 @@ import os
 import sys
 import logging
 from datetime import datetime
+import matplotlib.pyplot as plt  # 🔥 新增：引入绘图库
 
 # 确保项目根目录在 sys.path 中
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -22,22 +23,18 @@ log_dir = "experiments/minimal_stateful_comparison/logs"
 os.makedirs(log_dir, exist_ok=True)
 log_filename = os.path.join(log_dir, f"experiment_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
 
-# 显式配置 logger，解决 basicConfig 的缓冲和潜在冲突问题
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-# 清除可能存在的旧 handlers (防止重复打印)
 for handler in logger.handlers[:]:
     logger.removeHandler(handler)
 
 formatter = logging.Formatter('%(asctime)s - %(message)s')
 
-# 1. 文件 Handler
 file_handler = logging.FileHandler(log_filename, encoding='utf-8')
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
-# 2. 控制台 Handler
 console_handler = logging.StreamHandler(sys.stdout)
 console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
@@ -60,7 +57,6 @@ def evaluate_stateful_model(model, num_episodes=100, max_steps=4):
         total_distance += dist
     return float(total_distance / num_episodes), float(success_count / num_episodes)
 
-# 训练时使用 20 episodes 评估以加速，最终验证使用 100 episodes
 def stateful_success_loss(model, input_data, target):
     loss, _ = evaluate_stateful_model(model, num_episodes=20, max_steps=4)
     return loss
@@ -73,7 +69,6 @@ def stateful_accuracy(model, input_data, target):
 # 2. 单次训练与评估函数
 # ==============================================================================
 def run_single_experiment(config_name, methods_path, run_id, base_seed):
-    # 🔥 核心：设置相同的随机种子，确保两种配置面对完全相同的随机初始化序列
     seed = base_seed + run_id
     random.seed(seed)
     np.random.seed(seed)
@@ -81,8 +76,6 @@ def run_single_experiment(config_name, methods_path, run_id, base_seed):
     logging.info(f"\n[{config_name.upper()}] Starting Run {run_id+1}/10 (Seed: {seed})...")
     
     dummy_input = np.array([[0.0, 0.0]], dtype=np.float32)
-    
-    # 根据配置决定 Root 节点的输入类型
     input_types = ['pos_type', 'target_type'] if config_name == "constrained" else ['scalar', 'scalar']
         
     af = AdaptoFlux(
@@ -93,7 +86,7 @@ def run_single_experiment(config_name, methods_path, run_id, base_seed):
     )
     
     ge_config = {
-        "verbose": False, # 关闭详细日志，保持输出整洁
+        "verbose": False,
         "init_mode": "fixed",
         "max_init_layers": 3,
         "num_initial_models": 3,
@@ -114,7 +107,6 @@ def run_single_experiment(config_name, methods_path, run_id, base_seed):
         **ge_config
     )
     
-    # 训练
     trainer.train(
         input_data=dummy_input,
         target=np.array([0.0]),
@@ -125,7 +117,6 @@ def run_single_experiment(config_name, methods_path, run_id, base_seed):
         model_save_path=save_dir
     )
     
-    # 最终严格验证 (100 episodes)
     final_loss, final_acc = evaluate_stateful_model(trainer.adaptoflux, num_episodes=100, max_steps=4)
     
     is_success = final_acc >= 0.95
@@ -134,7 +125,67 @@ def run_single_experiment(config_name, methods_path, run_id, base_seed):
     return is_success, final_acc
 
 # ==============================================================================
-# 3. 主执行逻辑
+# 3. 绘图函数 (🔥 新增)
+# ==============================================================================
+def plot_experiment_results(results_summary, save_dir="experiments/minimal_stateful_comparison/results"):
+    os.makedirs(save_dir, exist_ok=True)
+    
+    # 创建 1x2 的子图布局
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4.5))
+    
+    labels = ['Unconstrained\nBaseline', 'Type-Constrained\nAdaptoFlux']
+    success_rates = [
+        results_summary['unconstrained']['success_rate'] * 100, 
+        results_summary['constrained']['success_rate'] * 100
+    ]
+    
+    # --- 图 1: 成功率对比柱状图 ---
+    colors = ['#d62728', '#2ca02c'] # 红色(失败), 绿色(成功)
+    bars = ax1.bar(labels, success_rates, color=colors, alpha=0.85, edgecolor='black', linewidth=1.2)
+    ax1.set_ylabel('Success Rate (%)', fontsize=11, fontweight='bold')
+    ax1.set_ylim(0, 105)
+    ax1.set_title('Automatic Synthesis Success Rate\n(10 Independent Runs)', fontsize=12, fontweight='bold')
+    ax1.grid(axis='y', linestyle='--', alpha=0.6)
+    
+    # 在柱状图上方添加具体数值标签
+    for bar in bars:
+        yval = bar.get_height()
+        ax1.text(bar.get_x() + bar.get_width()/2, yval + 3, f'{yval:.0f}%', 
+                 ha='center', va='bottom', fontsize=12, fontweight='bold', color='black')
+        
+    # --- 图 2: 每次运行的准确率分布 ---
+    ax2.set_ylabel('Final Accuracy (%)', fontsize=11, fontweight='bold')
+    ax2.set_ylim(-5, 105)
+    ax2.set_title('Final Accuracy per Independent Run', fontsize=12, fontweight='bold')
+    
+    # 绘制 95% 成功阈值线
+    ax2.axhline(95, color='gray', linestyle='--', linewidth=1.5, label='Success Threshold (95%)')
+    
+    runs = np.arange(1, 11)
+    acc_unconstrained = [acc * 100 for acc in results_summary['unconstrained']['acc_per_run']]
+    acc_constrained = [acc * 100 for acc in results_summary['constrained']['acc_per_run']]
+    
+    # 绘制折线和散点
+    ax2.plot(runs, acc_unconstrained, marker='o', color=colors[0], label='Unconstrained', linestyle='--', alpha=0.7)
+    ax2.plot(runs, acc_constrained, marker='s', color=colors[1], label='Type-Constrained', linestyle='-', linewidth=2)
+    
+    ax2.scatter(runs, acc_unconstrained, color=colors[0], s=50, zorder=5)
+    ax2.scatter(runs, acc_constrained, color=colors[1], s=50, zorder=5)
+    
+    ax2.set_xticks(runs)
+    ax2.set_xlabel('Run Index (Random Seed)', fontsize=11, fontweight='bold')
+    ax2.legend(loc='lower right', fontsize=10)
+    ax2.grid(axis='y', linestyle='--', alpha=0.6)
+    
+    # 保存图像
+    plt.tight_layout()
+    save_path = os.path.join(save_dir, "stateful_synthesis_comparison.png")
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    logging.info(f"📊 Experiment plot successfully saved to: {save_path}")
+    plt.close()
+
+# ==============================================================================
+# 4. 主执行逻辑
 # ==============================================================================
 if __name__ == "__main__":
     NUM_RUNS = 10
@@ -161,10 +212,12 @@ if __name__ == "__main__":
                 success_count += 1
             acc_list.append(final_acc)
             
+        # 🔥 修改：将每次运行的准确率列表也存入字典，供绘图使用
         results_summary[config_name] = {
             "success_rate": success_count / NUM_RUNS,
             "success_count": success_count,
-            "avg_acc": np.mean(acc_list)
+            "avg_acc": np.mean(acc_list),
+            "acc_per_run": acc_list  
         }
         
     # 打印最终对比报告
@@ -179,5 +232,8 @@ if __name__ == "__main__":
     logging.info(f"✅ All experiments finished. Log saved to: {log_filename}")
     logging.info("="*70)
 
-    # 🔥 核心修复：强制刷新缓冲区并关闭所有文件句柄，确保内容完整写入磁盘
+    # 🔥 新增：调用绘图函数生成论文用图
+    plot_experiment_results(results_summary)
+
+    # 强制刷新缓冲区并关闭所有文件句柄
     logging.shutdown()

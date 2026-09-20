@@ -1,0 +1,7 @@
+model_path,num_cores,avg_latency_ms,throughput_samples_per_sec,std_latency_ms,timestamp,cpu_util_percent,memory_mb,python_version,graph_node_count,thread_count_before,thread_count_after,use_sleep,flamegraph_file
+experiments/PipelineParallel_exp2/models\model_8,8,26.349640,37.951183,0.0,2025-11-03 16:31:59,2.6,121.6,3.12.9,90,1,1,False,experiments/PipelineParallel_exp2/results/flamegraph\model_8_nosleep.svg
+experiments/PipelineParallel_exp2/models\model_8,8,1539.213720,0.649682,0.0,2025-11-03 16:32:45,16.7,122.2,3.12.9,90,1,1,True,experiments/PipelineParallel_exp2/results/flamegraph\model_8_sleep.svg
+experiments/PipelineParallel_exp2/models\model_14,8,51.048480,19.589222,0.0,2025-11-03 16:33:17,5.9,122.7,3.12.9,184,1,1,False,experiments/PipelineParallel_exp2/results/flamegraph\model_14_nosleep.svg
+experiments/PipelineParallel_exp2/models\model_14,8,3080.312960,0.324642,0.0,2025-11-03 16:34:40,19.7,123.2,3.12.9,184,1,1,True,experiments/PipelineParallel_exp2/results/flamegraph\model_14_sleep.svg
+experiments/PipelineParallel_exp2/models\model_21,8,51.671520,19.353021,0.0,2025-11-03 16:35:11,6.5,123.2,3.12.9,215,1,1,False,experiments/PipelineParallel_exp2/results/flamegraph\model_21_nosleep.svg
+experiments/PipelineParallel_exp2/models\model_21,8,4203.373640,0.237904,0.0,2025-11-03 16:37:03,17.1,123.6,3.12.9,215,1,1,True,experiments/PipelineParallel_exp2/results/flamegraph\model_21_sleep.svg

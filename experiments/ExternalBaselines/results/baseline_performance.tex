@@ -1,0 +1,50 @@
+\begin{table}[H]
+\centering
+\caption{Baseline performance of gplearn, PySR, and XGBoost (best of 10 runs)}
+\label{tab:baselines_gp_pysr}
+\begin{tabular}{lcccc}
+\toprule
+Task & Method & Exact? & MSE & Runtime (s) \\
+\midrule
+\multirow{3}{*}{E_mc2}
+& Gplearn & \textbf{Yes} & 8.3e-12 & 17.86 \\
+& PySR & \textbf{Yes} & 8.3e-12 & 20.29 \\
+& Xgboost & No & 1.5e+02 & 0.04 \\
+\midrule
+\multirow{3}{*}{F_ma}
+& Gplearn & \textbf{Yes} & 1.9e-13 & 16.40 \\
+& PySR & \textbf{Yes} & 2.1e-12 & 20.49 \\
+& Xgboost & No & 2.5e+01 & 724.38 \\
+\midrule
+\multirow{3}{*}{KE}
+& Gplearn & No & 3.4e-11 & 72.71 \\
+& PySR & No & 3.4e-11 & 20.31 \\
+& Xgboost & No & 3.9e+02 & 0.03 \\
+\midrule
+\multirow{3}{*}{Coulomb}
+& Gplearn & \textbf{Yes} & 6.8e-14 & 10.49 \\
+& PySR & \textbf{Yes} & 2.7e-13 & 20.46 \\
+& Xgboost & No & 6.4 & 0.02 \\
+\midrule
+\multirow{3}{*}{IdealGas}
+& Gplearn & No & 1e-10 & 122.72 \\
+& PySR & No & 2.2e-10 & 20.32 \\
+& Xgboost & No & 4.5e+03 & 0.05 \\
+\midrule
+\multirow{3}{*}{OhmsLaw}
+& Gplearn & \textbf{Yes} & 2.2e-13 & 9.24 \\
+& PySR & \textbf{Yes} & 2.2e-13 & 20.40 \\
+& Xgboost & No & 9.6 & 0.03 \\
+\midrule
+\multirow{3}{*}{Acceleration}
+& Gplearn & \textbf{Yes} & 3.9e-14 & 28.84 \\
+& PySR & \textbf{Yes} & 1.1e-13 & 20.46 \\
+& Xgboost & No & 1.7 & 0.04 \\
+\midrule
+\multirow{3}{*}{Power}
+& Gplearn & \textbf{Yes} & 8e-13 & 116.68 \\
+& PySR & \textbf{Yes} & 1e-12 & 20.20 \\
+& Xgboost & No & 3.1e+01 & 0.03 \\
+\bottomrule
+\end{tabular}
+\end{table}

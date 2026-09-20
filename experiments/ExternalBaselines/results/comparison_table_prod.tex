@@ -1,0 +1,27 @@
+\begin{table}[h]
+\centering
+\caption{Parameter-free symbolic regression with collapse=prod (best of 10 runs)}
+\label{tab:baselines_prod}
+\begin{tabular}{lccccc}
+\toprule
+Task & Exact? & MSE & Runtime (s) & Method Pool & Notes \\
+\midrule
+E_mc2 & No & 2e-11 & 0.1 & 5 & Supports actions \\
+\midrule
+F_ma & \textbf{Yes} & 2e-13 & 0.0 & 5 & Supports actions \\
+\midrule
+KE & No & 2e-11 & 0.1 & 5 & Supports actions \\
+\midrule
+Coulomb & No & 9e+00 & 6.0 & 5 & Supports actions \\
+\midrule
+IdealGas & No & 2e+04 & 19.8 & 8 & Supports actions \\
+\midrule
+OhmsLaw & \textbf{Yes} & 2e-13 & 0.0 & 5 & Supports actions \\
+\midrule
+Acceleration & No & 5e+00 & 11.2 & 7 & Supports actions \\
+\midrule
+Power & \textbf{Yes} & 8e-13 & 0.0 & 5 & Supports actions \\
+\midrule
+\bottomrule
+\end{tabular}
+\end{table}

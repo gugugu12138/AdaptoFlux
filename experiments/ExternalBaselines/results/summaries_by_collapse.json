@@ -1,0 +1,488 @@
+{
+  "first": {
+    "E_mc2": {
+      "adaptoflux": {
+        "exact_match": false,
+        "method_pool_size": 5,
+        "supports_side_effects": true,
+        "mse": 1551.9152402489615,
+        "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/first_run_4",
+        "collapse_mode": "first",
+        "runtime_sec": 3.9974899291992188
+      },
+      "gplearn": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "xgboost": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "ground_truth": "m * c**2"
+    },
+    "F_ma": {
+      "adaptoflux": {
+        "exact_match": true,
+        "method_pool_size": 5,
+        "supports_side_effects": true,
+        "mse": 2.76543232757831e-12,
+        "save_path": "experiments/ExternalBaselines/saved_models/F_ma/first_run_1",
+        "collapse_mode": "first",
+        "runtime_sec": 0.323793888092041
+      },
+      "gplearn": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "xgboost": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "ground_truth": "m * a"
+    },
+    "KE": {
+      "adaptoflux": {
+        "exact_match": false,
+        "method_pool_size": 8,
+        "supports_side_effects": true,
+        "mse": 3709.2928767456424,
+        "save_path": "experiments/ExternalBaselines/saved_models/KE/first_run_6",
+        "collapse_mode": "first",
+        "runtime_sec": 42.008381366729736
+      },
+      "gplearn": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "xgboost": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "ground_truth": "0.5 * m * v**2"
+    },
+    "Coulomb": {
+      "adaptoflux": {
+        "exact_match": false,
+        "method_pool_size": 7,
+        "supports_side_effects": true,
+        "mse": 11.912280822679406,
+        "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/first_run_0",
+        "collapse_mode": "first",
+        "runtime_sec": 13.126680135726929
+      },
+      "gplearn": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "xgboost": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "ground_truth": "q1 * q2 / r**2"
+    },
+    "IdealGas": {
+      "adaptoflux": {
+        "exact_match": false,
+        "method_pool_size": 7,
+        "supports_side_effects": true,
+        "mse": 34726.85318340354,
+        "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/first_run_1",
+        "collapse_mode": "first",
+        "runtime_sec": 11.04674768447876
+      },
+      "gplearn": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "xgboost": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "ground_truth": "n * T / V"
+    },
+    "OhmsLaw": {
+      "adaptoflux": {
+        "exact_match": true,
+        "method_pool_size": 5,
+        "supports_side_effects": true,
+        "mse": 5.275069270282983e-13,
+        "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/first_run_8",
+        "collapse_mode": "first",
+        "runtime_sec": 0.3841545581817627
+      },
+      "gplearn": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "xgboost": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "ground_truth": "I * R"
+    },
+    "Acceleration": {
+      "adaptoflux": {
+        "exact_match": false,
+        "method_pool_size": 7,
+        "supports_side_effects": true,
+        "mse": 6.684667083000545,
+        "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/first_run_2",
+        "collapse_mode": "first",
+        "runtime_sec": 10.693094491958618
+      },
+      "gplearn": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "xgboost": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "ground_truth": "(v2 - v1) / t"
+    },
+    "Power": {
+      "adaptoflux": {
+        "exact_match": true,
+        "method_pool_size": 5,
+        "supports_side_effects": true,
+        "mse": 1.4938450476620347e-12,
+        "save_path": "experiments/ExternalBaselines/saved_models/Power/first_run_4",
+        "collapse_mode": "first",
+        "runtime_sec": 0.3587226867675781
+      },
+      "gplearn": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "xgboost": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "ground_truth": "V * I"
+    }
+  },
+  "prod": {
+    "E_mc2": {
+      "adaptoflux": {
+        "exact_match": false,
+        "method_pool_size": 5,
+        "supports_side_effects": true,
+        "mse": 1.58638613356743e-11,
+        "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/prod_run_5",
+        "collapse_mode": "prod",
+        "runtime_sec": 0.07275652885437012
+      },
+      "gplearn": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "xgboost": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "ground_truth": "m * c**2"
+    },
+    "F_ma": {
+      "adaptoflux": {
+        "exact_match": true,
+        "method_pool_size": 5,
+        "supports_side_effects": true,
+        "mse": 1.9326762412674725e-13,
+        "save_path": "experiments/ExternalBaselines/saved_models/F_ma/prod_run_5",
+        "collapse_mode": "prod",
+        "runtime_sec": 0.014382123947143555
+      },
+      "gplearn": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "xgboost": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "ground_truth": "m * a"
+    },
+    "KE": {
+      "adaptoflux": {
+        "exact_match": false,
+        "method_pool_size": 5,
+        "supports_side_effects": true,
+        "mse": 2.2710802162484444e-11,
+        "save_path": "experiments/ExternalBaselines/saved_models/KE/prod_run_4",
+        "collapse_mode": "prod",
+        "runtime_sec": 0.06929731369018555
+      },
+      "gplearn": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "xgboost": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "ground_truth": "0.5 * m * v**2"
+    },
+    "Coulomb": {
+      "adaptoflux": {
+        "exact_match": false,
+        "method_pool_size": 5,
+        "supports_side_effects": true,
+        "mse": 9.401370756697037,
+        "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/prod_run_3",
+        "collapse_mode": "prod",
+        "runtime_sec": 5.952756643295288
+      },
+      "gplearn": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "xgboost": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "ground_truth": "q1 * q2 / r**2"
+    },
+    "IdealGas": {
+      "adaptoflux": {
+        "exact_match": false,
+        "method_pool_size": 8,
+        "supports_side_effects": true,
+        "mse": 22494.019673542884,
+        "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/prod_run_9",
+        "collapse_mode": "prod",
+        "runtime_sec": 19.79173755645752
+      },
+      "gplearn": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "xgboost": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "ground_truth": "n * T / V"
+    },
+    "OhmsLaw": {
+      "adaptoflux": {
+        "exact_match": true,
+        "method_pool_size": 5,
+        "supports_side_effects": true,
+        "mse": 2.2112089936854318e-13,
+        "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/prod_run_3",
+        "collapse_mode": "prod",
+        "runtime_sec": 0.01633000373840332
+      },
+      "gplearn": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "xgboost": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "ground_truth": "I * R"
+    },
+    "Acceleration": {
+      "adaptoflux": {
+        "exact_match": false,
+        "method_pool_size": 7,
+        "supports_side_effects": true,
+        "mse": 5.381202298085844,
+        "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/prod_run_4",
+        "collapse_mode": "prod",
+        "runtime_sec": 11.160422086715698
+      },
+      "gplearn": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "xgboost": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "ground_truth": "(v2 - v1) / t"
+    },
+    "Power": {
+      "adaptoflux": {
+        "exact_match": true,
+        "method_pool_size": 5,
+        "supports_side_effects": true,
+        "mse": 8.049028110690415e-13,
+        "save_path": "experiments/ExternalBaselines/saved_models/Power/prod_run_0",
+        "collapse_mode": "prod",
+        "runtime_sec": 0.013664960861206055
+      },
+      "gplearn": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "xgboost": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "ground_truth": "V * I"
+    }
+  },
+  "sum": {
+    "E_mc2": {
+      "adaptoflux": {
+        "exact_match": false,
+        "method_pool_size": 8,
+        "supports_side_effects": true,
+        "mse": 7.730069398576652,
+        "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/sum_run_9",
+        "collapse_mode": "sum",
+        "runtime_sec": 532.0693185329437
+      },
+      "gplearn": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "xgboost": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "ground_truth": "m * c**2"
+    },
+    "F_ma": {
+      "adaptoflux": {
+        "exact_match": false,
+        "method_pool_size": 7,
+        "supports_side_effects": true,
+        "mse": 41.10708478937572,
+        "save_path": "experiments/ExternalBaselines/saved_models/F_ma/sum_run_7",
+        "collapse_mode": "sum",
+        "runtime_sec": 6.425346851348877
+      },
+      "gplearn": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "xgboost": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "ground_truth": "m * a"
+    },
+    "KE": {
+      "adaptoflux": {
+        "exact_match": false,
+        "method_pool_size": 8,
+        "supports_side_effects": true,
+        "mse": 784.0507841956008,
+        "save_path": "experiments/ExternalBaselines/saved_models/KE/sum_run_9",
+        "collapse_mode": "sum",
+        "runtime_sec": 39.94125270843506
+      },
+      "gplearn": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "xgboost": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "ground_truth": "0.5 * m * v**2"
+    },
+    "Coulomb": {
+      "adaptoflux": {
+        "exact_match": false,
+        "method_pool_size": 6,
+        "supports_side_effects": true,
+        "mse": 9.734758270826667,
+        "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/sum_run_7",
+        "collapse_mode": "sum",
+        "runtime_sec": 8.569337606430054
+      },
+      "gplearn": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "xgboost": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "ground_truth": "q1 * q2 / r**2"
+    },
+    "IdealGas": {
+      "adaptoflux": {
+        "exact_match": false,
+        "method_pool_size": 5,
+        "supports_side_effects": true,
+        "mse": 31383.121105912076,
+        "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/sum_run_7",
+        "collapse_mode": "sum",
+        "runtime_sec": 2.1913583278656006
+      },
+      "gplearn": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "xgboost": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "ground_truth": "n * T / V"
+    },
+    "OhmsLaw": {
+      "adaptoflux": {
+        "exact_match": true,
+        "method_pool_size": 5,
+        "supports_side_effects": true,
+        "mse": 1.255671122635249e-12,
+        "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/sum_run_1",
+        "collapse_mode": "sum",
+        "runtime_sec": 0.4807474613189697
+      },
+      "gplearn": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "xgboost": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "ground_truth": "I * R"
+    },
+    "Acceleration": {
+      "adaptoflux": {
+        "exact_match": false,
+        "method_pool_size": 6,
+        "supports_side_effects": true,
+        "mse": 9.575030246774448,
+        "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/sum_run_0",
+        "collapse_mode": "sum",
+        "runtime_sec": 9.683903455734253
+      },
+      "gplearn": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "xgboost": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "ground_truth": "(v2 - v1) / t"
+    },
+    "Power": {
+      "adaptoflux": {
+        "exact_match": true,
+        "method_pool_size": 5,
+        "supports_side_effects": true,
+        "mse": 1.7553603015585394e-12,
+        "save_path": "experiments/ExternalBaselines/saved_models/Power/sum_run_7",
+        "collapse_mode": "sum",
+        "runtime_sec": 1.604841709136963
+      },
+      "gplearn": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "xgboost": {
+        "exact_match": false,
+        "mse": 0.0
+      },
+      "ground_truth": "V * I"
+    }
+  }
+}

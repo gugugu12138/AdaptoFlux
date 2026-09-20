@@ -1,0 +1,42 @@
+\begin{table}[H]
+\centering
+\caption{Symbolic expressions recovered by gplearn and PySR}
+\label{tab:symbolic_expressions}
+\begin{tabular}{lcl}
+\toprule
+Task & Method & Expression \\
+\midrule
+\multirow{2}{*}{E_mc2}
+& gplearn & \texttt{mul(mul(X1, X0), X1)} \\
+& PySR & \texttt{x0*x1*x1} \\
+\midrule
+\multirow{2}{*}{F_ma}
+& gplearn & \texttt{mul(X0, X1)} \\
+& PySR & \texttt{x0*x1 - 0.027047554 - 1*(-0.027047586)} \\
+\midrule
+\multirow{2}{*}{KE}
+& gplearn & \texttt{mul(mul(X2, X1), mul(X0, X1))} \\
+& PySR & \texttt{x0*x1*x1*x2} \\
+\midrule
+\multirow{2}{*}{Coulomb}
+& gplearn & \texttt{div(mul(div(X1, X2), X0), X2)} \\
+& PySR & \texttt{x0/((x2/((x1/x2))))} \\
+\midrule
+\multirow{2}{*}{IdealGas}
+& gplearn & \texttt{div(X1, div(X2, X0))} \\
+& PySR & \texttt{x0*x1/x2} \\
+\midrule
+\multirow{2}{*}{OhmsLaw}
+& gplearn & \texttt{mul(X0, X1)} \\
+& PySR & \texttt{x0*x1 - (-x0 + x0 - x1 + x1)} \\
+\midrule
+\multirow{2}{*}{Acceleration}
+& gplearn & \texttt{div(sub(X1, X0), X2)} \\
+& PySR & \texttt{(-x0 + x1 - 6.078859e-6/(x2/((x2/(-16.520508)))))/x2} \\
+\midrule
+\multirow{2}{*}{Power}
+& gplearn & \texttt{mul(X1, X0)} \\
+& PySR & \texttt{x1*(x0 - 1*0.99999976) + x1} \\
+\bottomrule
+\end{tabular}
+\end{table}

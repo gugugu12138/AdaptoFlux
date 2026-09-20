@@ -1,0 +1,5096 @@
+{
+  "first": {
+    "E_mc2": [
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 4308.482322000999,
+          "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/first_run_0",
+          "collapse_mode": "first",
+          "runtime_sec": 0.05161595344543457
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 1.6555076753910214e-11,
+          "expression": "mul(mul(X1, X1), X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 117.48092651367188
+        },
+        "ground_truth": "m * c**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 3172.8332825698167,
+          "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/first_run_1",
+          "collapse_mode": "first",
+          "runtime_sec": 4.33293080329895
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 1.6555076753910214e-11,
+          "expression": "mul(mul(X1, X1), X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 117.48092651367188
+        },
+        "ground_truth": "m * c**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 3507.7996025203947,
+          "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/first_run_2",
+          "collapse_mode": "first",
+          "runtime_sec": 4.323726177215576
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 1.6555076753910214e-11,
+          "expression": "mul(mul(X1, X1), X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 117.48092651367188
+        },
+        "ground_truth": "m * c**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 4302.615690411698,
+          "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/first_run_3",
+          "collapse_mode": "first",
+          "runtime_sec": 1.693690538406372
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 1.6555076753910214e-11,
+          "expression": "mul(mul(X1, X1), X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 117.48092651367188
+        },
+        "ground_truth": "m * c**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 1551.9152402489615,
+          "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/first_run_4",
+          "collapse_mode": "first",
+          "runtime_sec": 3.9974899291992188
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 1.6555076753910214e-11,
+          "expression": "mul(mul(X1, X1), X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 117.48092651367188
+        },
+        "ground_truth": "m * c**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 3440.3788093795606,
+          "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/first_run_5",
+          "collapse_mode": "first",
+          "runtime_sec": 3.0089352130889893
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 1.6555076753910214e-11,
+          "expression": "mul(mul(X1, X1), X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 117.48092651367188
+        },
+        "ground_truth": "m * c**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 3109.167806497026,
+          "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/first_run_6",
+          "collapse_mode": "first",
+          "runtime_sec": 4.262500286102295
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 1.6555076753910214e-11,
+          "expression": "mul(mul(X1, X1), X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 117.48092651367188
+        },
+        "ground_truth": "m * c**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 4278.614095662026,
+          "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/first_run_7",
+          "collapse_mode": "first",
+          "runtime_sec": 4.424565076828003
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 1.6555076753910214e-11,
+          "expression": "mul(mul(X1, X1), X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 117.48092651367188
+        },
+        "ground_truth": "m * c**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 5750.466750814929,
+          "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/first_run_8",
+          "collapse_mode": "first",
+          "runtime_sec": 0.0458221435546875
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 1.6555076753910214e-11,
+          "expression": "mul(mul(X1, X1), X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 117.48092651367188
+        },
+        "ground_truth": "m * c**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 1627.6716038922843,
+          "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/first_run_9",
+          "collapse_mode": "first",
+          "runtime_sec": 4.875339984893799
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 1.6555076753910214e-11,
+          "expression": "mul(mul(X1, X1), X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 117.48092651367188
+        },
+        "ground_truth": "m * c**2"
+      }
+    ],
+    "F_ma": [
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 6,
+          "supports_side_effects": true,
+          "mse": 35.29661527831513,
+          "save_path": "experiments/ExternalBaselines/saved_models/F_ma/first_run_0",
+          "collapse_mode": "first",
+          "runtime_sec": 6.0496745109558105
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 7.276046627181787e-13,
+          "expression": "mul(X1, X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 21.502296447753906
+        },
+        "ground_truth": "m * a"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 2.76543232757831e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/F_ma/first_run_1",
+          "collapse_mode": "first",
+          "runtime_sec": 0.323793888092041
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 7.276046627181787e-13,
+          "expression": "mul(X1, X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 21.502296447753906
+        },
+        "ground_truth": "m * a"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 666.0825805950824,
+          "save_path": "experiments/ExternalBaselines/saved_models/F_ma/first_run_2",
+          "collapse_mode": "first",
+          "runtime_sec": 0.6322221755981445
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 7.276046627181787e-13,
+          "expression": "mul(X1, X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 21.502296447753906
+        },
+        "ground_truth": "m * a"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 334.77767686765173,
+          "save_path": "experiments/ExternalBaselines/saved_models/F_ma/first_run_3",
+          "collapse_mode": "first",
+          "runtime_sec": 23.64147925376892
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 7.276046627181787e-13,
+          "expression": "mul(X1, X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 21.502296447753906
+        },
+        "ground_truth": "m * a"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 327.9312610608946,
+          "save_path": "experiments/ExternalBaselines/saved_models/F_ma/first_run_4",
+          "collapse_mode": "first",
+          "runtime_sec": 1.0956289768218994
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 7.276046627181787e-13,
+          "expression": "mul(X1, X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 21.502296447753906
+        },
+        "ground_truth": "m * a"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 925.7916064194054,
+          "save_path": "experiments/ExternalBaselines/saved_models/F_ma/first_run_5",
+          "collapse_mode": "first",
+          "runtime_sec": 0.042729854583740234
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 7.276046627181787e-13,
+          "expression": "mul(X1, X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 21.502296447753906
+        },
+        "ground_truth": "m * a"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 5.431957106338814e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/F_ma/first_run_6",
+          "collapse_mode": "first",
+          "runtime_sec": 0.7565028667449951
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 7.276046627181787e-13,
+          "expression": "mul(X1, X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 21.502296447753906
+        },
+        "ground_truth": "m * a"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 803.2710213576017,
+          "save_path": "experiments/ExternalBaselines/saved_models/F_ma/first_run_7",
+          "collapse_mode": "first",
+          "runtime_sec": 0.3652064800262451
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 7.276046627181787e-13,
+          "expression": "mul(X1, X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 21.502296447753906
+        },
+        "ground_truth": "m * a"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 726.8110897310765,
+          "save_path": "experiments/ExternalBaselines/saved_models/F_ma/first_run_8",
+          "collapse_mode": "first",
+          "runtime_sec": 0.9632923603057861
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 7.276046627181787e-13,
+          "expression": "mul(X1, X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 21.502296447753906
+        },
+        "ground_truth": "m * a"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 490.8738607745725,
+          "save_path": "experiments/ExternalBaselines/saved_models/F_ma/first_run_9",
+          "collapse_mode": "first",
+          "runtime_sec": 0.03921198844909668
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 7.276046627181787e-13,
+          "expression": "mul(X1, X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 21.502296447753906
+        },
+        "ground_truth": "m * a"
+      }
+    ],
+    "KE": [
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 6,
+          "supports_side_effects": true,
+          "mse": 14260.059934138486,
+          "save_path": "experiments/ExternalBaselines/saved_models/KE/first_run_0",
+          "collapse_mode": "first",
+          "runtime_sec": 7.3970324993133545
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 4.674859457876046e-11,
+          "expression": "mul(mul(X1, X0), mul(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 453.8609619140625
+        },
+        "ground_truth": "0.5 * m * v**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 10125.665388716507,
+          "save_path": "experiments/ExternalBaselines/saved_models/KE/first_run_1",
+          "collapse_mode": "first",
+          "runtime_sec": 9.866820335388184
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 4.674859457876046e-11,
+          "expression": "mul(mul(X1, X0), mul(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 453.8609619140625
+        },
+        "ground_truth": "0.5 * m * v**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 10218.435238927263,
+          "save_path": "experiments/ExternalBaselines/saved_models/KE/first_run_2",
+          "collapse_mode": "first",
+          "runtime_sec": 17.884596347808838
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 4.674859457876046e-11,
+          "expression": "mul(mul(X1, X0), mul(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 453.8609619140625
+        },
+        "ground_truth": "0.5 * m * v**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 14973.500192445514,
+          "save_path": "experiments/ExternalBaselines/saved_models/KE/first_run_3",
+          "collapse_mode": "first",
+          "runtime_sec": 4.733367919921875
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 4.674859457876046e-11,
+          "expression": "mul(mul(X1, X0), mul(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 453.8609619140625
+        },
+        "ground_truth": "0.5 * m * v**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 4285.695599172479,
+          "save_path": "experiments/ExternalBaselines/saved_models/KE/first_run_4",
+          "collapse_mode": "first",
+          "runtime_sec": 6.076525449752808
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 4.674859457876046e-11,
+          "expression": "mul(mul(X1, X0), mul(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 453.8609619140625
+        },
+        "ground_truth": "0.5 * m * v**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 6,
+          "supports_side_effects": true,
+          "mse": 18059.50061356093,
+          "save_path": "experiments/ExternalBaselines/saved_models/KE/first_run_5",
+          "collapse_mode": "first",
+          "runtime_sec": 2.9288344383239746
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 4.674859457876046e-11,
+          "expression": "mul(mul(X1, X0), mul(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 453.8609619140625
+        },
+        "ground_truth": "0.5 * m * v**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 3709.2928767456424,
+          "save_path": "experiments/ExternalBaselines/saved_models/KE/first_run_6",
+          "collapse_mode": "first",
+          "runtime_sec": 42.008381366729736
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 4.674859457876046e-11,
+          "expression": "mul(mul(X1, X0), mul(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 453.8609619140625
+        },
+        "ground_truth": "0.5 * m * v**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 20870.389354314328,
+          "save_path": "experiments/ExternalBaselines/saved_models/KE/first_run_7",
+          "collapse_mode": "first",
+          "runtime_sec": 5.243479013442993
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 4.674859457876046e-11,
+          "expression": "mul(mul(X1, X0), mul(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 453.8609619140625
+        },
+        "ground_truth": "0.5 * m * v**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 11502.16193186759,
+          "save_path": "experiments/ExternalBaselines/saved_models/KE/first_run_8",
+          "collapse_mode": "first",
+          "runtime_sec": 5.083968877792358
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 4.674859457876046e-11,
+          "expression": "mul(mul(X1, X0), mul(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 453.8609619140625
+        },
+        "ground_truth": "0.5 * m * v**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 8042.463736587687,
+          "save_path": "experiments/ExternalBaselines/saved_models/KE/first_run_9",
+          "collapse_mode": "first",
+          "runtime_sec": 0.21159887313842773
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 4.674859457876046e-11,
+          "expression": "mul(mul(X1, X0), mul(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 453.8609619140625
+        },
+        "ground_truth": "0.5 * m * v**2"
+      }
+    ],
+    "Coulomb": [
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 11.912280822679406,
+          "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/first_run_0",
+          "collapse_mode": "first",
+          "runtime_sec": 13.126680135726929
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 8.185452641217006e-14,
+          "expression": "div(mul(div(X0, X2), X1), X2)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.007847785949707
+        },
+        "ground_truth": "q1 * q2 / r**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 35.38836134629583,
+          "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/first_run_1",
+          "collapse_mode": "first",
+          "runtime_sec": 5.045066833496094
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 8.185452641217006e-14,
+          "expression": "div(mul(div(X0, X2), X1), X2)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.007847785949707
+        },
+        "ground_truth": "q1 * q2 / r**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 53.74426124953409,
+          "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/first_run_2",
+          "collapse_mode": "first",
+          "runtime_sec": 11.05058240890503
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 8.185452641217006e-14,
+          "expression": "div(mul(div(X0, X2), X1), X2)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.007847785949707
+        },
+        "ground_truth": "q1 * q2 / r**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 62.32562928658388,
+          "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/first_run_3",
+          "collapse_mode": "first",
+          "runtime_sec": 0.050746917724609375
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 8.185452641217006e-14,
+          "expression": "div(mul(div(X0, X2), X1), X2)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.007847785949707
+        },
+        "ground_truth": "q1 * q2 / r**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 35.277623871087705,
+          "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/first_run_4",
+          "collapse_mode": "first",
+          "runtime_sec": 3.4014391899108887
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 8.185452641217006e-14,
+          "expression": "div(mul(div(X0, X2), X1), X2)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.007847785949707
+        },
+        "ground_truth": "q1 * q2 / r**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 6,
+          "supports_side_effects": true,
+          "mse": 66.19530001571289,
+          "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/first_run_5",
+          "collapse_mode": "first",
+          "runtime_sec": 4.773598670959473
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 8.185452641217006e-14,
+          "expression": "div(mul(div(X0, X2), X1), X2)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.007847785949707
+        },
+        "ground_truth": "q1 * q2 / r**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 6,
+          "supports_side_effects": true,
+          "mse": 90.3978881129639,
+          "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/first_run_6",
+          "collapse_mode": "first",
+          "runtime_sec": 2.587789297103882
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 8.185452641217006e-14,
+          "expression": "div(mul(div(X0, X2), X1), X2)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.007847785949707
+        },
+        "ground_truth": "q1 * q2 / r**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 6,
+          "supports_side_effects": true,
+          "mse": 31.949257880976784,
+          "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/first_run_7",
+          "collapse_mode": "first",
+          "runtime_sec": 3.010089874267578
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 8.185452641217006e-14,
+          "expression": "div(mul(div(X0, X2), X1), X2)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.007847785949707
+        },
+        "ground_truth": "q1 * q2 / r**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 36.02570794600369,
+          "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/first_run_8",
+          "collapse_mode": "first",
+          "runtime_sec": 31.106664180755615
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 8.185452641217006e-14,
+          "expression": "div(mul(div(X0, X2), X1), X2)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.007847785949707
+        },
+        "ground_truth": "q1 * q2 / r**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 55.27682532141852,
+          "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/first_run_9",
+          "collapse_mode": "first",
+          "runtime_sec": 4.891366958618164
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 8.185452641217006e-14,
+          "expression": "div(mul(div(X0, X2), X1), X2)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.007847785949707
+        },
+        "ground_truth": "q1 * q2 / r**2"
+      }
+    ],
+    "IdealGas": [
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 44281.800653657,
+          "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/first_run_0",
+          "collapse_mode": "first",
+          "runtime_sec": 0.5192668437957764
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 5.995388907553689e-11,
+          "expression": "mul(X0, div(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 3202.490234375
+        },
+        "ground_truth": "n * T / V"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 34726.85318340354,
+          "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/first_run_1",
+          "collapse_mode": "first",
+          "runtime_sec": 11.04674768447876
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 5.995388907553689e-11,
+          "expression": "mul(X0, div(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 3202.490234375
+        },
+        "ground_truth": "n * T / V"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 63533.03426435786,
+          "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/first_run_2",
+          "collapse_mode": "first",
+          "runtime_sec": 6.204444885253906
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 5.995388907553689e-11,
+          "expression": "mul(X0, div(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 3202.490234375
+        },
+        "ground_truth": "n * T / V"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 48643.34550173907,
+          "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/first_run_3",
+          "collapse_mode": "first",
+          "runtime_sec": 10.748679876327515
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 5.995388907553689e-11,
+          "expression": "mul(X0, div(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 3202.490234375
+        },
+        "ground_truth": "n * T / V"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 51922.36076173053,
+          "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/first_run_4",
+          "collapse_mode": "first",
+          "runtime_sec": 6.708087205886841
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 5.995388907553689e-11,
+          "expression": "mul(X0, div(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 3202.490234375
+        },
+        "ground_truth": "n * T / V"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 45314.66693150288,
+          "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/first_run_5",
+          "collapse_mode": "first",
+          "runtime_sec": 5.0412163734436035
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 5.995388907553689e-11,
+          "expression": "mul(X0, div(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 3202.490234375
+        },
+        "ground_truth": "n * T / V"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 43052.565020522045,
+          "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/first_run_6",
+          "collapse_mode": "first",
+          "runtime_sec": 4.852460861206055
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 5.995388907553689e-11,
+          "expression": "mul(X0, div(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 3202.490234375
+        },
+        "ground_truth": "n * T / V"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 55277.01342578891,
+          "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/first_run_7",
+          "collapse_mode": "first",
+          "runtime_sec": 13.053788661956787
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 5.995388907553689e-11,
+          "expression": "mul(X0, div(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 3202.490234375
+        },
+        "ground_truth": "n * T / V"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 57378.856253787344,
+          "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/first_run_8",
+          "collapse_mode": "first",
+          "runtime_sec": 15.757285833358765
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 5.995388907553689e-11,
+          "expression": "mul(X0, div(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 3202.490234375
+        },
+        "ground_truth": "n * T / V"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 42434.229055107535,
+          "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/first_run_9",
+          "collapse_mode": "first",
+          "runtime_sec": 0.5160315036773682
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 5.995388907553689e-11,
+          "expression": "mul(X0, div(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 3202.490234375
+        },
+        "ground_truth": "n * T / V"
+      }
+    ],
+    "OhmsLaw": [
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 75.69647509624443,
+          "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/first_run_0",
+          "collapse_mode": "first",
+          "runtime_sec": 0.8874921798706055
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 2.2083668173213805e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 4.81674861907959
+        },
+        "ground_truth": "I * R"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 77.3332083747679,
+          "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/first_run_1",
+          "collapse_mode": "first",
+          "runtime_sec": 4.667436122894287
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 2.2083668173213805e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 4.81674861907959
+        },
+        "ground_truth": "I * R"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 115.03434240726656,
+          "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/first_run_2",
+          "collapse_mode": "first",
+          "runtime_sec": 1.1912322044372559
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 2.2083668173213805e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 4.81674861907959
+        },
+        "ground_truth": "I * R"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 177.61410747128954,
+          "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/first_run_3",
+          "collapse_mode": "first",
+          "runtime_sec": 0.42937159538269043
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 2.2083668173213805e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 4.81674861907959
+        },
+        "ground_truth": "I * R"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 55.54251911142524,
+          "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/first_run_4",
+          "collapse_mode": "first",
+          "runtime_sec": 0.6155483722686768
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 2.2083668173213805e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 4.81674861907959
+        },
+        "ground_truth": "I * R"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 97.85428989626395,
+          "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/first_run_5",
+          "collapse_mode": "first",
+          "runtime_sec": 5.114100217819214
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 2.2083668173213805e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 4.81674861907959
+        },
+        "ground_truth": "I * R"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 96.7853212307119,
+          "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/first_run_6",
+          "collapse_mode": "first",
+          "runtime_sec": 1.054321527481079
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 2.2083668173213805e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 4.81674861907959
+        },
+        "ground_truth": "I * R"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 295.86447153859865,
+          "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/first_run_7",
+          "collapse_mode": "first",
+          "runtime_sec": 0.037516117095947266
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 2.2083668173213805e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 4.81674861907959
+        },
+        "ground_truth": "I * R"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 5.275069270282983e-13,
+          "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/first_run_8",
+          "collapse_mode": "first",
+          "runtime_sec": 0.3841545581817627
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 2.2083668173213805e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 4.81674861907959
+        },
+        "ground_truth": "I * R"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 46.58328924735001,
+          "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/first_run_9",
+          "collapse_mode": "first",
+          "runtime_sec": 0.747887134552002
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 2.2083668173213805e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 4.81674861907959
+        },
+        "ground_truth": "I * R"
+      }
+    ],
+    "Acceleration": [
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 11.55451026382131,
+          "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/first_run_0",
+          "collapse_mode": "first",
+          "runtime_sec": 0.042452335357666016
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 6.27853346570062e-14,
+          "expression": "sub(div(X1, X2), div(X0, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.258376598358154
+        },
+        "ground_truth": "(v2 - v1) / t"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 15.40210155768886,
+          "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/first_run_1",
+          "collapse_mode": "first",
+          "runtime_sec": 1.9066123962402344
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 6.27853346570062e-14,
+          "expression": "sub(div(X1, X2), div(X0, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.258376598358154
+        },
+        "ground_truth": "(v2 - v1) / t"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 6.684667083000545,
+          "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/first_run_2",
+          "collapse_mode": "first",
+          "runtime_sec": 10.693094491958618
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 6.27853346570062e-14,
+          "expression": "sub(div(X1, X2), div(X0, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.258376598358154
+        },
+        "ground_truth": "(v2 - v1) / t"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 26.741448484979536,
+          "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/first_run_3",
+          "collapse_mode": "first",
+          "runtime_sec": 0.27187466621398926
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 6.27853346570062e-14,
+          "expression": "sub(div(X1, X2), div(X0, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.258376598358154
+        },
+        "ground_truth": "(v2 - v1) / t"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 21.854714150280792,
+          "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/first_run_4",
+          "collapse_mode": "first",
+          "runtime_sec": 0.04302692413330078
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 6.27853346570062e-14,
+          "expression": "sub(div(X1, X2), div(X0, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.258376598358154
+        },
+        "ground_truth": "(v2 - v1) / t"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 6,
+          "supports_side_effects": true,
+          "mse": 11.632273002402208,
+          "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/first_run_5",
+          "collapse_mode": "first",
+          "runtime_sec": 2.899415969848633
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 6.27853346570062e-14,
+          "expression": "sub(div(X1, X2), div(X0, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.258376598358154
+        },
+        "ground_truth": "(v2 - v1) / t"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 22.449966542714083,
+          "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/first_run_6",
+          "collapse_mode": "first",
+          "runtime_sec": 0.049398183822631836
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 6.27853346570062e-14,
+          "expression": "sub(div(X1, X2), div(X0, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.258376598358154
+        },
+        "ground_truth": "(v2 - v1) / t"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 8.815461312136144,
+          "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/first_run_7",
+          "collapse_mode": "first",
+          "runtime_sec": 5.318004846572876
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 6.27853346570062e-14,
+          "expression": "sub(div(X1, X2), div(X0, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.258376598358154
+        },
+        "ground_truth": "(v2 - v1) / t"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 6,
+          "supports_side_effects": true,
+          "mse": 18.893644167047455,
+          "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/first_run_8",
+          "collapse_mode": "first",
+          "runtime_sec": 2.81169056892395
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 6.27853346570062e-14,
+          "expression": "sub(div(X1, X2), div(X0, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.258376598358154
+        },
+        "ground_truth": "(v2 - v1) / t"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 14.298756849577092,
+          "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/first_run_9",
+          "collapse_mode": "first",
+          "runtime_sec": 0.050887346267700195
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 6.27853346570062e-14,
+          "expression": "sub(div(X1, X2), div(X0, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.258376598358154
+        },
+        "ground_truth": "(v2 - v1) / t"
+      }
+    ],
+    "Power": [
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 410.98258322435373,
+          "save_path": "experiments/ExternalBaselines/saved_models/Power/first_run_0",
+          "collapse_mode": "first",
+          "runtime_sec": 0.8932101726531982
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 3.3651304399279214e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 18.38965606689453
+        },
+        "ground_truth": "V * I"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 2.132765075657517e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/Power/first_run_1",
+          "collapse_mode": "first",
+          "runtime_sec": 0.3413412570953369
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 3.3651304399279214e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 18.38965606689453
+        },
+        "ground_truth": "V * I"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 541.7978848665662,
+          "save_path": "experiments/ExternalBaselines/saved_models/Power/first_run_2",
+          "collapse_mode": "first",
+          "runtime_sec": 0.9001731872558594
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 3.3651304399279214e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 18.38965606689453
+        },
+        "ground_truth": "V * I"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 3.876721166307107e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/Power/first_run_3",
+          "collapse_mode": "first",
+          "runtime_sec": 0.4232618808746338
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 3.3651304399279214e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 18.38965606689453
+        },
+        "ground_truth": "V * I"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 1.4938450476620347e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/Power/first_run_4",
+          "collapse_mode": "first",
+          "runtime_sec": 0.3587226867675781
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 3.3651304399279214e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 18.38965606689453
+        },
+        "ground_truth": "V * I"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 634.0038023412376,
+          "save_path": "experiments/ExternalBaselines/saved_models/Power/first_run_5",
+          "collapse_mode": "first",
+          "runtime_sec": 0.03871941566467285
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 3.3651304399279214e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 18.38965606689453
+        },
+        "ground_truth": "V * I"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 1.90084392670542e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/Power/first_run_6",
+          "collapse_mode": "first",
+          "runtime_sec": 0.3243427276611328
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 3.3651304399279214e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 18.38965606689453
+        },
+        "ground_truth": "V * I"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 644.8680829851747,
+          "save_path": "experiments/ExternalBaselines/saved_models/Power/first_run_7",
+          "collapse_mode": "first",
+          "runtime_sec": 0.9089510440826416
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 3.3651304399279214e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 18.38965606689453
+        },
+        "ground_truth": "V * I"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 583.1877498691207,
+          "save_path": "experiments/ExternalBaselines/saved_models/Power/first_run_8",
+          "collapse_mode": "first",
+          "runtime_sec": 0.8809895515441895
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 3.3651304399279214e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 18.38965606689453
+        },
+        "ground_truth": "V * I"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 2.4221336047958175e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/Power/first_run_9",
+          "collapse_mode": "first",
+          "runtime_sec": 0.3501906394958496
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 3.3651304399279214e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 18.38965606689453
+        },
+        "ground_truth": "V * I"
+      }
+    ]
+  },
+  "prod": {
+    "E_mc2": [
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 2.624119588290341e-11,
+          "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/prod_run_0",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.08983135223388672
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 1.6555076753910214e-11,
+          "expression": "mul(mul(X1, X1), X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 117.48092651367188
+        },
+        "ground_truth": "m * c**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 2.4310793378390372e-11,
+          "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/prod_run_1",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.05913209915161133
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 1.6555076753910214e-11,
+          "expression": "mul(mul(X1, X1), X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 117.48092651367188
+        },
+        "ground_truth": "m * c**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 3.940158421755768e-11,
+          "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/prod_run_2",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.09779572486877441
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 1.6555076753910214e-11,
+          "expression": "mul(mul(X1, X1), X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 117.48092651367188
+        },
+        "ground_truth": "m * c**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 3.34512151312083e-11,
+          "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/prod_run_3",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.062494516372680664
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 1.6555076753910214e-11,
+          "expression": "mul(mul(X1, X1), X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 117.48092651367188
+        },
+        "ground_truth": "m * c**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 1.6407284419983625e-11,
+          "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/prod_run_4",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.06605958938598633
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 1.6555076753910214e-11,
+          "expression": "mul(mul(X1, X1), X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 117.48092651367188
+        },
+        "ground_truth": "m * c**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 1.58638613356743e-11,
+          "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/prod_run_5",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.07275652885437012
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 1.6555076753910214e-11,
+          "expression": "mul(mul(X1, X1), X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 117.48092651367188
+        },
+        "ground_truth": "m * c**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 1.9845174392685294e-11,
+          "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/prod_run_6",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.06636166572570801
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 1.6555076753910214e-11,
+          "expression": "mul(mul(X1, X1), X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 117.48092651367188
+        },
+        "ground_truth": "m * c**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 3.278728399891406e-11,
+          "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/prod_run_7",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.0744779109954834
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 1.6555076753910214e-11,
+          "expression": "mul(mul(X1, X1), X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 117.48092651367188
+        },
+        "ground_truth": "m * c**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 3.424247552175075e-11,
+          "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/prod_run_8",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.08023810386657715
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 1.6555076753910214e-11,
+          "expression": "mul(mul(X1, X1), X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 117.48092651367188
+        },
+        "ground_truth": "m * c**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 2.104570739902556e-11,
+          "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/prod_run_9",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.0629568099975586
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 1.6555076753910214e-11,
+          "expression": "mul(mul(X1, X1), X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 117.48092651367188
+        },
+        "ground_truth": "m * c**2"
+      }
+    ],
+    "F_ma": [
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 1.383000380883459e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/F_ma/prod_run_0",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.01751089096069336
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 7.276046627181787e-13,
+          "expression": "mul(X1, X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 21.502296447753906
+        },
+        "ground_truth": "m * a"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 2.76543232757831e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/F_ma/prod_run_1",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.015185356140136719
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 7.276046627181787e-13,
+          "expression": "mul(X1, X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 21.502296447753906
+        },
+        "ground_truth": "m * a"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 2.0827428670600057e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/F_ma/prod_run_2",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.019164085388183594
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 7.276046627181787e-13,
+          "expression": "mul(X1, X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 21.502296447753906
+        },
+        "ground_truth": "m * a"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 3.858531272271648e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/F_ma/prod_run_3",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.0168306827545166
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 7.276046627181787e-13,
+          "expression": "mul(X1, X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 21.502296447753906
+        },
+        "ground_truth": "m * a"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 1.964508555829525e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/F_ma/prod_run_4",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.01769089698791504
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 7.276046627181787e-13,
+          "expression": "mul(X1, X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 21.502296447753906
+        },
+        "ground_truth": "m * a"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 1.9326762412674725e-13,
+          "save_path": "experiments/ExternalBaselines/saved_models/F_ma/prod_run_5",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.014382123947143555
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 7.276046627181787e-13,
+          "expression": "mul(X1, X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 21.502296447753906
+        },
+        "ground_truth": "m * a"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 5.431957106338814e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/F_ma/prod_run_6",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.014959573745727539
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 7.276046627181787e-13,
+          "expression": "mul(X1, X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 21.502296447753906
+        },
+        "ground_truth": "m * a"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 3.67435859516263e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/F_ma/prod_run_7",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.014879941940307617
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 7.276046627181787e-13,
+          "expression": "mul(X1, X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 21.502296447753906
+        },
+        "ground_truth": "m * a"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 6.693881005048752e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/F_ma/prod_run_8",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.019570589065551758
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 7.276046627181787e-13,
+          "expression": "mul(X1, X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 21.502296447753906
+        },
+        "ground_truth": "m * a"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 7.02584657119587e-13,
+          "save_path": "experiments/ExternalBaselines/saved_models/F_ma/prod_run_9",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.01690959930419922
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 7.276046627181787e-13,
+          "expression": "mul(X1, X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 21.502296447753906
+        },
+        "ground_truth": "m * a"
+      }
+    ],
+    "KE": [
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 3935.947304019893,
+          "save_path": "experiments/ExternalBaselines/saved_models/KE/prod_run_0",
+          "collapse_mode": "prod",
+          "runtime_sec": 7.628446102142334
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 4.674859457876046e-11,
+          "expression": "mul(mul(X1, X0), mul(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 453.8609619140625
+        },
+        "ground_truth": "0.5 * m * v**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 2.876050508859862e-11,
+          "save_path": "experiments/ExternalBaselines/saved_models/KE/prod_run_1",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.06683206558227539
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 4.674859457876046e-11,
+          "expression": "mul(mul(X1, X0), mul(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 453.8609619140625
+        },
+        "ground_truth": "0.5 * m * v**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 7.58433316150331e-11,
+          "save_path": "experiments/ExternalBaselines/saved_models/KE/prod_run_2",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.07509613037109375
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 4.674859457876046e-11,
+          "expression": "mul(mul(X1, X0), mul(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 453.8609619140625
+        },
+        "ground_truth": "0.5 * m * v**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 8.703182174940593e-11,
+          "save_path": "experiments/ExternalBaselines/saved_models/KE/prod_run_3",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.07310223579406738
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 4.674859457876046e-11,
+          "expression": "mul(mul(X1, X0), mul(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 453.8609619140625
+        },
+        "ground_truth": "0.5 * m * v**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 2.2710802162484444e-11,
+          "save_path": "experiments/ExternalBaselines/saved_models/KE/prod_run_4",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.06929731369018555
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 4.674859457876046e-11,
+          "expression": "mul(mul(X1, X0), mul(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 453.8609619140625
+        },
+        "ground_truth": "0.5 * m * v**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 5358.700186711696,
+          "save_path": "experiments/ExternalBaselines/saved_models/KE/prod_run_5",
+          "collapse_mode": "prod",
+          "runtime_sec": 5.701151371002197
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 4.674859457876046e-11,
+          "expression": "mul(mul(X1, X0), mul(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 453.8609619140625
+        },
+        "ground_truth": "0.5 * m * v**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 1534.565064174903,
+          "save_path": "experiments/ExternalBaselines/saved_models/KE/prod_run_6",
+          "collapse_mode": "prod",
+          "runtime_sec": 5.947682619094849
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 4.674859457876046e-11,
+          "expression": "mul(mul(X1, X0), mul(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 453.8609619140625
+        },
+        "ground_truth": "0.5 * m * v**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 5.3551190148937166e-11,
+          "save_path": "experiments/ExternalBaselines/saved_models/KE/prod_run_7",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.08302021026611328
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 4.674859457876046e-11,
+          "expression": "mul(mul(X1, X0), mul(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 453.8609619140625
+        },
+        "ground_truth": "0.5 * m * v**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 2262.952664743837,
+          "save_path": "experiments/ExternalBaselines/saved_models/KE/prod_run_8",
+          "collapse_mode": "prod",
+          "runtime_sec": 6.3793158531188965
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 4.674859457876046e-11,
+          "expression": "mul(mul(X1, X0), mul(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 453.8609619140625
+        },
+        "ground_truth": "0.5 * m * v**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 7.880999186582472e-11,
+          "save_path": "experiments/ExternalBaselines/saved_models/KE/prod_run_9",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.06640958786010742
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 4.674859457876046e-11,
+          "expression": "mul(mul(X1, X0), mul(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 453.8609619140625
+        },
+        "ground_truth": "0.5 * m * v**2"
+      }
+    ],
+    "Coulomb": [
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 6,
+          "supports_side_effects": true,
+          "mse": 11.912282984050732,
+          "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/prod_run_0",
+          "collapse_mode": "prod",
+          "runtime_sec": 11.423051834106445
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 8.185452641217006e-14,
+          "expression": "div(mul(div(X0, X2), X1), X2)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.007847785949707
+        },
+        "ground_truth": "q1 * q2 / r**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 9.886480509869692,
+          "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/prod_run_1",
+          "collapse_mode": "prod",
+          "runtime_sec": 13.5910964012146
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 8.185452641217006e-14,
+          "expression": "div(mul(div(X0, X2), X1), X2)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.007847785949707
+        },
+        "ground_truth": "q1 * q2 / r**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 21.599640874732746,
+          "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/prod_run_2",
+          "collapse_mode": "prod",
+          "runtime_sec": 6.355906248092651
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 8.185452641217006e-14,
+          "expression": "div(mul(div(X0, X2), X1), X2)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.007847785949707
+        },
+        "ground_truth": "q1 * q2 / r**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 9.401370756697037,
+          "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/prod_run_3",
+          "collapse_mode": "prod",
+          "runtime_sec": 5.952756643295288
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 8.185452641217006e-14,
+          "expression": "div(mul(div(X0, X2), X1), X2)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.007847785949707
+        },
+        "ground_truth": "q1 * q2 / r**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 73.55243692543672,
+          "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/prod_run_4",
+          "collapse_mode": "prod",
+          "runtime_sec": 7.864888668060303
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 8.185452641217006e-14,
+          "expression": "div(mul(div(X0, X2), X1), X2)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.007847785949707
+        },
+        "ground_truth": "q1 * q2 / r**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 109.48525716114824,
+          "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/prod_run_5",
+          "collapse_mode": "prod",
+          "runtime_sec": 7.835261821746826
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 8.185452641217006e-14,
+          "expression": "div(mul(div(X0, X2), X1), X2)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.007847785949707
+        },
+        "ground_truth": "q1 * q2 / r**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 23.400743131561253,
+          "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/prod_run_6",
+          "collapse_mode": "prod",
+          "runtime_sec": 14.8329176902771
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 8.185452641217006e-14,
+          "expression": "div(mul(div(X0, X2), X1), X2)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.007847785949707
+        },
+        "ground_truth": "q1 * q2 / r**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 9.734758356163937,
+          "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/prod_run_7",
+          "collapse_mode": "prod",
+          "runtime_sec": 5.84500527381897
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 8.185452641217006e-14,
+          "expression": "div(mul(div(X0, X2), X1), X2)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.007847785949707
+        },
+        "ground_truth": "q1 * q2 / r**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 238.18415203359072,
+          "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/prod_run_8",
+          "collapse_mode": "prod",
+          "runtime_sec": 6.04297661781311
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 8.185452641217006e-14,
+          "expression": "div(mul(div(X0, X2), X1), X2)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.007847785949707
+        },
+        "ground_truth": "q1 * q2 / r**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 58.044663077953004,
+          "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/prod_run_9",
+          "collapse_mode": "prod",
+          "runtime_sec": 12.279276609420776
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 8.185452641217006e-14,
+          "expression": "div(mul(div(X0, X2), X1), X2)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.007847785949707
+        },
+        "ground_truth": "q1 * q2 / r**2"
+      }
+    ],
+    "IdealGas": [
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 67559.26839132981,
+          "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/prod_run_0",
+          "collapse_mode": "prod",
+          "runtime_sec": 16.17197299003601
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 5.995388907553689e-11,
+          "expression": "mul(X0, div(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 3202.490234375
+        },
+        "ground_truth": "n * T / V"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 729794.9495523943,
+          "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/prod_run_1",
+          "collapse_mode": "prod",
+          "runtime_sec": 7.81925368309021
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 5.995388907553689e-11,
+          "expression": "mul(X0, div(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 3202.490234375
+        },
+        "ground_truth": "n * T / V"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 61819.43230584632,
+          "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/prod_run_2",
+          "collapse_mode": "prod",
+          "runtime_sec": 9.636073112487793
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 5.995388907553689e-11,
+          "expression": "mul(X0, div(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 3202.490234375
+        },
+        "ground_truth": "n * T / V"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 32249.796020460053,
+          "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/prod_run_3",
+          "collapse_mode": "prod",
+          "runtime_sec": 11.419707536697388
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 5.995388907553689e-11,
+          "expression": "mul(X0, div(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 3202.490234375
+        },
+        "ground_truth": "n * T / V"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 37269.83664152618,
+          "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/prod_run_4",
+          "collapse_mode": "prod",
+          "runtime_sec": 14.609448909759521
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 5.995388907553689e-11,
+          "expression": "mul(X0, div(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 3202.490234375
+        },
+        "ground_truth": "n * T / V"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 6,
+          "supports_side_effects": true,
+          "mse": 43405.438024525894,
+          "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/prod_run_5",
+          "collapse_mode": "prod",
+          "runtime_sec": 11.222981929779053
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 5.995388907553689e-11,
+          "expression": "mul(X0, div(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 3202.490234375
+        },
+        "ground_truth": "n * T / V"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 49153.67190218545,
+          "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/prod_run_6",
+          "collapse_mode": "prod",
+          "runtime_sec": 35.07818603515625
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 5.995388907553689e-11,
+          "expression": "mul(X0, div(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 3202.490234375
+        },
+        "ground_truth": "n * T / V"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 69724.35706226564,
+          "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/prod_run_7",
+          "collapse_mode": "prod",
+          "runtime_sec": 11.386127948760986
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 5.995388907553689e-11,
+          "expression": "mul(X0, div(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 3202.490234375
+        },
+        "ground_truth": "n * T / V"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 170316.86756193853,
+          "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/prod_run_8",
+          "collapse_mode": "prod",
+          "runtime_sec": 14.550918102264404
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 5.995388907553689e-11,
+          "expression": "mul(X0, div(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 3202.490234375
+        },
+        "ground_truth": "n * T / V"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 22494.019673542884,
+          "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/prod_run_9",
+          "collapse_mode": "prod",
+          "runtime_sec": 19.79173755645752
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 5.995388907553689e-11,
+          "expression": "mul(X0, div(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 3202.490234375
+        },
+        "ground_truth": "n * T / V"
+      }
+    ],
+    "OhmsLaw": [
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 1.0663825378287584e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/prod_run_0",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.014843940734863281
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 2.2083668173213805e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 4.81674861907959
+        },
+        "ground_truth": "I * R"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 1.255671122635249e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/prod_run_1",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.02448105812072754
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 2.2083668173213805e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 4.81674861907959
+        },
+        "ground_truth": "I * R"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 5.007905201637186e-13,
+          "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/prod_run_2",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.013779401779174805
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 2.2083668173213805e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 4.81674861907959
+        },
+        "ground_truth": "I * R"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 2.2112089936854318e-13,
+          "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/prod_run_3",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.01633000373840332
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 2.2083668173213805e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 4.81674861907959
+        },
+        "ground_truth": "I * R"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 6.502887117676437e-13,
+          "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/prod_run_4",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.017486572265625
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 2.2083668173213805e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 4.81674861907959
+        },
+        "ground_truth": "I * R"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 2.4556356947869064e-13,
+          "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/prod_run_5",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.01882195472717285
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 2.2083668173213805e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 4.81674861907959
+        },
+        "ground_truth": "I * R"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 1.7217871572938747e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/prod_run_6",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.013571977615356445
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 2.2083668173213805e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 4.81674861907959
+        },
+        "ground_truth": "I * R"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 1.5008083664724836e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/prod_run_7",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.013103961944580078
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 2.2083668173213805e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 4.81674861907959
+        },
+        "ground_truth": "I * R"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 5.275069270282983e-13,
+          "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/prod_run_8",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.014792203903198242
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 2.2083668173213805e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 4.81674861907959
+        },
+        "ground_truth": "I * R"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 3.4788172342814506e-13,
+          "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/prod_run_9",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.01671576499938965
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 2.2083668173213805e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 4.81674861907959
+        },
+        "ground_truth": "I * R"
+      }
+    ],
+    "Acceleration": [
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 10.004911946193074,
+          "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/prod_run_0",
+          "collapse_mode": "prod",
+          "runtime_sec": 11.216933250427246
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 6.27853346570062e-14,
+          "expression": "sub(div(X1, X2), div(X0, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.258376598358154
+        },
+        "ground_truth": "(v2 - v1) / t"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 10.713781302547705,
+          "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/prod_run_1",
+          "collapse_mode": "prod",
+          "runtime_sec": 18.710658073425293
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 6.27853346570062e-14,
+          "expression": "sub(div(X1, X2), div(X0, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.258376598358154
+        },
+        "ground_truth": "(v2 - v1) / t"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 6,
+          "supports_side_effects": true,
+          "mse": 12.924304121858336,
+          "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/prod_run_2",
+          "collapse_mode": "prod",
+          "runtime_sec": 8.389216899871826
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 6.27853346570062e-14,
+          "expression": "sub(div(X1, X2), div(X0, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.258376598358154
+        },
+        "ground_truth": "(v2 - v1) / t"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 435.67558251467284,
+          "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/prod_run_3",
+          "collapse_mode": "prod",
+          "runtime_sec": 6.246184587478638
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 6.27853346570062e-14,
+          "expression": "sub(div(X1, X2), div(X0, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.258376598358154
+        },
+        "ground_truth": "(v2 - v1) / t"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 5.381202298085844,
+          "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/prod_run_4",
+          "collapse_mode": "prod",
+          "runtime_sec": 11.160422086715698
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 6.27853346570062e-14,
+          "expression": "sub(div(X1, X2), div(X0, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.258376598358154
+        },
+        "ground_truth": "(v2 - v1) / t"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 21.686832420436883,
+          "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/prod_run_5",
+          "collapse_mode": "prod",
+          "runtime_sec": 13.114506244659424
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 6.27853346570062e-14,
+          "expression": "sub(div(X1, X2), div(X0, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.258376598358154
+        },
+        "ground_truth": "(v2 - v1) / t"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 26.321783531680843,
+          "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/prod_run_6",
+          "collapse_mode": "prod",
+          "runtime_sec": 11.722268342971802
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 6.27853346570062e-14,
+          "expression": "sub(div(X1, X2), div(X0, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.258376598358154
+        },
+        "ground_truth": "(v2 - v1) / t"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 30.54050564520222,
+          "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/prod_run_7",
+          "collapse_mode": "prod",
+          "runtime_sec": 17.84588384628296
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 6.27853346570062e-14,
+          "expression": "sub(div(X1, X2), div(X0, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.258376598358154
+        },
+        "ground_truth": "(v2 - v1) / t"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 11.783663953797591,
+          "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/prod_run_8",
+          "collapse_mode": "prod",
+          "runtime_sec": 11.903700590133667
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 6.27853346570062e-14,
+          "expression": "sub(div(X1, X2), div(X0, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.258376598358154
+        },
+        "ground_truth": "(v2 - v1) / t"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 1798.3223340058757,
+          "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/prod_run_9",
+          "collapse_mode": "prod",
+          "runtime_sec": 5.885625600814819
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 6.27853346570062e-14,
+          "expression": "sub(div(X1, X2), div(X0, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.258376598358154
+        },
+        "ground_truth": "(v2 - v1) / t"
+      }
+    ],
+    "Power": [
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 8.049028110690415e-13,
+          "save_path": "experiments/ExternalBaselines/saved_models/Power/prod_run_0",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.013664960861206055
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 3.3651304399279214e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 18.38965606689453
+        },
+        "ground_truth": "V * I"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 2.132765075657517e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/Power/prod_run_1",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.019581079483032227
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 3.3651304399279214e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 18.38965606689453
+        },
+        "ground_truth": "V * I"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 2.0105517251067793e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/Power/prod_run_2",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.016732215881347656
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 3.3651304399279214e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 18.38965606689453
+        },
+        "ground_truth": "V * I"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 3.876721166307107e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/Power/prod_run_3",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.01404714584350586
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 3.3651304399279214e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 18.38965606689453
+        },
+        "ground_truth": "V * I"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 1.4938450476620347e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/Power/prod_run_4",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.013536453247070312
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 3.3651304399279214e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 18.38965606689453
+        },
+        "ground_truth": "V * I"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 5.022684490540996e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/Power/prod_run_5",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.015142440795898438
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 3.3651304399279214e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 18.38965606689453
+        },
+        "ground_truth": "V * I"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 1.90084392670542e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/Power/prod_run_6",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.01630091667175293
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 3.3651304399279214e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 18.38965606689453
+        },
+        "ground_truth": "V * I"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 1.7553603015585394e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/Power/prod_run_7",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.023244619369506836
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 3.3651304399279214e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 18.38965606689453
+        },
+        "ground_truth": "V * I"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 5.056790541857481e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/Power/prod_run_8",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.011853456497192383
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 3.3651304399279214e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 18.38965606689453
+        },
+        "ground_truth": "V * I"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 2.4221336047958175e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/Power/prod_run_9",
+          "collapse_mode": "prod",
+          "runtime_sec": 0.018782377243041992
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 3.3651304399279214e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 18.38965606689453
+        },
+        "ground_truth": "V * I"
+      }
+    ]
+  },
+  "sum": {
+    "E_mc2": [
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 262.3036529424248,
+          "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/sum_run_0",
+          "collapse_mode": "sum",
+          "runtime_sec": 46.6564359664917
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 1.6555076753910214e-11,
+          "expression": "mul(mul(X1, X1), X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 117.48092651367188
+        },
+        "ground_truth": "m * c**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 490.9016662976314,
+          "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/sum_run_1",
+          "collapse_mode": "sum",
+          "runtime_sec": 21.380781173706055
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 1.6555076753910214e-11,
+          "expression": "mul(mul(X1, X1), X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 117.48092651367188
+        },
+        "ground_truth": "m * c**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 378.54400329564027,
+          "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/sum_run_2",
+          "collapse_mode": "sum",
+          "runtime_sec": 13.155840635299683
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 1.6555076753910214e-11,
+          "expression": "mul(mul(X1, X1), X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 117.48092651367188
+        },
+        "ground_truth": "m * c**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 2672.7536930517117,
+          "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/sum_run_3",
+          "collapse_mode": "sum",
+          "runtime_sec": 47.844242334365845
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 1.6555076753910214e-11,
+          "expression": "mul(mul(X1, X1), X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 117.48092651367188
+        },
+        "ground_truth": "m * c**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 575.1555239743706,
+          "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/sum_run_4",
+          "collapse_mode": "sum",
+          "runtime_sec": 105.58469200134277
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 1.6555076753910214e-11,
+          "expression": "mul(mul(X1, X1), X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 117.48092651367188
+        },
+        "ground_truth": "m * c**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 1057.210799108502,
+          "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/sum_run_5",
+          "collapse_mode": "sum",
+          "runtime_sec": 142.17572164535522
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 1.6555076753910214e-11,
+          "expression": "mul(mul(X1, X1), X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 117.48092651367188
+        },
+        "ground_truth": "m * c**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 1634.6553122162034,
+          "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/sum_run_6",
+          "collapse_mode": "sum",
+          "runtime_sec": 26.029414176940918
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 1.6555076753910214e-11,
+          "expression": "mul(mul(X1, X1), X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 117.48092651367188
+        },
+        "ground_truth": "m * c**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 1532.6215924878625,
+          "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/sum_run_7",
+          "collapse_mode": "sum",
+          "runtime_sec": 43.82830333709717
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 1.6555076753910214e-11,
+          "expression": "mul(mul(X1, X1), X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 117.48092651367188
+        },
+        "ground_truth": "m * c**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 226.47125052139094,
+          "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/sum_run_8",
+          "collapse_mode": "sum",
+          "runtime_sec": 569.1434206962585
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 1.6555076753910214e-11,
+          "expression": "mul(mul(X1, X1), X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 117.48092651367188
+        },
+        "ground_truth": "m * c**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 7.730069398576652,
+          "save_path": "experiments/ExternalBaselines/saved_models/E_mc2/sum_run_9",
+          "collapse_mode": "sum",
+          "runtime_sec": 532.0693185329437
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 1.6555076753910214e-11,
+          "expression": "mul(mul(X1, X1), X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 117.48092651367188
+        },
+        "ground_truth": "m * c**2"
+      }
+    ],
+    "F_ma": [
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 117.57421854694047,
+          "save_path": "experiments/ExternalBaselines/saved_models/F_ma/sum_run_0",
+          "collapse_mode": "sum",
+          "runtime_sec": 21.085434675216675
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 7.276046627181787e-13,
+          "expression": "mul(X1, X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 21.502296447753906
+        },
+        "ground_truth": "m * a"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 155.2637485812564,
+          "save_path": "experiments/ExternalBaselines/saved_models/F_ma/sum_run_1",
+          "collapse_mode": "sum",
+          "runtime_sec": 1.1771917343139648
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 7.276046627181787e-13,
+          "expression": "mul(X1, X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 21.502296447753906
+        },
+        "ground_truth": "m * a"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 176.00152769914612,
+          "save_path": "experiments/ExternalBaselines/saved_models/F_ma/sum_run_2",
+          "collapse_mode": "sum",
+          "runtime_sec": 7.2462708950042725
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 7.276046627181787e-13,
+          "expression": "mul(X1, X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 21.502296447753906
+        },
+        "ground_truth": "m * a"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 216.40336190590108,
+          "save_path": "experiments/ExternalBaselines/saved_models/F_ma/sum_run_3",
+          "collapse_mode": "sum",
+          "runtime_sec": 1.2787868976593018
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 7.276046627181787e-13,
+          "expression": "mul(X1, X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 21.502296447753906
+        },
+        "ground_truth": "m * a"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 142.17753246692112,
+          "save_path": "experiments/ExternalBaselines/saved_models/F_ma/sum_run_4",
+          "collapse_mode": "sum",
+          "runtime_sec": 12.828278064727783
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 7.276046627181787e-13,
+          "expression": "mul(X1, X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 21.502296447753906
+        },
+        "ground_truth": "m * a"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 174.17249422096833,
+          "save_path": "experiments/ExternalBaselines/saved_models/F_ma/sum_run_5",
+          "collapse_mode": "sum",
+          "runtime_sec": 1.6383867263793945
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 7.276046627181787e-13,
+          "expression": "mul(X1, X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 21.502296447753906
+        },
+        "ground_truth": "m * a"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 6,
+          "supports_side_effects": true,
+          "mse": 242.71194635289322,
+          "save_path": "experiments/ExternalBaselines/saved_models/F_ma/sum_run_6",
+          "collapse_mode": "sum",
+          "runtime_sec": 0.783637285232544
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 7.276046627181787e-13,
+          "expression": "mul(X1, X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 21.502296447753906
+        },
+        "ground_truth": "m * a"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 41.10708478937572,
+          "save_path": "experiments/ExternalBaselines/saved_models/F_ma/sum_run_7",
+          "collapse_mode": "sum",
+          "runtime_sec": 6.425346851348877
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 7.276046627181787e-13,
+          "expression": "mul(X1, X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 21.502296447753906
+        },
+        "ground_truth": "m * a"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 159.53147966217279,
+          "save_path": "experiments/ExternalBaselines/saved_models/F_ma/sum_run_8",
+          "collapse_mode": "sum",
+          "runtime_sec": 71.04375672340393
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 7.276046627181787e-13,
+          "expression": "mul(X1, X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 21.502296447753906
+        },
+        "ground_truth": "m * a"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 78.48591979521528,
+          "save_path": "experiments/ExternalBaselines/saved_models/F_ma/sum_run_9",
+          "collapse_mode": "sum",
+          "runtime_sec": 4.332485198974609
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 7.276046627181787e-13,
+          "expression": "mul(X1, X0)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 21.502296447753906
+        },
+        "ground_truth": "m * a"
+      }
+    ],
+    "KE": [
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 3411.02863460124,
+          "save_path": "experiments/ExternalBaselines/saved_models/KE/sum_run_0",
+          "collapse_mode": "sum",
+          "runtime_sec": 460.43728852272034
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 4.674859457876046e-11,
+          "expression": "mul(mul(X1, X0), mul(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 453.8609619140625
+        },
+        "ground_truth": "0.5 * m * v**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 1185.251306464115,
+          "save_path": "experiments/ExternalBaselines/saved_models/KE/sum_run_1",
+          "collapse_mode": "sum",
+          "runtime_sec": 388.6304726600647
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 4.674859457876046e-11,
+          "expression": "mul(mul(X1, X0), mul(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 453.8609619140625
+        },
+        "ground_truth": "0.5 * m * v**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 3266.7543092824694,
+          "save_path": "experiments/ExternalBaselines/saved_models/KE/sum_run_2",
+          "collapse_mode": "sum",
+          "runtime_sec": 133.47321581840515
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 4.674859457876046e-11,
+          "expression": "mul(mul(X1, X0), mul(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 453.8609619140625
+        },
+        "ground_truth": "0.5 * m * v**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 1055.5487548015253,
+          "save_path": "experiments/ExternalBaselines/saved_models/KE/sum_run_3",
+          "collapse_mode": "sum",
+          "runtime_sec": 19.25652241706848
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 4.674859457876046e-11,
+          "expression": "mul(mul(X1, X0), mul(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 453.8609619140625
+        },
+        "ground_truth": "0.5 * m * v**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 1465.580202265338,
+          "save_path": "experiments/ExternalBaselines/saved_models/KE/sum_run_4",
+          "collapse_mode": "sum",
+          "runtime_sec": 29.40658688545227
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 4.674859457876046e-11,
+          "expression": "mul(mul(X1, X0), mul(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 453.8609619140625
+        },
+        "ground_truth": "0.5 * m * v**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 1416.4332393792554,
+          "save_path": "experiments/ExternalBaselines/saved_models/KE/sum_run_5",
+          "collapse_mode": "sum",
+          "runtime_sec": 281.4730830192566
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 4.674859457876046e-11,
+          "expression": "mul(mul(X1, X0), mul(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 453.8609619140625
+        },
+        "ground_truth": "0.5 * m * v**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 2043.4057461745408,
+          "save_path": "experiments/ExternalBaselines/saved_models/KE/sum_run_6",
+          "collapse_mode": "sum",
+          "runtime_sec": 150.27848744392395
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 4.674859457876046e-11,
+          "expression": "mul(mul(X1, X0), mul(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 453.8609619140625
+        },
+        "ground_truth": "0.5 * m * v**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 7371.357575587293,
+          "save_path": "experiments/ExternalBaselines/saved_models/KE/sum_run_7",
+          "collapse_mode": "sum",
+          "runtime_sec": 19.106791496276855
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 4.674859457876046e-11,
+          "expression": "mul(mul(X1, X0), mul(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 453.8609619140625
+        },
+        "ground_truth": "0.5 * m * v**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 1293.6047952480267,
+          "save_path": "experiments/ExternalBaselines/saved_models/KE/sum_run_8",
+          "collapse_mode": "sum",
+          "runtime_sec": 75.60434913635254
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 4.674859457876046e-11,
+          "expression": "mul(mul(X1, X0), mul(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 453.8609619140625
+        },
+        "ground_truth": "0.5 * m * v**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 784.0507841956008,
+          "save_path": "experiments/ExternalBaselines/saved_models/KE/sum_run_9",
+          "collapse_mode": "sum",
+          "runtime_sec": 39.94125270843506
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 4.674859457876046e-11,
+          "expression": "mul(mul(X1, X0), mul(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 453.8609619140625
+        },
+        "ground_truth": "0.5 * m * v**2"
+      }
+    ],
+    "Coulomb": [
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 6,
+          "supports_side_effects": true,
+          "mse": 39.64476452802957,
+          "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/sum_run_0",
+          "collapse_mode": "sum",
+          "runtime_sec": 5.83843207359314
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 8.185452641217006e-14,
+          "expression": "div(mul(div(X0, X2), X1), X2)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.007847785949707
+        },
+        "ground_truth": "q1 * q2 / r**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 37.28655086475753,
+          "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/sum_run_1",
+          "collapse_mode": "sum",
+          "runtime_sec": 8.77616000175476
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 8.185452641217006e-14,
+          "expression": "div(mul(div(X0, X2), X1), X2)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.007847785949707
+        },
+        "ground_truth": "q1 * q2 / r**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 70.88521944923595,
+          "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/sum_run_2",
+          "collapse_mode": "sum",
+          "runtime_sec": 0.062165260314941406
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 8.185452641217006e-14,
+          "expression": "div(mul(div(X0, X2), X1), X2)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.007847785949707
+        },
+        "ground_truth": "q1 * q2 / r**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 32.36602633675182,
+          "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/sum_run_3",
+          "collapse_mode": "sum",
+          "runtime_sec": 2.624819755554199
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 8.185452641217006e-14,
+          "expression": "div(mul(div(X0, X2), X1), X2)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.007847785949707
+        },
+        "ground_truth": "q1 * q2 / r**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 38.8488571615037,
+          "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/sum_run_4",
+          "collapse_mode": "sum",
+          "runtime_sec": 6.436176776885986
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 8.185452641217006e-14,
+          "expression": "div(mul(div(X0, X2), X1), X2)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.007847785949707
+        },
+        "ground_truth": "q1 * q2 / r**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 31.33224287938109,
+          "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/sum_run_5",
+          "collapse_mode": "sum",
+          "runtime_sec": 18.965636491775513
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 8.185452641217006e-14,
+          "expression": "div(mul(div(X0, X2), X1), X2)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.007847785949707
+        },
+        "ground_truth": "q1 * q2 / r**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 23.400743131561253,
+          "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/sum_run_6",
+          "collapse_mode": "sum",
+          "runtime_sec": 13.381054878234863
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 8.185452641217006e-14,
+          "expression": "div(mul(div(X0, X2), X1), X2)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.007847785949707
+        },
+        "ground_truth": "q1 * q2 / r**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 6,
+          "supports_side_effects": true,
+          "mse": 9.734758270826667,
+          "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/sum_run_7",
+          "collapse_mode": "sum",
+          "runtime_sec": 8.569337606430054
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 8.185452641217006e-14,
+          "expression": "div(mul(div(X0, X2), X1), X2)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.007847785949707
+        },
+        "ground_truth": "q1 * q2 / r**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 6,
+          "supports_side_effects": true,
+          "mse": 85.81900809203981,
+          "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/sum_run_8",
+          "collapse_mode": "sum",
+          "runtime_sec": 4.912211656570435
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 8.185452641217006e-14,
+          "expression": "div(mul(div(X0, X2), X1), X2)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.007847785949707
+        },
+        "ground_truth": "q1 * q2 / r**2"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 58.04466293255359,
+          "save_path": "experiments/ExternalBaselines/saved_models/Coulomb/sum_run_9",
+          "collapse_mode": "sum",
+          "runtime_sec": 5.658546447753906
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 8.185452641217006e-14,
+          "expression": "div(mul(div(X0, X2), X1), X2)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.007847785949707
+        },
+        "ground_truth": "q1 * q2 / r**2"
+      }
+    ],
+    "IdealGas": [
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 45164.430911707525,
+          "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/sum_run_0",
+          "collapse_mode": "sum",
+          "runtime_sec": 4.037215948104858
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 5.995388907553689e-11,
+          "expression": "mul(X0, div(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 3202.490234375
+        },
+        "ground_truth": "n * T / V"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 42483.67493601925,
+          "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/sum_run_1",
+          "collapse_mode": "sum",
+          "runtime_sec": 70.48860383033752
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 5.995388907553689e-11,
+          "expression": "mul(X0, div(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 3202.490234375
+        },
+        "ground_truth": "n * T / V"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 6,
+          "supports_side_effects": true,
+          "mse": 60828.52955448357,
+          "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/sum_run_2",
+          "collapse_mode": "sum",
+          "runtime_sec": 10.337999105453491
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 5.995388907553689e-11,
+          "expression": "mul(X0, div(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 3202.490234375
+        },
+        "ground_truth": "n * T / V"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 32249.796020460053,
+          "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/sum_run_3",
+          "collapse_mode": "sum",
+          "runtime_sec": 2.6512246131896973
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 5.995388907553689e-11,
+          "expression": "mul(X0, div(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 3202.490234375
+        },
+        "ground_truth": "n * T / V"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 6,
+          "supports_side_effects": true,
+          "mse": 38584.684021105415,
+          "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/sum_run_4",
+          "collapse_mode": "sum",
+          "runtime_sec": 1.1901776790618896
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 5.995388907553689e-11,
+          "expression": "mul(X0, div(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 3202.490234375
+        },
+        "ground_truth": "n * T / V"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 6,
+          "supports_side_effects": true,
+          "mse": 41751.43567796397,
+          "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/sum_run_5",
+          "collapse_mode": "sum",
+          "runtime_sec": 9.00078296661377
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 5.995388907553689e-11,
+          "expression": "mul(X0, div(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 3202.490234375
+        },
+        "ground_truth": "n * T / V"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 46962.92611387276,
+          "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/sum_run_6",
+          "collapse_mode": "sum",
+          "runtime_sec": 0.05913138389587402
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 5.995388907553689e-11,
+          "expression": "mul(X0, div(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 3202.490234375
+        },
+        "ground_truth": "n * T / V"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 31383.121105912076,
+          "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/sum_run_7",
+          "collapse_mode": "sum",
+          "runtime_sec": 2.1913583278656006
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 5.995388907553689e-11,
+          "expression": "mul(X0, div(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 3202.490234375
+        },
+        "ground_truth": "n * T / V"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 59027.04132634195,
+          "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/sum_run_8",
+          "collapse_mode": "sum",
+          "runtime_sec": 5.8179404735565186
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 5.995388907553689e-11,
+          "expression": "mul(X0, div(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 3202.490234375
+        },
+        "ground_truth": "n * T / V"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 6,
+          "supports_side_effects": true,
+          "mse": 39588.48257683307,
+          "save_path": "experiments/ExternalBaselines/saved_models/IdealGas/sum_run_9",
+          "collapse_mode": "sum",
+          "runtime_sec": 9.182339191436768
+        },
+        "gplearn": {
+          "exact_match": false,
+          "mse": 5.995388907553689e-11,
+          "expression": "mul(X0, div(X1, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 3202.490234375
+        },
+        "ground_truth": "n * T / V"
+      }
+    ],
+    "OhmsLaw": [
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 34.698826866752235,
+          "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/sum_run_0",
+          "collapse_mode": "sum",
+          "runtime_sec": 0.9939732551574707
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 2.2083668173213805e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 4.81674861907959
+        },
+        "ground_truth": "I * R"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 1.255671122635249e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/sum_run_1",
+          "collapse_mode": "sum",
+          "runtime_sec": 0.4807474613189697
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 2.2083668173213805e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 4.81674861907959
+        },
+        "ground_truth": "I * R"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 49.32102458161279,
+          "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/sum_run_2",
+          "collapse_mode": "sum",
+          "runtime_sec": 1.075261116027832
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 2.2083668173213805e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 4.81674861907959
+        },
+        "ground_truth": "I * R"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 41.439474463523624,
+          "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/sum_run_3",
+          "collapse_mode": "sum",
+          "runtime_sec": 5.904311895370483
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 2.2083668173213805e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 4.81674861907959
+        },
+        "ground_truth": "I * R"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 28.883678155743713,
+          "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/sum_run_4",
+          "collapse_mode": "sum",
+          "runtime_sec": 5.858530521392822
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 2.2083668173213805e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 4.81674861907959
+        },
+        "ground_truth": "I * R"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 29.256593018612666,
+          "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/sum_run_5",
+          "collapse_mode": "sum",
+          "runtime_sec": 10.113021612167358
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 2.2083668173213805e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 4.81674861907959
+        },
+        "ground_truth": "I * R"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 30.256673868784954,
+          "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/sum_run_6",
+          "collapse_mode": "sum",
+          "runtime_sec": 7.36858868598938
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 2.2083668173213805e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 4.81674861907959
+        },
+        "ground_truth": "I * R"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 1.5008083664724836e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/sum_run_7",
+          "collapse_mode": "sum",
+          "runtime_sec": 0.3897221088409424
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 2.2083668173213805e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 4.81674861907959
+        },
+        "ground_truth": "I * R"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 69.90854760881807,
+          "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/sum_run_8",
+          "collapse_mode": "sum",
+          "runtime_sec": 8.169080257415771
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 2.2083668173213805e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 4.81674861907959
+        },
+        "ground_truth": "I * R"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 22.408780027608678,
+          "save_path": "experiments/ExternalBaselines/saved_models/OhmsLaw/sum_run_9",
+          "collapse_mode": "sum",
+          "runtime_sec": 7.826339244842529
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 2.2083668173213805e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 4.81674861907959
+        },
+        "ground_truth": "I * R"
+      }
+    ],
+    "Acceleration": [
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 6,
+          "supports_side_effects": true,
+          "mse": 9.575030246774448,
+          "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/sum_run_0",
+          "collapse_mode": "sum",
+          "runtime_sec": 9.683903455734253
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 6.27853346570062e-14,
+          "expression": "sub(div(X1, X2), div(X0, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.258376598358154
+        },
+        "ground_truth": "(v2 - v1) / t"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 6,
+          "supports_side_effects": true,
+          "mse": 14.907210747949716,
+          "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/sum_run_1",
+          "collapse_mode": "sum",
+          "runtime_sec": 5.988968849182129
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 6.27853346570062e-14,
+          "expression": "sub(div(X1, X2), div(X0, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.258376598358154
+        },
+        "ground_truth": "(v2 - v1) / t"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 6,
+          "supports_side_effects": true,
+          "mse": 80.3565154286429,
+          "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/sum_run_2",
+          "collapse_mode": "sum",
+          "runtime_sec": 6.977486610412598
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 6.27853346570062e-14,
+          "expression": "sub(div(X1, X2), div(X0, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.258376598358154
+        },
+        "ground_truth": "(v2 - v1) / t"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 25.785493455069453,
+          "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/sum_run_3",
+          "collapse_mode": "sum",
+          "runtime_sec": 4.233132362365723
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 6.27853346570062e-14,
+          "expression": "sub(div(X1, X2), div(X0, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.258376598358154
+        },
+        "ground_truth": "(v2 - v1) / t"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 36.961531471556,
+          "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/sum_run_4",
+          "collapse_mode": "sum",
+          "runtime_sec": 6.172145843505859
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 6.27853346570062e-14,
+          "expression": "sub(div(X1, X2), div(X0, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.258376598358154
+        },
+        "ground_truth": "(v2 - v1) / t"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 147.97138271234738,
+          "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/sum_run_5",
+          "collapse_mode": "sum",
+          "runtime_sec": 4.404635429382324
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 6.27853346570062e-14,
+          "expression": "sub(div(X1, X2), div(X0, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.258376598358154
+        },
+        "ground_truth": "(v2 - v1) / t"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 143.64050741697918,
+          "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/sum_run_6",
+          "collapse_mode": "sum",
+          "runtime_sec": 7.664436101913452
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 6.27853346570062e-14,
+          "expression": "sub(div(X1, X2), div(X0, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.258376598358154
+        },
+        "ground_truth": "(v2 - v1) / t"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 138.01313281817636,
+          "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/sum_run_7",
+          "collapse_mode": "sum",
+          "runtime_sec": 4.947441101074219
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 6.27853346570062e-14,
+          "expression": "sub(div(X1, X2), div(X0, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.258376598358154
+        },
+        "ground_truth": "(v2 - v1) / t"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 39.76031272082976,
+          "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/sum_run_8",
+          "collapse_mode": "sum",
+          "runtime_sec": 140.69370913505554
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 6.27853346570062e-14,
+          "expression": "sub(div(X1, X2), div(X0, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.258376598358154
+        },
+        "ground_truth": "(v2 - v1) / t"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 14.874163981545223,
+          "save_path": "experiments/ExternalBaselines/saved_models/Acceleration/sum_run_9",
+          "collapse_mode": "sum",
+          "runtime_sec": 8.652610063552856
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 6.27853346570062e-14,
+          "expression": "sub(div(X1, X2), div(X0, X2))"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 6.258376598358154
+        },
+        "ground_truth": "(v2 - v1) / t"
+      }
+    ],
+    "Power": [
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 107.31646551797023,
+          "save_path": "experiments/ExternalBaselines/saved_models/Power/sum_run_0",
+          "collapse_mode": "sum",
+          "runtime_sec": 5.773197174072266
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 3.3651304399279214e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 18.38965606689453
+        },
+        "ground_truth": "V * I"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 136.8596817649571,
+          "save_path": "experiments/ExternalBaselines/saved_models/Power/sum_run_1",
+          "collapse_mode": "sum",
+          "runtime_sec": 14.447558403015137
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 3.3651304399279214e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 18.38965606689453
+        },
+        "ground_truth": "V * I"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 0.0015429387304453713,
+          "save_path": "experiments/ExternalBaselines/saved_models/Power/sum_run_2",
+          "collapse_mode": "sum",
+          "runtime_sec": 141.33947229385376
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 3.3651304399279214e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 18.38965606689453
+        },
+        "ground_truth": "V * I"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 6,
+          "supports_side_effects": true,
+          "mse": 275.3437136263325,
+          "save_path": "experiments/ExternalBaselines/saved_models/Power/sum_run_3",
+          "collapse_mode": "sum",
+          "runtime_sec": 0.6127409934997559
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 3.3651304399279214e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 18.38965606689453
+        },
+        "ground_truth": "V * I"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 197.7236415803753,
+          "save_path": "experiments/ExternalBaselines/saved_models/Power/sum_run_4",
+          "collapse_mode": "sum",
+          "runtime_sec": 6.9792633056640625
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 3.3651304399279214e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 18.38965606689453
+        },
+        "ground_truth": "V * I"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 5.022684490540996e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/Power/sum_run_5",
+          "collapse_mode": "sum",
+          "runtime_sec": 1.7377595901489258
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 3.3651304399279214e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 18.38965606689453
+        },
+        "ground_truth": "V * I"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 6,
+          "supports_side_effects": true,
+          "mse": 1.90084392670542e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/Power/sum_run_6",
+          "collapse_mode": "sum",
+          "runtime_sec": 6.200913190841675
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 3.3651304399279214e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 18.38965606689453
+        },
+        "ground_truth": "V * I"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": true,
+          "method_pool_size": 5,
+          "supports_side_effects": true,
+          "mse": 1.7553603015585394e-12,
+          "save_path": "experiments/ExternalBaselines/saved_models/Power/sum_run_7",
+          "collapse_mode": "sum",
+          "runtime_sec": 1.604841709136963
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 3.3651304399279214e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 18.38965606689453
+        },
+        "ground_truth": "V * I"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 8,
+          "supports_side_effects": true,
+          "mse": 157.32950072163575,
+          "save_path": "experiments/ExternalBaselines/saved_models/Power/sum_run_8",
+          "collapse_mode": "sum",
+          "runtime_sec": 61.37629699707031
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 3.3651304399279214e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 18.38965606689453
+        },
+        "ground_truth": "V * I"
+      },
+      {
+        "adaptoflux": {
+          "exact_match": false,
+          "method_pool_size": 7,
+          "supports_side_effects": true,
+          "mse": 139.40456726731028,
+          "save_path": "experiments/ExternalBaselines/saved_models/Power/sum_run_9",
+          "collapse_mode": "sum",
+          "runtime_sec": 13.80665135383606
+        },
+        "gplearn": {
+          "exact_match": true,
+          "mse": 3.3651304399279214e-13,
+          "expression": "mul(X0, X1)"
+        },
+        "xgboost": {
+          "exact_match": false,
+          "mse": 18.38965606689453
+        },
+        "ground_truth": "V * I"
+      }
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+group_name,exp_type,max_layers,method_pool,avg_task3_accuracy,std_task3_accuracy,success_rate,n_repeats
+Ctrl_L2_Extended,Ctrl,2,Extended,0.0003,0.0012124355652982143,0.0,100
+Ctrl_L2_Minimal,Ctrl,2,Minimal,0.00064,0.0020567936211491906,0.0,100
+Ctrl_L3_Minimal,Ctrl,3,Minimal,0.00072,0.0022184679398179275,0.0,100
+Exp_L2_Extended,Exp,2,Extended,0.13115999999999997,0.3358658279730166,0.13,100
+Exp_L2_Minimal,Exp,2,Minimal,0.13076,0.33601533060263783,0.13,100
+Exp_L3_Minimal,Exp,3,Minimal,0.09082000000000001,0.2859321730760636,0.09,100
+Oracle_L2,Oracle,2,default,0.12064,0.32473347594604407,0.12,100

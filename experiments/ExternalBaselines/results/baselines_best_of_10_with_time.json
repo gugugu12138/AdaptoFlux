@@ -1,0 +1,162 @@
+{
+  "E_mc2": {
+    "gplearn": {
+      "exact_match": true,
+      "mse": 8.340634606585073e-12,
+      "expression": "mul(mul(X1, X0), X1)",
+      "runtime_sec": 17.859673976898193
+    },
+    "xgboost": {
+      "exact_match": false,
+      "mse": 151.28294372558594,
+      "runtime_sec": 0.03742218017578125
+    },
+    "pysr": {
+      "exact_match": true,
+      "mse": 8.340634606585073e-12,
+      "expression": "x0*x1*x1",
+      "runtime_sec": 20.29229497909546
+    },
+    "ground_truth": "m * c**2"
+  },
+  "F_ma": {
+    "gplearn": {
+      "exact_match": true,
+      "mse": 1.9326762954775811e-13,
+      "expression": "mul(X0, X1)",
+      "runtime_sec": 16.400797605514526
+    },
+    "xgboost": {
+      "exact_match": false,
+      "mse": 25.068857192993164,
+      "runtime_sec": 724.3767340183258
+    },
+    "pysr": {
+      "exact_match": true,
+      "mse": 2.0833113879847875e-12,
+      "expression": "x0*x1 - 0.027047554 - 1*(-0.027047586)",
+      "runtime_sec": 20.486276626586914
+    },
+    "ground_truth": "m * a"
+  },
+  "KE": {
+    "gplearn": {
+      "exact_match": false,
+      "mse": 3.4360850970083234e-11,
+      "expression": "mul(mul(X2, X1), mul(X0, X1))",
+      "runtime_sec": 72.71467351913452
+    },
+    "xgboost": {
+      "exact_match": false,
+      "mse": 385.6156005859375,
+      "runtime_sec": 0.031158924102783203
+    },
+    "pysr": {
+      "exact_match": false,
+      "mse": 3.4360850970083234e-11,
+      "expression": "x0*x1*x1*x2",
+      "runtime_sec": 20.312398433685303
+    },
+    "ground_truth": "0.5 * m * v**2"
+  },
+  "Coulomb": {
+    "gplearn": {
+      "exact_match": true,
+      "mse": 6.821210534347505e-14,
+      "expression": "div(mul(div(X1, X2), X0), X2)",
+      "runtime_sec": 10.485918283462524
+    },
+    "xgboost": {
+      "exact_match": false,
+      "mse": 6.406747817993164,
+      "runtime_sec": 0.022595643997192383
+    },
+    "pysr": {
+      "exact_match": true,
+      "mse": 2.737010650673971e-13,
+      "expression": "x0/((x2/((x1/x2))))",
+      "runtime_sec": 20.461790323257446
+    },
+    "ground_truth": "q1 * q2 / r**2"
+  },
+  "IdealGas": {
+    "gplearn": {
+      "exact_match": false,
+      "mse": 1.0011717843649848e-10,
+      "expression": "div(X1, div(X2, X0))",
+      "runtime_sec": 122.71658563613892
+    },
+    "xgboost": {
+      "exact_match": false,
+      "mse": 4525.236328125,
+      "runtime_sec": 0.04533743858337402
+    },
+    "pysr": {
+      "exact_match": false,
+      "mse": 2.1769665237147962e-10,
+      "expression": "x0*x1/x2",
+      "runtime_sec": 20.3249568939209
+    },
+    "ground_truth": "n * T / V"
+  },
+  "OhmsLaw": {
+    "gplearn": {
+      "exact_match": true,
+      "mse": 2.2112090533165513e-13,
+      "expression": "mul(X0, X1)",
+      "runtime_sec": 9.236108541488647
+    },
+    "xgboost": {
+      "exact_match": false,
+      "mse": 9.610791206359863,
+      "runtime_sec": 0.028912067413330078
+    },
+    "pysr": {
+      "exact_match": true,
+      "mse": 2.2112090533165513e-13,
+      "expression": "x0*x1 - (-x0 + x0 - x1 + x1)",
+      "runtime_sec": 20.401460647583008
+    },
+    "ground_truth": "I * R"
+  },
+  "Acceleration": {
+    "gplearn": {
+      "exact_match": true,
+      "mse": 3.8795633643552013e-14,
+      "expression": "div(sub(X1, X0), X2)",
+      "runtime_sec": 28.84252429008484
+    },
+    "xgboost": {
+      "exact_match": false,
+      "mse": 1.720838189125061,
+      "runtime_sec": 0.03589510917663574
+    },
+    "pysr": {
+      "exact_match": true,
+      "mse": 1.1354472592185749e-13,
+      "expression": "(-x0 + x1 - 6.078859e-6/(x2/((x2/(-16.520508)))))/x2",
+      "runtime_sec": 20.45639681816101
+    },
+    "ground_truth": "(v2 - v1) / t"
+  },
+  "Power": {
+    "gplearn": {
+      "exact_match": true,
+      "mse": 8.049028023954241e-13,
+      "expression": "mul(X1, X0)",
+      "runtime_sec": 116.68114280700684
+    },
+    "xgboost": {
+      "exact_match": false,
+      "mse": 30.595134735107422,
+      "runtime_sec": 0.029451370239257812
+    },
+    "pysr": {
+      "exact_match": true,
+      "mse": 1.0373923942097463e-12,
+      "expression": "x1*(x0 - 1*0.99999976) + x1",
+      "runtime_sec": 20.198280811309814
+    },
+    "ground_truth": "V * I"
+  }
+}

@@ -1,0 +1,491 @@
+<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" width="1200" height="362" onload="init(evt)" viewBox="0 0 1200 362" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:fg="http://github.com/jonhoo/inferno"><!--Flame graph stack visualization. See https://github.com/brendangregg/FlameGraph for latest version, and http://www.brendangregg.com/flamegraphs.html for examples.--><!--NOTES: --><defs><linearGradient id="background" y1="0" y2="1" x1="0" x2="0"><stop stop-color="#eeeeee" offset="5%"/><stop stop-color="#eeeeb0" offset="95%"/></linearGradient></defs><style type="text/css">
+text { font-family:monospace; font-size:12px }
+#title { text-anchor:middle; font-size:17px; }
+#matched { text-anchor:end; }
+#search { text-anchor:end; opacity:0.1; cursor:pointer; }
+#search:hover, #search.show { opacity:1; }
+#subtitle { text-anchor:middle; font-color:rgb(160,160,160); }
+#unzoom { cursor:pointer; }
+#frames > *:hover { stroke:black; stroke-width:0.5; cursor:pointer; }
+.hide { display:none; }
+.parent { opacity:0.5; }
+</style><script type="text/ecmascript"><![CDATA[
+        var nametype = 'Function:';
+        var fontsize = 12;
+        var fontwidth = 0.59;
+        var xpad = 10;
+        var inverted = true;
+        var searchcolor = 'rgb(230,0,230)';
+        var fluiddrawing = true;
+        var truncate_text_right = false;
+    ]]><![CDATA["use strict";
+var details, searchbtn, unzoombtn, matchedtxt, svg, searching, frames, known_font_width;
+function init(evt) {
+    details = document.getElementById("details").firstChild;
+    searchbtn = document.getElementById("search");
+    unzoombtn = document.getElementById("unzoom");
+    matchedtxt = document.getElementById("matched");
+    svg = document.getElementsByTagName("svg")[0];
+    frames = document.getElementById("frames");
+    known_font_width = get_monospace_width(frames);
+    total_samples = parseInt(frames.attributes.total_samples.value);
+    searching = 0;
+
+    // Use GET parameters to restore a flamegraph's state.
+    var restore_state = function() {
+        var params = get_params();
+        if (params.x && params.y)
+            zoom(find_group(document.querySelector('[*|x="' + params.x + '"][y="' + params.y + '"]')));
+        if (params.s)
+            search(params.s);
+    };
+
+    if (fluiddrawing) {
+        // Make width dynamic so the SVG fits its parent's width.
+        svg.removeAttribute("width");
+        // Edge requires us to have a viewBox that gets updated with size changes.
+        var isEdge = /Edge\/\d./i.test(navigator.userAgent);
+        if (!isEdge) {
+            svg.removeAttribute("viewBox");
+        }
+        var update_for_width_change = function() {
+            if (isEdge) {
+                svg.attributes.viewBox.value = "0 0 " + svg.width.baseVal.value + " " + svg.height.baseVal.value;
+            }
+
+            // Keep consistent padding on left and right of frames container.
+            frames.attributes.width.value = svg.width.baseVal.value - xpad * 2;
+
+            // Text truncation needs to be adjusted for the current width.
+            update_text_for_elements(frames.children);
+
+            // Keep search elements at a fixed distance from right edge.
+            var svgWidth = svg.width.baseVal.value;
+            searchbtn.attributes.x.value = svgWidth - xpad;
+            matchedtxt.attributes.x.value = svgWidth - xpad;
+        };
+        window.addEventListener('resize', function() {
+            update_for_width_change();
+        });
+        // This needs to be done asynchronously for Safari to work.
+        setTimeout(function() {
+            unzoom();
+            update_for_width_change();
+            restore_state();
+        }, 0);
+    } else {
+        restore_state();
+    }
+}
+// event listeners
+window.addEventListener("click", function(e) {
+    var target = find_group(e.target);
+    if (target) {
+        if (target.nodeName == "a") {
+            if (e.ctrlKey === false) return;
+            e.preventDefault();
+        }
+        if (target.classList.contains("parent")) unzoom();
+        zoom(target);
+
+        // set parameters for zoom state
+        var el = target.querySelector("rect");
+        if (el && el.attributes && el.attributes.y && el.attributes["fg:x"]) {
+            var params = get_params()
+            params.x = el.attributes["fg:x"].value;
+            params.y = el.attributes.y.value;
+            history.replaceState(null, null, parse_params(params));
+        }
+    }
+    else if (e.target.id == "unzoom") {
+        unzoom();
+
+        // remove zoom state
+        var params = get_params();
+        if (params.x) delete params.x;
+        if (params.y) delete params.y;
+        history.replaceState(null, null, parse_params(params));
+    }
+    else if (e.target.id == "search") search_prompt();
+}, false)
+// mouse-over for info
+// show
+window.addEventListener("mouseover", function(e) {
+    var target = find_group(e.target);
+    if (target) details.nodeValue = nametype + " " + g_to_text(target);
+}, false)
+// clear
+window.addEventListener("mouseout", function(e) {
+    var target = find_group(e.target);
+    if (target) details.nodeValue = ' ';
+}, false)
+// ctrl-F for search
+window.addEventListener("keydown",function (e) {
+    if (e.keyCode === 114 || (e.ctrlKey && e.keyCode === 70)) {
+        e.preventDefault();
+        search_prompt();
+    }
+}, false)
+// functions
+function get_params() {
+    var params = {};
+    var paramsarr = window.location.search.substr(1).split('&');
+    for (var i = 0; i < paramsarr.length; ++i) {
+        var tmp = paramsarr[i].split("=");
+        if (!tmp[0] || !tmp[1]) continue;
+        params[tmp[0]]  = decodeURIComponent(tmp[1]);
+    }
+    return params;
+}
+function parse_params(params) {
+    var uri = "?";
+    for (var key in params) {
+        uri += key + '=' + encodeURIComponent(params[key]) + '&';
+    }
+    if (uri.slice(-1) == "&")
+        uri = uri.substring(0, uri.length - 1);
+    if (uri == '?')
+        uri = window.location.href.split('?')[0];
+    return uri;
+}
+function find_child(node, selector) {
+    var children = node.querySelectorAll(selector);
+    if (children.length) return children[0];
+    return;
+}
+function find_group(node) {
+    var parent = node.parentElement;
+    if (!parent) return;
+    if (parent.id == "frames") return node;
+    return find_group(parent);
+}
+function orig_save(e, attr, val) {
+    if (e.attributes["fg:orig_" + attr] != undefined) return;
+    if (e.attributes[attr] == undefined) return;
+    if (val == undefined) val = e.attributes[attr].value;
+    e.setAttribute("fg:orig_" + attr, val);
+}
+function orig_load(e, attr) {
+    if (e.attributes["fg:orig_"+attr] == undefined) return;
+    e.attributes[attr].value = e.attributes["fg:orig_" + attr].value;
+    e.removeAttribute("fg:orig_" + attr);
+}
+function g_to_text(e) {
+    var text = find_child(e, "title").firstChild.nodeValue;
+    return (text)
+}
+function g_to_func(e) {
+    var func = g_to_text(e);
+    // if there's any manipulation we want to do to the function
+    // name before it's searched, do it here before returning.
+    return (func);
+}
+function get_monospace_width(frames) {
+    // Given the id="frames" element, return the width of text characters if
+    // this is a monospace font, otherwise return 0.
+    text = find_child(frames.children[0], "text");
+    originalContent = text.textContent;
+    text.textContent = "!";
+    bangWidth = text.getComputedTextLength();
+    text.textContent = "W";
+    wWidth = text.getComputedTextLength();
+    text.textContent = originalContent;
+    if (bangWidth === wWidth) {
+        return bangWidth;
+    } else {
+        return 0;
+    }
+}
+function update_text_for_elements(elements) {
+    // In order to render quickly in the browser, you want to do one pass of
+    // reading attributes, and one pass of mutating attributes. See
+    // https://web.dev/avoid-large-complex-layouts-and-layout-thrashing/ for details.
+
+    // Fall back to inefficient calculation, if we're variable-width font.
+    // TODO This should be optimized somehow too.
+    if (known_font_width === 0) {
+        for (var i = 0; i < elements.length; i++) {
+            update_text(elements[i]);
+        }
+        return;
+    }
+
+    var textElemNewAttributes = [];
+    for (var i = 0; i < elements.length; i++) {
+        var e = elements[i];
+        var r = find_child(e, "rect");
+        var t = find_child(e, "text");
+        var w = parseFloat(r.attributes.width.value) * frames.attributes.width.value / 100 - 3;
+        var txt = find_child(e, "title").textContent.replace(/\([^(]*\)$/,"");
+        var newX = format_percent((parseFloat(r.attributes.x.value) + (100 * 3 / frames.attributes.width.value)));
+
+        // Smaller than this size won't fit anything
+        if (w < 2 * known_font_width) {
+            textElemNewAttributes.push([newX, ""]);
+            continue;
+        }
+
+        // Fit in full text width
+        if (txt.length * known_font_width < w) {
+            textElemNewAttributes.push([newX, txt]);
+            continue;
+        }
+
+        var substringLength = Math.floor(w / known_font_width) - 2;
+        if (truncate_text_right) {
+            // Truncate the right side of the text.
+            textElemNewAttributes.push([newX, txt.substring(0, substringLength) + ".."]);
+            continue;
+        } else {
+            // Truncate the left side of the text.
+            textElemNewAttributes.push([newX, ".." + txt.substring(txt.length - substringLength, txt.length)]);
+            continue;
+        }
+    }
+
+    console.assert(textElemNewAttributes.length === elements.length, "Resize failed, please file a bug at https://github.com/jonhoo/inferno/");
+
+    // Now that we know new textContent, set it all in one go so we don't refresh a bazillion times.
+    for (var i = 0; i < elements.length; i++) {
+        var e = elements[i];
+        var values = textElemNewAttributes[i];
+        var t = find_child(e, "text");
+        t.attributes.x.value = values[0];
+        t.textContent = values[1];
+    }
+}
+
+function update_text(e) {
+    var r = find_child(e, "rect");
+    var t = find_child(e, "text");
+    var w = parseFloat(r.attributes.width.value) * frames.attributes.width.value / 100 - 3;
+    var txt = find_child(e, "title").textContent.replace(/\([^(]*\)$/,"");
+    t.attributes.x.value = format_percent((parseFloat(r.attributes.x.value) + (100 * 3 / frames.attributes.width.value)));
+
+    // Smaller than this size won't fit anything
+    if (w < 2 * fontsize * fontwidth) {
+        t.textContent = "";
+        return;
+    }
+    t.textContent = txt;
+    // Fit in full text width
+    if (t.getComputedTextLength() < w)
+        return;
+    if (truncate_text_right) {
+        // Truncate the right side of the text.
+        for (var x = txt.length - 2; x > 0; x--) {
+            if (t.getSubStringLength(0, x + 2) <= w) {
+                t.textContent = txt.substring(0, x) + "..";
+                return;
+            }
+        }
+    } else {
+        // Truncate the left side of the text.
+        for (var x = 2; x < txt.length; x++) {
+            if (t.getSubStringLength(x - 2, txt.length) <= w) {
+                t.textContent = ".." + txt.substring(x, txt.length);
+                return;
+            }
+        }
+    }
+    t.textContent = "";
+}
+// zoom
+function zoom_reset(e) {
+    if (e.tagName == "rect") {
+        e.attributes.x.value = format_percent(100 * parseInt(e.attributes["fg:x"].value) / total_samples);
+        e.attributes.width.value = format_percent(100 * parseInt(e.attributes["fg:w"].value) / total_samples);
+    }
+    if (e.childNodes == undefined) return;
+    for(var i = 0, c = e.childNodes; i < c.length; i++) {
+        zoom_reset(c[i]);
+    }
+}
+function zoom_child(e, x, zoomed_width_samples) {
+    if (e.tagName == "text") {
+        var parent_x = parseFloat(find_child(e.parentNode, "rect[x]").attributes.x.value);
+        e.attributes.x.value = format_percent(parent_x + (100 * 3 / frames.attributes.width.value));
+    } else if (e.tagName == "rect") {
+        e.attributes.x.value = format_percent(100 * (parseInt(e.attributes["fg:x"].value) - x) / zoomed_width_samples);
+        e.attributes.width.value = format_percent(100 * parseInt(e.attributes["fg:w"].value) / zoomed_width_samples);
+    }
+    if (e.childNodes == undefined) return;
+    for(var i = 0, c = e.childNodes; i < c.length; i++) {
+        zoom_child(c[i], x, zoomed_width_samples);
+    }
+}
+function zoom_parent(e) {
+    if (e.attributes) {
+        if (e.attributes.x != undefined) {
+            e.attributes.x.value = "0.0%";
+        }
+        if (e.attributes.width != undefined) {
+            e.attributes.width.value = "100.0%";
+        }
+    }
+    if (e.childNodes == undefined) return;
+    for(var i = 0, c = e.childNodes; i < c.length; i++) {
+        zoom_parent(c[i]);
+    }
+}
+function zoom(node) {
+    var attr = find_child(node, "rect").attributes;
+    var width = parseInt(attr["fg:w"].value);
+    var xmin = parseInt(attr["fg:x"].value);
+    var xmax = xmin + width;
+    var ymin = parseFloat(attr.y.value);
+    unzoombtn.classList.remove("hide");
+    var el = frames.children;
+    var to_update_text = [];
+    for (var i = 0; i < el.length; i++) {
+        var e = el[i];
+        var a = find_child(e, "rect").attributes;
+        var ex = parseInt(a["fg:x"].value);
+        var ew = parseInt(a["fg:w"].value);
+        // Is it an ancestor
+        if (!inverted) {
+            var upstack = parseFloat(a.y.value) > ymin;
+        } else {
+            var upstack = parseFloat(a.y.value) < ymin;
+        }
+        if (upstack) {
+            // Direct ancestor
+            if (ex <= xmin && (ex+ew) >= xmax) {
+                e.classList.add("parent");
+                zoom_parent(e);
+                to_update_text.push(e);
+            }
+            // not in current path
+            else
+                e.classList.add("hide");
+        }
+        // Children maybe
+        else {
+            // no common path
+            if (ex < xmin || ex >= xmax) {
+                e.classList.add("hide");
+            }
+            else {
+                zoom_child(e, xmin, width);
+                to_update_text.push(e);
+            }
+        }
+    }
+    update_text_for_elements(to_update_text);
+}
+function unzoom() {
+    unzoombtn.classList.add("hide");
+    var el = frames.children;
+    for(var i = 0; i < el.length; i++) {
+        el[i].classList.remove("parent");
+        el[i].classList.remove("hide");
+        zoom_reset(el[i]);
+    }
+    update_text_for_elements(el);
+}
+// search
+function reset_search() {
+    var el = document.querySelectorAll("#frames rect");
+    for (var i = 0; i < el.length; i++) {
+        orig_load(el[i], "fill")
+    }
+    var params = get_params();
+    delete params.s;
+    history.replaceState(null, null, parse_params(params));
+}
+function search_prompt() {
+    if (!searching) {
+        var term = prompt("Enter a search term (regexp " +
+            "allowed, eg: ^ext4_)", "");
+        if (term != null) {
+            search(term)
+        }
+    } else {
+        reset_search();
+        searching = 0;
+        searchbtn.classList.remove("show");
+        searchbtn.firstChild.nodeValue = "Search"
+        matchedtxt.classList.add("hide");
+        matchedtxt.firstChild.nodeValue = ""
+    }
+}
+function search(term) {
+    var re = new RegExp(term);
+    var el = frames.children;
+    var matches = new Object();
+    var maxwidth = 0;
+    for (var i = 0; i < el.length; i++) {
+        var e = el[i];
+        // Skip over frames which are either not visible, or below the zoomed-to frame
+        if (e.classList.contains("hide") || e.classList.contains("parent")) {
+            continue;
+        }
+        var func = g_to_func(e);
+        var rect = find_child(e, "rect");
+        if (func == null || rect == null)
+            continue;
+        // Save max width. Only works as we have a root frame
+        var w = parseInt(rect.attributes["fg:w"].value);
+        if (w > maxwidth)
+            maxwidth = w;
+        if (func.match(re)) {
+            // highlight
+            var x = parseInt(rect.attributes["fg:x"].value);
+            orig_save(rect, "fill");
+            rect.attributes.fill.value = searchcolor;
+            // remember matches
+            if (matches[x] == undefined) {
+                matches[x] = w;
+            } else {
+                if (w > matches[x]) {
+                    // overwrite with parent
+                    matches[x] = w;
+                }
+            }
+            searching = 1;
+        }
+    }
+    if (!searching)
+        return;
+    var params = get_params();
+    params.s = term;
+    history.replaceState(null, null, parse_params(params));
+
+    searchbtn.classList.add("show");
+    searchbtn.firstChild.nodeValue = "Reset Search";
+    // calculate percent matched, excluding vertical overlap
+    var count = 0;
+    var lastx = -1;
+    var lastw = 0;
+    var keys = Array();
+    for (k in matches) {
+        if (matches.hasOwnProperty(k))
+            keys.push(k);
+    }
+    // sort the matched frames by their x location
+    // ascending, then width descending
+    keys.sort(function(a, b){
+        return a - b;
+    });
+    // Step through frames saving only the biggest bottom-up frames
+    // thanks to the sort order. This relies on the tree property
+    // where children are always smaller than their parents.
+    for (var k in keys) {
+        var x = parseInt(keys[k]);
+        var w = matches[keys[k]];
+        if (x >= lastx + lastw) {
+            count += w;
+            lastx = x;
+            lastw = w;
+        }
+    }
+    // display matched percent
+    matchedtxt.classList.remove("hide");
+    var pct = 100 * count / maxwidth;
+    if (pct != 100) pct = pct.toFixed(1);
+    matchedtxt.firstChild.nodeValue = "Matched: " + pct + "%";
+}
+function format_percent(n) {
+    return n.toFixed(4) + "%";
+}
+]]></script><rect x="0" y="0" width="100%" height="362" fill="url(#background)"/><text id="title" fill="rgb(0,0,0)" x="50.0000%" y="24.00">py-spy record --output experiments/PipelineParallel_exp2/results/flamegraph\model_21_sleep.svg --pid 19608 --rate 1000 --duration 30</text><text id="details" fill="rgb(0,0,0)" x="10" y="40.00"> </text><text id="unzoom" class="hide" fill="rgb(0,0,0)" x="10" y="24.00">Reset Zoom</text><text id="search" fill="rgb(0,0,0)" x="1190" y="24.00">Search</text><text id="matched" fill="rgb(0,0,0)" x="1190" y="351.00"> </text><svg id="frames" x="10" width="1180" total_samples="17513"><g><title>infer_with_task_parallel (ATF\GraphManager\graph_processor.py:460) (28 samples, 0.16%)</title><rect x="0.0742%" y="148" width="0.1599%" height="15" fill="rgb(227,0,7)" fg:x="13" fg:w="28"/><text x="0.3242%" y="158.50"></text></g><g><title>submit (concurrent\futures\thread.py:176) (18 samples, 0.10%)</title><rect x="0.2798%" y="164" width="0.1028%" height="15" fill="rgb(217,0,24)" fg:x="49" fg:w="18"/><text x="0.5298%" y="174.50"></text></g><g><title>infer_with_task_parallel (ATF\GraphManager\graph_processor.py:464) (60 samples, 0.34%)</title><rect x="0.2455%" y="148" width="0.3426%" height="15" fill="rgb(221,193,54)" fg:x="43" fg:w="60"/><text x="0.4955%" y="158.50"></text></g><g><title>submit (concurrent\futures\thread.py:180) (27 samples, 0.15%)</title><rect x="0.4340%" y="164" width="0.1542%" height="15" fill="rgb(248,212,6)" fg:x="76" fg:w="27"/><text x="0.6840%" y="174.50"></text></g><g><title>forward (flamegraph_analysis.py:126) (118 samples, 0.67%)</title><rect x="0.0057%" y="116" width="0.6738%" height="15" fill="rgb(208,68,35)" fg:x="1" fg:w="118"/><text x="0.2557%" y="126.50"></text></g><g><title>infer_with_task_parallel (ATF\core\adaptoflux.py:327) (118 samples, 0.67%)</title><rect x="0.0057%" y="132" width="0.6738%" height="15" fill="rgb(232,128,0)" fg:x="1" fg:w="118"/><text x="0.2557%" y="142.50"></text></g><g><title>record_flamegraph (flamegraph_analysis.py:219) (122 samples, 0.70%)</title><rect x="0.0000%" y="100" width="0.6966%" height="15" fill="rgb(207,160,47)" fg:x="0" fg:w="122"/><text x="0.2500%" y="110.50"></text></g><g><title>forward (flamegraph_analysis.py:126) (25 samples, 0.14%)</title><rect x="0.6966%" y="116" width="0.1428%" height="15" fill="rgb(228,23,34)" fg:x="122" fg:w="25"/><text x="0.9466%" y="126.50"></text></g><g><title>infer_with_task_parallel (ATF\core\adaptoflux.py:327) (25 samples, 0.14%)</title><rect x="0.6966%" y="132" width="0.1428%" height="15" fill="rgb(218,30,26)" fg:x="122" fg:w="25"/><text x="0.9466%" y="142.50"></text></g><g><title>infer_with_task_parallel (ATF\GraphManager\graph_processor.py:464) (20 samples, 0.11%)</title><rect x="0.7252%" y="148" width="0.1142%" height="15" fill="rgb(220,122,19)" fg:x="127" fg:w="20"/><text x="0.9752%" y="158.50"></text></g><g><title>&lt;module&gt; (flamegraph_analysis.py:342) (148 samples, 0.85%)</title><rect x="0.0000%" y="68" width="0.8451%" height="15" fill="rgb(250,228,42)" fg:x="0" fg:w="148"/><text x="0.2500%" y="78.50"></text></g><g><title>main (flamegraph_analysis.py:298) (148 samples, 0.85%)</title><rect x="0.0000%" y="84" width="0.8451%" height="15" fill="rgb(240,193,28)" fg:x="0" fg:w="148"/><text x="0.2500%" y="94.50"></text></g><g><title>record_flamegraph (flamegraph_analysis.py:222) (26 samples, 0.15%)</title><rect x="0.6966%" y="100" width="0.1485%" height="15" fill="rgb(216,20,37)" fg:x="122" fg:w="26"/><text x="0.9466%" y="110.50"></text></g><g><title>_worker (concurrent\futures\thread.py:90) (252 samples, 1.44%)</title><rect x="1.0221%" y="116" width="1.4389%" height="15" fill="rgb(206,188,39)" fg:x="179" fg:w="252"/><text x="1.2721%" y="126.50"></text></g><g><title>process_node (ATF\GraphManager\graph_processor.py:328) (20 samples, 0.11%)</title><rect x="2.9578%" y="148" width="0.1142%" height="15" fill="rgb(217,207,13)" fg:x="518" fg:w="20"/><text x="3.2078%" y="158.50"></text></g><g><title>process_node (ATF\GraphManager\graph_processor.py:333) (28 samples, 0.16%)</title><rect x="3.0834%" y="148" width="0.1599%" height="15" fill="rgb(231,73,38)" fg:x="540" fg:w="28"/><text x="3.3334%" y="158.50"></text></g><g><title>__getitem__ (networkx\classes\graph.py:522) (19 samples, 0.11%)</title><rect x="3.1348%" y="164" width="0.1085%" height="15" fill="rgb(225,20,46)" fg:x="549" fg:w="19"/><text x="3.3848%" y="174.50"></text></g><g><title>process_node (ATF\GraphManager\graph_processor.py:341) (21 samples, 0.12%)</title><rect x="3.3118%" y="148" width="0.1199%" height="15" fill="rgb(210,31,41)" fg:x="580" fg:w="21"/><text x="3.5618%" y="158.50"></text></g><g><title>process_node (ATF\GraphManager\graph_processor.py:350) (30 samples, 0.17%)</title><rect x="3.4489%" y="148" width="0.1713%" height="15" fill="rgb(221,200,47)" fg:x="604" fg:w="30"/><text x="3.6989%" y="158.50"></text></g><g><title>hstack (numpy\_core\shape_base.py:364) (18 samples, 0.10%)</title><rect x="3.5174%" y="164" width="0.1028%" height="15" fill="rgb(226,26,5)" fg:x="616" fg:w="18"/><text x="3.7674%" y="174.50"></text></g><g><title>_is_internal_frame (logging\__init__.py:202) (69 samples, 0.39%)</title><rect x="3.9514%" y="212" width="0.3940%" height="15" fill="rgb(249,33,26)" fg:x="692" fg:w="69"/><text x="4.2014%" y="222.50"></text></g><g><title>normcase (&lt;frozen ntpath&gt;:68) (47 samples, 0.27%)</title><rect x="4.0770%" y="228" width="0.2684%" height="15" fill="rgb(235,183,28)" fg:x="714" fg:w="47"/><text x="4.3270%" y="238.50"></text></g><g><title>findCaller (logging\__init__.py:1632) (79 samples, 0.45%)</title><rect x="3.9285%" y="196" width="0.4511%" height="15" fill="rgb(221,5,38)" fg:x="688" fg:w="79"/><text x="4.1785%" y="206.50"></text></g><g><title>_log (logging\__init__.py:1672) (122 samples, 0.70%)</title><rect x="3.8314%" y="180" width="0.6966%" height="15" fill="rgb(247,18,42)" fg:x="671" fg:w="122"/><text x="4.0814%" y="190.50"></text></g><g><title>findCaller (logging\__init__.py:1643) (24 samples, 0.14%)</title><rect x="4.3910%" y="196" width="0.1370%" height="15" fill="rgb(241,131,45)" fg:x="769" fg:w="24"/><text x="4.6410%" y="206.50"></text></g><g><title>__init__ (logging\__init__.py:332) (58 samples, 0.33%)</title><rect x="4.6537%" y="212" width="0.3312%" height="15" fill="rgb(249,31,29)" fg:x="815" fg:w="58"/><text x="4.9037%" y="222.50"></text></g><g><title>basename (&lt;frozen ntpath&gt;:270) (55 samples, 0.31%)</title><rect x="4.6708%" y="228" width="0.3141%" height="15" fill="rgb(225,111,53)" fg:x="818" fg:w="55"/><text x="4.9208%" y="238.50"></text></g><g><title>_splitext (&lt;frozen genericpath&gt;:143) (19 samples, 0.11%)</title><rect x="5.1447%" y="244" width="0.1085%" height="15" fill="rgb(238,160,17)" fg:x="901" fg:w="19"/><text x="5.3947%" y="254.50"></text></g><g><title>__init__ (logging\__init__.py:333) (55 samples, 0.31%)</title><rect x="4.9849%" y="212" width="0.3141%" height="15" fill="rgb(214,148,48)" fg:x="873" fg:w="55"/><text x="5.2349%" y="222.50"></text></g><g><title>splitext (&lt;frozen ntpath&gt;:262) (46 samples, 0.26%)</title><rect x="5.0363%" y="228" width="0.2627%" height="15" fill="rgb(232,36,49)" fg:x="882" fg:w="46"/><text x="5.2863%" y="238.50"></text></g><g><title>makeRecord (logging\__init__.py:1652) (188 samples, 1.07%)</title><rect x="4.5509%" y="196" width="1.0735%" height="15" fill="rgb(209,103,24)" fg:x="797" fg:w="188"/><text x="4.8009%" y="206.50"></text></g><g><title>_log (logging\__init__.py:1682) (192 samples, 1.10%)</title><rect x="4.5338%" y="180" width="1.0963%" height="15" fill="rgb(229,88,8)" fg:x="794" fg:w="192"/><text x="4.7838%" y="190.50"></text></g><g><title>handle (logging\__init__.py:1026) (52 samples, 0.30%)</title><rect x="5.7500%" y="228" width="0.2969%" height="15" fill="rgb(213,181,19)" fg:x="1007" fg:w="52"/><text x="6.0000%" y="238.50"></text></g><g><title>acquire (logging\__init__.py:973) (51 samples, 0.29%)</title><rect x="5.7557%" y="244" width="0.2912%" height="15" fill="rgb(254,191,54)" fg:x="1008" fg:w="51"/><text x="6.0057%" y="254.50"></text></g><g><title>format (logging\__init__.py:706) (36 samples, 0.21%)</title><rect x="6.1726%" y="276" width="0.2056%" height="15" fill="rgb(241,83,37)" fg:x="1081" fg:w="36"/><text x="6.4226%" y="286.50"></text></g><g><title>formatMessage (logging\__init__.py:675) (32 samples, 0.18%)</title><rect x="6.1954%" y="292" width="0.1827%" height="15" fill="rgb(233,36,39)" fg:x="1085" fg:w="32"/><text x="6.4454%" y="302.50"></text></g><g><title>format (logging\__init__.py:464) (30 samples, 0.17%)</title><rect x="6.2068%" y="308" width="0.1713%" height="15" fill="rgb(226,3,54)" fg:x="1087" fg:w="30"/><text x="6.4568%" y="318.50"></text></g><g><title>_format (logging\__init__.py:460) (18 samples, 0.10%)</title><rect x="6.2753%" y="324" width="0.1028%" height="15" fill="rgb(245,192,40)" fg:x="1099" fg:w="18"/><text x="6.5253%" y="334.50"></text></g><g><title>emit (logging\__init__.py:1160) (59 samples, 0.34%)</title><rect x="6.0584%" y="244" width="0.3369%" height="15" fill="rgb(238,167,29)" fg:x="1061" fg:w="59"/><text x="6.3084%" y="254.50"></text></g><g><title>format (logging\__init__.py:999) (52 samples, 0.30%)</title><rect x="6.0983%" y="260" width="0.2969%" height="15" fill="rgb(232,182,51)" fg:x="1068" fg:w="52"/><text x="6.3483%" y="270.50"></text></g><g><title>emit (logging\__init__.py:1163) (520 samples, 2.97%)</title><rect x="6.3952%" y="244" width="2.9692%" height="15" fill="rgb(231,60,39)" fg:x="1120" fg:w="520"/><text x="6.6452%" y="254.50">emi..</text></g><g><title>callHandlers (logging\__init__.py:1762) (650 samples, 3.71%)</title><rect x="5.7158%" y="212" width="3.7115%" height="15" fill="rgb(208,69,12)" fg:x="1001" fg:w="650"/><text x="5.9658%" y="222.50">call..</text></g><g><title>handle (logging\__init__.py:1028) (592 samples, 3.38%)</title><rect x="6.0469%" y="228" width="3.3803%" height="15" fill="rgb(235,93,37)" fg:x="1059" fg:w="592"/><text x="6.2969%" y="238.50">han..</text></g><g><title>process_node (ATF\GraphManager\graph_processor.py:358) (1,010 samples, 5.77%)</title><rect x="3.6944%" y="148" width="5.7671%" height="15" fill="rgb(213,116,39)" fg:x="647" fg:w="1010"/><text x="3.9444%" y="158.50">process..</text></g><g><title>warning (logging\__init__.py:1551) (997 samples, 5.69%)</title><rect x="3.7686%" y="164" width="5.6929%" height="15" fill="rgb(222,207,29)" fg:x="660" fg:w="997"/><text x="4.0186%" y="174.50">warning..</text></g><g><title>_log (logging\__init__.py:1684) (671 samples, 3.83%)</title><rect x="5.6301%" y="180" width="3.8314%" height="15" fill="rgb(206,96,30)" fg:x="986" fg:w="671"/><text x="5.8801%" y="190.50">_log..</text></g><g><title>handle (logging\__init__.py:1700) (664 samples, 3.79%)</title><rect x="5.6701%" y="196" width="3.7915%" height="15" fill="rgb(218,138,4)" fg:x="993" fg:w="664"/><text x="5.9201%" y="206.50">hand..</text></g><g><title>process_node (ATF\GraphManager\graph_processor.py:404) (255 samples, 1.46%)</title><rect x="9.6443%" y="148" width="1.4561%" height="15" fill="rgb(250,191,14)" fg:x="1689" fg:w="255"/><text x="9.8943%" y="158.50"></text></g><g><title>wrapped (flamegraph_analysis.py:96) (31 samples, 0.18%)</title><rect x="15.4628%" y="164" width="0.1770%" height="15" fill="rgb(239,60,40)" fg:x="2708" fg:w="31"/><text x="15.7128%" y="174.50"></text></g><g><title>decrement (methods_GIL.py:138) (21 samples, 0.12%)</title><rect x="16.1537%" y="180" width="0.1199%" height="15" fill="rgb(206,27,48)" fg:x="2829" fg:w="21"/><text x="16.4037%" y="190.50"></text></g><g><title>increment (methods_GIL.py:155) (29 samples, 0.17%)</title><rect x="16.3536%" y="180" width="0.1656%" height="15" fill="rgb(225,35,8)" fg:x="2864" fg:w="29"/><text x="16.6036%" y="190.50"></text></g><g><title>wrapped (flamegraph_analysis.py:97) (189 samples, 1.08%)</title><rect x="15.6398%" y="164" width="1.0792%" height="15" fill="rgb(250,213,24)" fg:x="2739" fg:w="189"/><text x="15.8898%" y="174.50"></text></g><g><title>wrapped (flamegraph_analysis.py:98) (14,065 samples, 80.31%)</title><rect x="16.7190%" y="164" width="80.3118%" height="15" fill="rgb(247,123,22)" fg:x="2928" fg:w="14065"/><text x="16.9690%" y="174.50">wrapped (flamegraph_analysis.py:98)</text></g><g><title>process_node (ATF\GraphManager\graph_processor.py:406) (15,056 samples, 85.97%)</title><rect x="11.1060%" y="148" width="85.9704%" height="15" fill="rgb(231,138,38)" fg:x="1945" fg:w="15056"/><text x="11.3560%" y="158.50">process_node (ATF\GraphManager\graph_processor.py:406)</text></g><g><title>process_node (ATF\GraphManager\graph_processor.py:407) (117 samples, 0.67%)</title><rect x="97.0765%" y="148" width="0.6681%" height="15" fill="rgb(231,145,46)" fg:x="17001" fg:w="117"/><text x="97.3265%" y="158.50"></text></g><g><title>process_node (ATF\GraphManager\graph_processor.py:409) (89 samples, 0.51%)</title><rect x="97.7560%" y="148" width="0.5082%" height="15" fill="rgb(251,118,11)" fg:x="17120" fg:w="89"/><text x="98.0060%" y="158.50"></text></g><g><title>process_node (ATF\GraphManager\graph_processor.py:411) (31 samples, 0.18%)</title><rect x="98.2984%" y="148" width="0.1770%" height="15" fill="rgb(217,147,25)" fg:x="17215" fg:w="31"/><text x="98.5484%" y="158.50"></text></g><g><title>process_node (ATF\GraphManager\graph_processor.py:415) (107 samples, 0.61%)</title><rect x="98.4754%" y="148" width="0.6110%" height="15" fill="rgb(247,81,37)" fg:x="17246" fg:w="107"/><text x="98.7254%" y="158.50"></text></g><g><title>process_node (ATF\GraphManager\graph_processor.py:421) (20 samples, 0.11%)</title><rect x="99.2120%" y="148" width="0.1142%" height="15" fill="rgb(209,12,38)" fg:x="17375" fg:w="20"/><text x="99.4620%" y="158.50"></text></g><g><title>run (concurrent\futures\thread.py:59) (16,986 samples, 96.99%)</title><rect x="2.5467%" y="132" width="96.9908%" height="15" fill="rgb(227,1,9)" fg:x="446" fg:w="16986"/><text x="2.7967%" y="142.50">run (concurrent\futures\thread.py:59)</text></g><g><title>process_node (ATF\GraphManager\graph_processor.py:429) (29 samples, 0.17%)</title><rect x="99.3719%" y="148" width="0.1656%" height="15" fill="rgb(248,47,43)" fg:x="17403" fg:w="29"/><text x="99.6219%" y="158.50"></text></g><g><title>_worker (concurrent\futures\thread.py:93) (17,048 samples, 97.34%)</title><rect x="2.4610%" y="116" width="97.3448%" height="15" fill="rgb(221,10,30)" fg:x="431" fg:w="17048"/><text x="2.7110%" y="126.50">_worker (concurrent\futures\thread.py:93)</text></g><g><title>run (concurrent\futures\thread.py:65) (47 samples, 0.27%)</title><rect x="99.5375%" y="132" width="0.2684%" height="15" fill="rgb(210,229,1)" fg:x="17432" fg:w="47"/><text x="99.7875%" y="142.50"></text></g><g><title>all (17,513 samples, 100%)</title><rect x="0.0000%" y="52" width="100.0000%" height="15" fill="rgb(222,148,37)" fg:x="0" fg:w="17513"/><text x="0.2500%" y="62.50"></text></g><g><title>_bootstrap (threading.py:1032) (17,365 samples, 99.15%)</title><rect x="0.8451%" y="68" width="99.1549%" height="15" fill="rgb(234,67,33)" fg:x="148" fg:w="17365"/><text x="1.0951%" y="78.50">_bootstrap (threading.py:1032)</text></g><g><title>_bootstrap_inner (threading.py:1075) (17,361 samples, 99.13%)</title><rect x="0.8679%" y="84" width="99.1321%" height="15" fill="rgb(247,98,35)" fg:x="152" fg:w="17361"/><text x="1.1179%" y="94.50">_bootstrap_inner (threading.py:1075)</text></g><g><title>run (threading.py:1012) (17,361 samples, 99.13%)</title><rect x="0.8679%" y="100" width="99.1321%" height="15" fill="rgb(247,138,52)" fg:x="152" fg:w="17361"/><text x="1.1179%" y="110.50">run (threading.py:1012)</text></g></svg></svg>

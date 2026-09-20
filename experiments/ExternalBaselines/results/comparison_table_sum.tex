@@ -1,0 +1,27 @@
+\begin{table}[h]
+\centering
+\caption{Parameter-free symbolic regression with collapse=sum (best of 10 runs)}
+\label{tab:baselines_sum}
+\begin{tabular}{lccccc}
+\toprule
+Task & Exact? & MSE & Runtime (s) & Method Pool & Notes \\
+\midrule
+E_mc2 & No & 8e+00 & 532.1 & 8 & Supports actions \\
+\midrule
+F_ma & No & 4e+01 & 6.4 & 7 & Supports actions \\
+\midrule
+KE & No & 8e+02 & 39.9 & 8 & Supports actions \\
+\midrule
+Coulomb & No & 1e+01 & 8.6 & 6 & Supports actions \\
+\midrule
+IdealGas & No & 3e+04 & 2.2 & 5 & Supports actions \\
+\midrule
+OhmsLaw & \textbf{Yes} & 1e-12 & 0.5 & 5 & Supports actions \\
+\midrule
+Acceleration & No & 1e+01 & 9.7 & 6 & Supports actions \\
+\midrule
+Power & \textbf{Yes} & 2e-12 & 1.6 & 5 & Supports actions \\
+\midrule
+\bottomrule
+\end{tabular}
+\end{table}

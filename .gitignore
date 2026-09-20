@@ -25,3 +25,14 @@ best_models/
 experiments/embodied_bird/results/
 !experiments/embodied_snake/snake.json
 !experiments/minimal_stateful_comparison/results
+
+# --- camera-ready: re-include the small raw-result artifacts referenced by the paper ---
+# (the global rules above stay in force for everything else; these paths are shipped on purpose)
+!experiments/PipelineParallel_exp2/results/
+!experiments/PipelineParallel_exp2/results/**
+!experiments/ExternalBaselines/results/
+!experiments/ExternalBaselines/results/**
+experiments/ExternalBaselines/results/.ipynb_checkpoints/
+!experiments/GraphEvo_exp3/exp3_results/
+experiments/GraphEvo_exp3/exp3_results/*
+!experiments/GraphEvo_exp3/exp3_results/summary_table.csv

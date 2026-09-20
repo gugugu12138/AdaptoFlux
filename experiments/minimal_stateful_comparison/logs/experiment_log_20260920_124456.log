@@ -1,0 +1,78 @@
+2026-09-20 12:44:56,588 - 
+======================================================================
+2026-09-20 12:44:56,588 - STARTING EXPERIMENT: UNCONSTRAINED (10 Runs)
+2026-09-20 12:44:56,588 - ======================================================================
+2026-09-20 12:44:56,588 - 
+[UNCONSTRAINED] Starting Run 1/10 (Seed: 42)...
+2026-09-20 12:45:08,022 - [UNCONSTRAINED] Run 1 Finished. Final Acc: 33.0% | ❌ FAILED
+2026-09-20 12:45:08,023 - 
+[UNCONSTRAINED] Starting Run 2/10 (Seed: 43)...
+2026-09-20 12:45:28,748 - [UNCONSTRAINED] Run 2 Finished. Final Acc: 30.0% | ❌ FAILED
+2026-09-20 12:45:28,748 - 
+[UNCONSTRAINED] Starting Run 3/10 (Seed: 44)...
+2026-09-20 12:45:53,193 - [UNCONSTRAINED] Run 3 Finished. Final Acc: 22.0% | ❌ FAILED
+2026-09-20 12:45:53,202 - 
+[UNCONSTRAINED] Starting Run 4/10 (Seed: 45)...
+2026-09-20 12:46:17,396 - [UNCONSTRAINED] Run 4 Finished. Final Acc: 42.0% | ❌ FAILED
+2026-09-20 12:46:17,397 - 
+[UNCONSTRAINED] Starting Run 5/10 (Seed: 46)...
+2026-09-20 12:46:38,247 - [UNCONSTRAINED] Run 5 Finished. Final Acc: 24.0% | ❌ FAILED
+2026-09-20 12:46:38,248 - 
+[UNCONSTRAINED] Starting Run 6/10 (Seed: 47)...
+2026-09-20 12:47:01,744 - [UNCONSTRAINED] Run 6 Finished. Final Acc: 37.0% | ❌ FAILED
+2026-09-20 12:47:01,745 - 
+[UNCONSTRAINED] Starting Run 7/10 (Seed: 48)...
+2026-09-20 12:47:21,876 - [UNCONSTRAINED] Run 7 Finished. Final Acc: 32.0% | ❌ FAILED
+2026-09-20 12:47:21,877 - 
+[UNCONSTRAINED] Starting Run 8/10 (Seed: 49)...
+2026-09-20 12:47:45,001 - [UNCONSTRAINED] Run 8 Finished. Final Acc: 27.0% | ❌ FAILED
+2026-09-20 12:47:45,001 - 
+[UNCONSTRAINED] Starting Run 9/10 (Seed: 50)...
+2026-09-20 12:48:08,804 - [UNCONSTRAINED] Run 9 Finished. Final Acc: 24.0% | ❌ FAILED
+2026-09-20 12:48:08,804 - 
+[UNCONSTRAINED] Starting Run 10/10 (Seed: 51)...
+2026-09-20 12:48:31,210 - [UNCONSTRAINED] Run 10 Finished. Final Acc: 32.0% | ❌ FAILED
+2026-09-20 12:48:31,211 - 
+======================================================================
+2026-09-20 12:48:31,211 - STARTING EXPERIMENT: CONSTRAINED (10 Runs)
+2026-09-20 12:48:31,211 - ======================================================================
+2026-09-20 12:48:31,212 - 
+[CONSTRAINED] Starting Run 1/10 (Seed: 42)...
+2026-09-20 12:48:32,258 - [CONSTRAINED] Run 1 Finished. Final Acc: 100.0% | ✅ SUCCESS
+2026-09-20 12:48:32,259 - 
+[CONSTRAINED] Starting Run 2/10 (Seed: 43)...
+2026-09-20 12:48:33,391 - [CONSTRAINED] Run 2 Finished. Final Acc: 100.0% | ✅ SUCCESS
+2026-09-20 12:48:33,392 - 
+[CONSTRAINED] Starting Run 3/10 (Seed: 44)...
+2026-09-20 12:48:33,936 - [CONSTRAINED] Run 3 Finished. Final Acc: 0.0% | ❌ FAILED
+2026-09-20 12:48:33,936 - 
+[CONSTRAINED] Starting Run 4/10 (Seed: 45)...
+2026-09-20 12:48:35,037 - [CONSTRAINED] Run 4 Finished. Final Acc: 100.0% | ✅ SUCCESS
+2026-09-20 12:48:35,038 - 
+[CONSTRAINED] Starting Run 5/10 (Seed: 46)...
+2026-09-20 12:48:35,577 - [CONSTRAINED] Run 5 Finished. Final Acc: 0.0% | ❌ FAILED
+2026-09-20 12:48:35,578 - 
+[CONSTRAINED] Starting Run 6/10 (Seed: 47)...
+2026-09-20 12:48:37,320 - [CONSTRAINED] Run 6 Finished. Final Acc: 100.0% | ✅ SUCCESS
+2026-09-20 12:48:37,322 - 
+[CONSTRAINED] Starting Run 7/10 (Seed: 48)...
+2026-09-20 12:48:38,394 - [CONSTRAINED] Run 7 Finished. Final Acc: 100.0% | ✅ SUCCESS
+2026-09-20 12:48:38,394 - 
+[CONSTRAINED] Starting Run 8/10 (Seed: 49)...
+2026-09-20 12:48:39,795 - [CONSTRAINED] Run 8 Finished. Final Acc: 100.0% | ✅ SUCCESS
+2026-09-20 12:48:39,796 - 
+[CONSTRAINED] Starting Run 9/10 (Seed: 50)...
+2026-09-20 12:48:41,255 - [CONSTRAINED] Run 9 Finished. Final Acc: 100.0% | ✅ SUCCESS
+2026-09-20 12:48:41,256 - 
+[CONSTRAINED] Starting Run 10/10 (Seed: 51)...
+2026-09-20 12:48:42,590 - [CONSTRAINED] Run 10 Finished. Final Acc: 100.0% | ✅ SUCCESS
+2026-09-20 12:48:42,592 - 
+======================================================================
+2026-09-20 12:48:42,592 - FINAL COMPARISON REPORT (10 Independent Runs)
+2026-09-20 12:48:42,592 - ======================================================================
+2026-09-20 12:48:42,593 - [UNCONSTRAINED] Success Rate: 0/10 (0.0%) | Avg Final Acc: 30.30%
+2026-09-20 12:48:42,593 - [CONSTRAINED] Success Rate: 8/10 (80.0%) | Avg Final Acc: 80.00%
+2026-09-20 12:48:42,593 - ======================================================================
+2026-09-20 12:48:42,593 - ✅ All experiments finished. Log saved to: experiments/minimal_stateful_comparison/logs\experiment_log_20260920_124456.log
+2026-09-20 12:48:42,594 - ======================================================================
+2026-09-20 12:48:46,247 - 📊 Experiment plot successfully saved to: experiments/minimal_stateful_comparison/results\stateful_synthesis_comparison.png

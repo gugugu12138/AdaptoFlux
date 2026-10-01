@@ -48,6 +48,22 @@ class GraphProcessor:
         """
         import logging
 
+        # 入口一致性守卫：collapse 入边必须满足「列表位置 == data_coord」。
+        # 该不变式一旦被打破（典型来源是 remove_last_nx_layer 把旧 data_coord 搬回来），
+        # PathGenerator 按位置取列就会取错，且**不会报错**。
+        # 这里发现不一致就按 data_coord 重排修回来，并给出警告，避免静默带偏搜索。
+        _ce = list(self.graph.in_edges("collapse", keys=True, data=True))
+        _bad = [i for i, (_u, _v, _k, _d) in enumerate(_ce)
+                if i != _d.get("data_coord")]
+        if _bad:
+            logging.getLogger(__name__).warning(
+                "collapse 入边的 data_coord 与列表位置不一致（错位位置: %s）；"
+                "已按 data_coord 重排以恢复不变式「位置 == data_coord」。"
+                "这通常意味着此前的 remove_last_nx_layer() 之后没有重整顺序。",
+                _bad[:10],
+            )
+            self._restore_collapse_order()
+
         self.discard_node_method_name = discard_node_method_name
         self.layer += 1
         new_index_edge = 0
@@ -164,6 +180,51 @@ class GraphProcessor:
 
         return self.graph
 
+    def _restore_collapse_order(self):
+        """把 collapse 入边按 **data_coord 升序** 重排，使「列表位置 == data_coord」恢复成立。
+
+        为什么必须有这一步（原来的隐含假设）：
+            PathGenerator 用 **列表位置** 索引 collapse 入边
+                path_generator.py:177   _, _, data = collapse_edges[idx]
+            而本类用 **data_coord** 查找同一条边
+                append_nx_layer():      coord_to_edge[data['data_coord']]
+            两者能对上，完全依赖一条**没有断言、没有注释**的隐式不变式：
+                「collapse 入边的列表位置 == 它的 data_coord」
+
+        这条不变式在「初始建图」与「纯 append」时天然成立
+        （append 给新边从 0 连续编号，恰好等于新位置），
+        但 `remove_last_nx_layer()` 会把被删层的输入边**连旧 data_coord 一起**
+        放回 collapse（见该方法的 add_edge）。此时列表顺序由插入历史决定，
+        与旧 data_coord 不再一致 —— 不变式被打破。
+
+        后果：下一次 append 时，PathGenerator 会按位置取到**错误的列**，
+        把方法节点接到不匹配的输入上。它既不抛异常也没有警告
+        （因为类型匹配也是按位置做的，两边自洽），
+        只会静默地把合成结果与搜索决策带偏。
+
+        **为什么是"排序"而不是"把 data_coord 重编号为位置"**：
+        两种做法都能恢复「位置 == data_coord」，但只有排序能保证
+        **回退是透明的**（append -> rollback -> append 同一个方案，
+        结果与"从未回退过"逐项相同）。重编号会保留被搬回来的边的**位置**
+        而改写它们的**编号**，于是位置上的内容与回退前不同：
+        实测 'pair_num' 之类的中间结果会出现在本该是基础列的位置上，
+        导致后续 'null' 透传节点带的输入与"未回退"时间线不一致。
+        排序则把每条边放回它编号对应的位置 —— 语义上等于撤销了这次 append。
+
+        实现说明：networkx 的 `in_edges` 顺序 = 插入顺序，没有原地重排 API，
+        因此按目标顺序 **删边再重加**。边的全部属性原样保留（含 data_coord）。
+        """
+        g = self.graph
+        edges = list(g.in_edges("collapse", keys=True, data=True))
+        if all(i == d.get("data_coord") for i, (_u, _v, _k, d) in enumerate(edges)):
+            return len(edges)                      # 已经有序，什么都不做
+        ordered = sorted(edges, key=lambda e: e[3].get("data_coord"))
+        for u, v, k, _d in edges:
+            g.remove_edge(u, v, key=k)
+        for u, v, _k, d in ordered:
+            g.add_edge(u, v, **d)
+        return len(ordered)
+
     def remove_last_nx_layer(self):
         """
         删除图中的最后一层节点。
@@ -189,6 +250,11 @@ class GraphProcessor:
                 self.graph.remove_node(node)
             else:
                 print(f"跳过删除节点：{node}（这是保留的根节点）")
+
+        # 被搬回来的边带的是旧 data_coord，与新的列表顺序不再一致；
+        # 这里按 data_coord 重排，把不变式「列表位置 == data_coord」修回来，
+        # 从而让这次回退在语义上等价于「从未 append 过」。
+        self._restore_collapse_order()
 
         self.layer -= 1
         return self.graph

@@ -1,0 +1,3899 @@
+{
+  "nodes": [
+    {
+      "id": "observation",
+      "method": "observation",
+      "outputs": [
+        "observation"
+      ]
+    },
+    {
+      "id": "f0",
+      "method": "read_bird_y",
+      "owner": -1,
+      "channel": null
+    },
+    {
+      "id": "f1",
+      "method": "read_gap_center",
+      "owner": -1,
+      "channel": null
+    },
+    {
+      "id": "f2",
+      "method": "read_bird_velocity",
+      "owner": -1,
+      "channel": null
+    },
+    {
+      "id": "f3",
+      "method": "read_time_to_pipe",
+      "owner": -1,
+      "channel": null
+    },
+    {
+      "id": "f4",
+      "method": "read_constant_one",
+      "owner": -1,
+      "channel": null
+    },
+    {
+      "id": "f5",
+      "method": "read_gap_bottom",
+      "owner": -1,
+      "channel": null
+    },
+    {
+      "id": "f6",
+      "method": "read_gap_top",
+      "owner": -1,
+      "channel": null
+    },
+    {
+      "id": "f7",
+      "method": "read_relative_gap",
+      "owner": -1,
+      "channel": null
+    },
+    {
+      "id": "f8",
+      "method": "read_hormone",
+      "owner": 0,
+      "channel": 0
+    },
+    {
+      "id": "f9",
+      "method": "read_hormone",
+      "owner": 0,
+      "channel": 1
+    },
+    {
+      "id": "f10",
+      "method": "read_hormone",
+      "owner": 1,
+      "channel": 2
+    },
+    {
+      "id": "f11",
+      "method": "read_hormone",
+      "owner": 1,
+      "channel": 3
+    },
+    {
+      "id": "f12",
+      "method": "read_constant_one",
+      "owner": 0,
+      "channel": null
+    },
+    {
+      "id": "f13",
+      "method": "greater",
+      "owner": 1,
+      "channel": null
+    },
+    {
+      "id": "f14",
+      "method": "subtract",
+      "owner": 1,
+      "channel": null
+    },
+    {
+      "id": "f15",
+      "method": "clip",
+      "owner": 1,
+      "channel": null
+    },
+    {
+      "id": "f16",
+      "method": "add",
+      "owner": 0,
+      "channel": null
+    },
+    {
+      "id": "f17",
+      "method": "read_gap_top",
+      "owner": 1,
+      "channel": null
+    },
+    {
+      "id": "f18",
+      "method": "greater",
+      "owner": 0,
+      "channel": null
+    },
+    {
+      "id": "f19",
+      "method": "multiply",
+      "owner": 1,
+      "channel": null
+    },
+    {
+      "id": "f20",
+      "method": "clip",
+      "owner": 0,
+      "channel": null
+    },
+    {
+      "id": "f21",
+      "method": "greater",
+      "owner": 1,
+      "channel": null
+    },
+    {
+      "id": "f22",
+      "method": "absolute",
+      "owner": 1,
+      "channel": null
+    },
+    {
+      "id": "f23",
+      "method": "absolute",
+      "owner": 1,
+      "channel": null
+    },
+    {
+      "id": "f24",
+      "method": "subtract",
+      "owner": 0,
+      "channel": null
+    },
+    {
+      "id": "f25",
+      "method": "add",
+      "owner": 1,
+      "channel": null
+    },
+    {
+      "id": "f26",
+      "method": "read_gap_center",
+      "owner": 1,
+      "channel": null
+    },
+    {
+      "id": "f27",
+      "method": "subtract",
+      "owner": 1,
+      "channel": null
+    },
+    {
+      "id": "f28",
+      "method": "add",
+      "owner": 1,
+      "channel": null
+    },
+    {
+      "id": "f29",
+      "method": "clip",
+      "owner": 0,
+      "channel": null
+    },
+    {
+      "id": "f30",
+      "method": "read_gap_center",
+      "owner": 0,
+      "channel": null
+    },
+    {
+      "id": "f31",
+      "method": "read_constant_one",
+      "owner": 1,
+      "channel": null
+    },
+    {
+      "id": "f32",
+      "method": "absolute",
+      "owner": 1,
+      "channel": null
+    },
+    {
+      "id": "f33",
+      "method": "greater",
+      "owner": 1,
+      "channel": null
+    },
+    {
+      "id": "f34",
+      "method": "clip",
+      "owner": 1,
+      "channel": null
+    },
+    {
+      "id": "f35",
+      "method": "read_bird_velocity",
+      "owner": 0,
+      "channel": null
+    },
+    {
+      "id": "f36",
+      "method": "clip",
+      "owner": 0,
+      "channel": null
+    },
+    {
+      "id": "f37",
+      "method": "subtract",
+      "owner": 0,
+      "channel": null
+    },
+    {
+      "id": "f38",
+      "method": "subtract",
+      "owner": 0,
+      "channel": null
+    },
+    {
+      "id": "f39",
+      "method": "read_bird_y",
+      "owner": 0,
+      "channel": null
+    },
+    {
+      "id": "f40",
+      "method": "absolute",
+      "owner": 1,
+      "channel": null
+    },
+    {
+      "id": "f41",
+      "method": "greater",
+      "owner": 1,
+      "channel": null
+    },
+    {
+      "id": "f42",
+      "method": "read_gap_top",
+      "owner": 1,
+      "channel": null
+    },
+    {
+      "id": "f43",
+      "method": "add",
+      "owner": 1,
+      "channel": null
+    },
+    {
+      "id": "emit0",
+      "method": "emit_hormone",
+      "channel": 0,
+      "owner": 0
+    },
+    {
+      "id": "emit1",
+      "method": "emit_hormone",
+      "channel": 1,
+      "owner": 0
+    },
+    {
+      "id": "emit2",
+      "method": "emit_hormone",
+      "channel": 0,
+      "owner": 1
+    },
+    {
+      "id": "emit3",
+      "method": "emit_hormone",
+      "channel": 1,
+      "owner": 1
+    },
+    {
+      "id": "p0_0",
+      "method": "learned_number",
+      "value": 1.1778850313649605
+    },
+    {
+      "id": "m0_0",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_1",
+      "method": "learned_number",
+      "value": 3.5470902356981107
+    },
+    {
+      "id": "m0_1",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_2",
+      "method": "learned_number",
+      "value": 4.891294549102174
+    },
+    {
+      "id": "m0_2",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_3",
+      "method": "learned_number",
+      "value": -7.415791920962925
+    },
+    {
+      "id": "m0_3",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_4",
+      "method": "learned_number",
+      "value": -2.170606331539836
+    },
+    {
+      "id": "m0_4",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_5",
+      "method": "learned_number",
+      "value": -0.3292981619537764
+    },
+    {
+      "id": "m0_5",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_6",
+      "method": "learned_number",
+      "value": -4.765921216076541
+    },
+    {
+      "id": "m0_6",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_7",
+      "method": "learned_number",
+      "value": 2.1743104428447166
+    },
+    {
+      "id": "m0_7",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_8",
+      "method": "learned_number",
+      "value": 0.6350981705449432
+    },
+    {
+      "id": "m0_8",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_9",
+      "method": "learned_number",
+      "value": -1.73438525595412
+    },
+    {
+      "id": "m0_9",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_10",
+      "method": "learned_number",
+      "value": 0.5455604342629569
+    },
+    {
+      "id": "m0_10",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_11",
+      "method": "learned_number",
+      "value": -2.0558847882623277
+    },
+    {
+      "id": "m0_11",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_12",
+      "method": "learned_number",
+      "value": -5.375995030929856
+    },
+    {
+      "id": "m0_12",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_13",
+      "method": "learned_number",
+      "value": -1.7875064489793955
+    },
+    {
+      "id": "m0_13",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_14",
+      "method": "learned_number",
+      "value": -2.0278971012129174
+    },
+    {
+      "id": "m0_14",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_15",
+      "method": "learned_number",
+      "value": 4.481298225682561
+    },
+    {
+      "id": "m0_15",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_16",
+      "method": "learned_number",
+      "value": 3.0011300050556007
+    },
+    {
+      "id": "m0_16",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_17",
+      "method": "learned_number",
+      "value": 1.3992692906057007
+    },
+    {
+      "id": "m0_17",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_18",
+      "method": "learned_number",
+      "value": -0.19805169921066712
+    },
+    {
+      "id": "m0_18",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_19",
+      "method": "learned_number",
+      "value": -0.9487909556994922
+    },
+    {
+      "id": "m0_19",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_20",
+      "method": "learned_number",
+      "value": 0.9351319453507736
+    },
+    {
+      "id": "m0_20",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_21",
+      "method": "learned_number",
+      "value": 3.0375363020635002
+    },
+    {
+      "id": "m0_21",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_22",
+      "method": "learned_number",
+      "value": -1.3135560490322056
+    },
+    {
+      "id": "m0_22",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_23",
+      "method": "learned_number",
+      "value": 0.7058107894101886
+    },
+    {
+      "id": "m0_23",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_24",
+      "method": "learned_number",
+      "value": -0.2627207314070706
+    },
+    {
+      "id": "m0_24",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_25",
+      "method": "learned_number",
+      "value": -0.8511447857479408
+    },
+    {
+      "id": "m0_25",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_26",
+      "method": "learned_number",
+      "value": 1.8557074779439988
+    },
+    {
+      "id": "m0_26",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_27",
+      "method": "learned_number",
+      "value": -1.3526972349732418
+    },
+    {
+      "id": "m0_27",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_28",
+      "method": "learned_number",
+      "value": 1.9506664318325566
+    },
+    {
+      "id": "m0_28",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_29",
+      "method": "learned_number",
+      "value": 0.699084954388425
+    },
+    {
+      "id": "m0_29",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_30",
+      "method": "learned_number",
+      "value": -0.1133190469659262
+    },
+    {
+      "id": "m0_30",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_31",
+      "method": "learned_number",
+      "value": -2.240061003802698
+    },
+    {
+      "id": "m0_31",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_32",
+      "method": "learned_number",
+      "value": -0.12746612991903084
+    },
+    {
+      "id": "m0_32",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_33",
+      "method": "learned_number",
+      "value": -0.6605181233682805
+    },
+    {
+      "id": "m0_33",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_34",
+      "method": "learned_number",
+      "value": 0.6053658776053432
+    },
+    {
+      "id": "m0_34",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_35",
+      "method": "learned_number",
+      "value": -0.23316153124884498
+    },
+    {
+      "id": "m0_35",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_36",
+      "method": "learned_number",
+      "value": -1.0927126340449587
+    },
+    {
+      "id": "m0_36",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_37",
+      "method": "learned_number",
+      "value": -0.20713664666446893
+    },
+    {
+      "id": "m0_37",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_38",
+      "method": "learned_number",
+      "value": -0.6498753952141357
+    },
+    {
+      "id": "m0_38",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_39",
+      "method": "learned_number",
+      "value": -0.03096566416704724
+    },
+    {
+      "id": "m0_39",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_40",
+      "method": "learned_number",
+      "value": 1.2347026304082074
+    },
+    {
+      "id": "m0_40",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_41",
+      "method": "learned_number",
+      "value": 0.7395532031895677
+    },
+    {
+      "id": "m0_41",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_42",
+      "method": "learned_number",
+      "value": 1.2886384412866996
+    },
+    {
+      "id": "m0_42",
+      "method": "multiply"
+    },
+    {
+      "id": "p0_43",
+      "method": "learned_number",
+      "value": 0.22161462792556058
+    },
+    {
+      "id": "m0_43",
+      "method": "multiply"
+    },
+    {
+      "id": "sum0_0",
+      "method": "add"
+    },
+    {
+      "id": "sum0_1",
+      "method": "add"
+    },
+    {
+      "id": "sum0_2",
+      "method": "add"
+    },
+    {
+      "id": "sum0_3",
+      "method": "add"
+    },
+    {
+      "id": "sum0_4",
+      "method": "add"
+    },
+    {
+      "id": "sum0_5",
+      "method": "add"
+    },
+    {
+      "id": "sum0_6",
+      "method": "add"
+    },
+    {
+      "id": "sum0_7",
+      "method": "add"
+    },
+    {
+      "id": "sum0_8",
+      "method": "add"
+    },
+    {
+      "id": "sum0_9",
+      "method": "add"
+    },
+    {
+      "id": "sum0_10",
+      "method": "add"
+    },
+    {
+      "id": "sum0_11",
+      "method": "add"
+    },
+    {
+      "id": "sum0_12",
+      "method": "add"
+    },
+    {
+      "id": "sum0_13",
+      "method": "add"
+    },
+    {
+      "id": "sum0_14",
+      "method": "add"
+    },
+    {
+      "id": "sum0_15",
+      "method": "add"
+    },
+    {
+      "id": "sum0_16",
+      "method": "add"
+    },
+    {
+      "id": "sum0_17",
+      "method": "add"
+    },
+    {
+      "id": "sum0_18",
+      "method": "add"
+    },
+    {
+      "id": "sum0_19",
+      "method": "add"
+    },
+    {
+      "id": "sum0_20",
+      "method": "add"
+    },
+    {
+      "id": "sum0_21",
+      "method": "add"
+    },
+    {
+      "id": "sum0_22",
+      "method": "add"
+    },
+    {
+      "id": "sum0_23",
+      "method": "add"
+    },
+    {
+      "id": "sum0_24",
+      "method": "add"
+    },
+    {
+      "id": "sum0_25",
+      "method": "add"
+    },
+    {
+      "id": "sum0_26",
+      "method": "add"
+    },
+    {
+      "id": "sum0_27",
+      "method": "add"
+    },
+    {
+      "id": "sum0_28",
+      "method": "add"
+    },
+    {
+      "id": "sum0_29",
+      "method": "add"
+    },
+    {
+      "id": "sum0_30",
+      "method": "add"
+    },
+    {
+      "id": "sum0_31",
+      "method": "add"
+    },
+    {
+      "id": "sum0_32",
+      "method": "add"
+    },
+    {
+      "id": "sum0_33",
+      "method": "add"
+    },
+    {
+      "id": "sum0_34",
+      "method": "add"
+    },
+    {
+      "id": "sum0_35",
+      "method": "add"
+    },
+    {
+      "id": "sum0_36",
+      "method": "add"
+    },
+    {
+      "id": "sum0_37",
+      "method": "add"
+    },
+    {
+      "id": "sum0_38",
+      "method": "add"
+    },
+    {
+      "id": "sum0_39",
+      "method": "add"
+    },
+    {
+      "id": "sum0_40",
+      "method": "add"
+    },
+    {
+      "id": "sum0_41",
+      "method": "add"
+    },
+    {
+      "id": "sum0_42",
+      "method": "add"
+    },
+    {
+      "id": "action1",
+      "method": "flap",
+      "inputs": [
+        "action_permit"
+      ],
+      "outputs": []
+    },
+    {
+      "id": "p1_0",
+      "method": "learned_number",
+      "value": -13.72162729408173
+    },
+    {
+      "id": "m1_0",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_1",
+      "method": "learned_number",
+      "value": -6.423364004694408
+    },
+    {
+      "id": "m1_1",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_2",
+      "method": "learned_number",
+      "value": -2.3637684061855078
+    },
+    {
+      "id": "m1_2",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_3",
+      "method": "learned_number",
+      "value": -0.5600424962307835
+    },
+    {
+      "id": "m1_3",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_4",
+      "method": "learned_number",
+      "value": -1.1067175224468022
+    },
+    {
+      "id": "m1_4",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_5",
+      "method": "learned_number",
+      "value": 0.3873581018022183
+    },
+    {
+      "id": "m1_5",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_6",
+      "method": "learned_number",
+      "value": 12.986537379622126
+    },
+    {
+      "id": "m1_6",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_7",
+      "method": "learned_number",
+      "value": -4.64459720458411
+    },
+    {
+      "id": "m1_7",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_8",
+      "method": "learned_number",
+      "value": -2.8349233251245347
+    },
+    {
+      "id": "m1_8",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_9",
+      "method": "learned_number",
+      "value": 1.7781156638252438
+    },
+    {
+      "id": "m1_9",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_10",
+      "method": "learned_number",
+      "value": -3.6328614320954236
+    },
+    {
+      "id": "m1_10",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_11",
+      "method": "learned_number",
+      "value": 4.476127670539171
+    },
+    {
+      "id": "m1_11",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_12",
+      "method": "learned_number",
+      "value": 2.7862856928357065
+    },
+    {
+      "id": "m1_12",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_13",
+      "method": "learned_number",
+      "value": -4.282831810679044
+    },
+    {
+      "id": "m1_13",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_14",
+      "method": "learned_number",
+      "value": -2.5121446564757224
+    },
+    {
+      "id": "m1_14",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_15",
+      "method": "learned_number",
+      "value": 1.584884461732731
+    },
+    {
+      "id": "m1_15",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_16",
+      "method": "learned_number",
+      "value": -6.538013180668572
+    },
+    {
+      "id": "m1_16",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_17",
+      "method": "learned_number",
+      "value": 5.812003299509962
+    },
+    {
+      "id": "m1_17",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_18",
+      "method": "learned_number",
+      "value": 3.890018953880064
+    },
+    {
+      "id": "m1_18",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_19",
+      "method": "learned_number",
+      "value": -0.9574141037918683
+    },
+    {
+      "id": "m1_19",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_20",
+      "method": "learned_number",
+      "value": 0.9780893412637092
+    },
+    {
+      "id": "m1_20",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_21",
+      "method": "learned_number",
+      "value": -1.3995426871625665
+    },
+    {
+      "id": "m1_21",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_22",
+      "method": "learned_number",
+      "value": 5.279680835964672
+    },
+    {
+      "id": "m1_22",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_23",
+      "method": "learned_number",
+      "value": -1.0322304141097132
+    },
+    {
+      "id": "m1_23",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_24",
+      "method": "learned_number",
+      "value": 3.433409969761962
+    },
+    {
+      "id": "m1_24",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_25",
+      "method": "learned_number",
+      "value": 2.643855103962774
+    },
+    {
+      "id": "m1_25",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_26",
+      "method": "learned_number",
+      "value": 1.134967529504756
+    },
+    {
+      "id": "m1_26",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_27",
+      "method": "learned_number",
+      "value": 0.7910887500058814
+    },
+    {
+      "id": "m1_27",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_28",
+      "method": "learned_number",
+      "value": -0.24001033879881017
+    },
+    {
+      "id": "m1_28",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_29",
+      "method": "learned_number",
+      "value": -1.0717067537287617
+    },
+    {
+      "id": "m1_29",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_30",
+      "method": "learned_number",
+      "value": 0.47722104884165684
+    },
+    {
+      "id": "m1_30",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_31",
+      "method": "learned_number",
+      "value": 0.5225622591688548
+    },
+    {
+      "id": "m1_31",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_32",
+      "method": "learned_number",
+      "value": 0.6333235316864922
+    },
+    {
+      "id": "m1_32",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_33",
+      "method": "learned_number",
+      "value": -0.6732443096402905
+    },
+    {
+      "id": "m1_33",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_34",
+      "method": "learned_number",
+      "value": 0.7906722830223238
+    },
+    {
+      "id": "m1_34",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_35",
+      "method": "learned_number",
+      "value": 0.6989932769599984
+    },
+    {
+      "id": "m1_35",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_36",
+      "method": "learned_number",
+      "value": 1.6375795794388945
+    },
+    {
+      "id": "m1_36",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_37",
+      "method": "learned_number",
+      "value": -0.23955535020201735
+    },
+    {
+      "id": "m1_37",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_38",
+      "method": "learned_number",
+      "value": -0.3020417695649495
+    },
+    {
+      "id": "m1_38",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_39",
+      "method": "learned_number",
+      "value": -1.0552481641558478
+    },
+    {
+      "id": "m1_39",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_40",
+      "method": "learned_number",
+      "value": 0.9296912505819263
+    },
+    {
+      "id": "m1_40",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_41",
+      "method": "learned_number",
+      "value": -0.6792498548511248
+    },
+    {
+      "id": "m1_41",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_42",
+      "method": "learned_number",
+      "value": 0.8393379151829222
+    },
+    {
+      "id": "m1_42",
+      "method": "multiply"
+    },
+    {
+      "id": "p1_43",
+      "method": "learned_number",
+      "value": -1.0364141711384205
+    },
+    {
+      "id": "m1_43",
+      "method": "multiply"
+    },
+    {
+      "id": "sum1_0",
+      "method": "add"
+    },
+    {
+      "id": "sum1_1",
+      "method": "add"
+    },
+    {
+      "id": "sum1_2",
+      "method": "add"
+    },
+    {
+      "id": "sum1_3",
+      "method": "add"
+    },
+    {
+      "id": "sum1_4",
+      "method": "add"
+    },
+    {
+      "id": "sum1_5",
+      "method": "add"
+    },
+    {
+      "id": "sum1_6",
+      "method": "add"
+    },
+    {
+      "id": "sum1_7",
+      "method": "add"
+    },
+    {
+      "id": "sum1_8",
+      "method": "add"
+    },
+    {
+      "id": "sum1_9",
+      "method": "add"
+    },
+    {
+      "id": "sum1_10",
+      "method": "add"
+    },
+    {
+      "id": "sum1_11",
+      "method": "add"
+    },
+    {
+      "id": "sum1_12",
+      "method": "add"
+    },
+    {
+      "id": "sum1_13",
+      "method": "add"
+    },
+    {
+      "id": "sum1_14",
+      "method": "add"
+    },
+    {
+      "id": "sum1_15",
+      "method": "add"
+    },
+    {
+      "id": "sum1_16",
+      "method": "add"
+    },
+    {
+      "id": "sum1_17",
+      "method": "add"
+    },
+    {
+      "id": "sum1_18",
+      "method": "add"
+    },
+    {
+      "id": "sum1_19",
+      "method": "add"
+    },
+    {
+      "id": "sum1_20",
+      "method": "add"
+    },
+    {
+      "id": "sum1_21",
+      "method": "add"
+    },
+    {
+      "id": "sum1_22",
+      "method": "add"
+    },
+    {
+      "id": "sum1_23",
+      "method": "add"
+    },
+    {
+      "id": "sum1_24",
+      "method": "add"
+    },
+    {
+      "id": "sum1_25",
+      "method": "add"
+    },
+    {
+      "id": "sum1_26",
+      "method": "add"
+    },
+    {
+      "id": "sum1_27",
+      "method": "add"
+    },
+    {
+      "id": "sum1_28",
+      "method": "add"
+    },
+    {
+      "id": "sum1_29",
+      "method": "add"
+    },
+    {
+      "id": "sum1_30",
+      "method": "add"
+    },
+    {
+      "id": "sum1_31",
+      "method": "add"
+    },
+    {
+      "id": "sum1_32",
+      "method": "add"
+    },
+    {
+      "id": "sum1_33",
+      "method": "add"
+    },
+    {
+      "id": "sum1_34",
+      "method": "add"
+    },
+    {
+      "id": "sum1_35",
+      "method": "add"
+    },
+    {
+      "id": "sum1_36",
+      "method": "add"
+    },
+    {
+      "id": "sum1_37",
+      "method": "add"
+    },
+    {
+      "id": "sum1_38",
+      "method": "add"
+    },
+    {
+      "id": "sum1_39",
+      "method": "add"
+    },
+    {
+      "id": "sum1_40",
+      "method": "add"
+    },
+    {
+      "id": "sum1_41",
+      "method": "add"
+    },
+    {
+      "id": "sum1_42",
+      "method": "add"
+    },
+    {
+      "id": "action2",
+      "method": "coast",
+      "inputs": [
+        "action_permit"
+      ],
+      "outputs": []
+    },
+    {
+      "id": "action_router",
+      "method": "exclusive_priority_router",
+      "group": "body",
+      "tie": "uniform",
+      "epsilon": 0.0,
+      "enabled": true
+    }
+  ],
+  "edges": [
+    [
+      "observation",
+      "f0",
+      "observation"
+    ],
+    [
+      "observation",
+      "f1",
+      "observation"
+    ],
+    [
+      "observation",
+      "f2",
+      "observation"
+    ],
+    [
+      "observation",
+      "f3",
+      "observation"
+    ],
+    [
+      "observation",
+      "f4",
+      "observation"
+    ],
+    [
+      "observation",
+      "f5",
+      "observation"
+    ],
+    [
+      "observation",
+      "f6",
+      "observation"
+    ],
+    [
+      "observation",
+      "f7",
+      "observation"
+    ],
+    [
+      "observation",
+      "f12",
+      "observation"
+    ],
+    [
+      "f1",
+      "f13",
+      "x"
+    ],
+    [
+      "f3",
+      "f13",
+      "y"
+    ],
+    [
+      "f0",
+      "f14",
+      "x"
+    ],
+    [
+      "f13",
+      "f14",
+      "y"
+    ],
+    [
+      "f13",
+      "f15",
+      "x"
+    ],
+    [
+      "f5",
+      "f16",
+      "x"
+    ],
+    [
+      "f9",
+      "f16",
+      "y"
+    ],
+    [
+      "observation",
+      "f17",
+      "observation"
+    ],
+    [
+      "f12",
+      "f18",
+      "x"
+    ],
+    [
+      "f7",
+      "f18",
+      "y"
+    ],
+    [
+      "f10",
+      "f19",
+      "x"
+    ],
+    [
+      "f6",
+      "f19",
+      "y"
+    ],
+    [
+      "f18",
+      "f20",
+      "x"
+    ],
+    [
+      "f3",
+      "f21",
+      "x"
+    ],
+    [
+      "f1",
+      "f21",
+      "y"
+    ],
+    [
+      "f2",
+      "f22",
+      "x"
+    ],
+    [
+      "f5",
+      "f23",
+      "x"
+    ],
+    [
+      "f5",
+      "f24",
+      "x"
+    ],
+    [
+      "f3",
+      "f24",
+      "y"
+    ],
+    [
+      "f6",
+      "f25",
+      "x"
+    ],
+    [
+      "f5",
+      "f25",
+      "y"
+    ],
+    [
+      "observation",
+      "f26",
+      "observation"
+    ],
+    [
+      "f26",
+      "f27",
+      "x"
+    ],
+    [
+      "f6",
+      "f27",
+      "y"
+    ],
+    [
+      "f4",
+      "f28",
+      "x"
+    ],
+    [
+      "f10",
+      "f28",
+      "y"
+    ],
+    [
+      "f24",
+      "f29",
+      "x"
+    ],
+    [
+      "observation",
+      "f30",
+      "observation"
+    ],
+    [
+      "observation",
+      "f31",
+      "observation"
+    ],
+    [
+      "f11",
+      "f32",
+      "x"
+    ],
+    [
+      "f19",
+      "f33",
+      "x"
+    ],
+    [
+      "f3",
+      "f33",
+      "y"
+    ],
+    [
+      "f1",
+      "f34",
+      "x"
+    ],
+    [
+      "observation",
+      "f35",
+      "observation"
+    ],
+    [
+      "f5",
+      "f36",
+      "x"
+    ],
+    [
+      "f20",
+      "f37",
+      "x"
+    ],
+    [
+      "f2",
+      "f37",
+      "y"
+    ],
+    [
+      "f3",
+      "f38",
+      "x"
+    ],
+    [
+      "f1",
+      "f38",
+      "y"
+    ],
+    [
+      "observation",
+      "f39",
+      "observation"
+    ],
+    [
+      "f4",
+      "f40",
+      "x"
+    ],
+    [
+      "f34",
+      "f41",
+      "x"
+    ],
+    [
+      "f34",
+      "f41",
+      "y"
+    ],
+    [
+      "observation",
+      "f42",
+      "observation"
+    ],
+    [
+      "f14",
+      "f43",
+      "x"
+    ],
+    [
+      "f40",
+      "f43",
+      "y"
+    ],
+    [
+      "f2",
+      "emit0",
+      "number"
+    ],
+    [
+      "f38",
+      "emit1",
+      "number"
+    ],
+    [
+      "f1",
+      "emit2",
+      "number"
+    ],
+    [
+      "f7",
+      "emit3",
+      "number"
+    ],
+    [
+      "p0_0",
+      "m0_0",
+      "x"
+    ],
+    [
+      "f0",
+      "m0_0",
+      "y"
+    ],
+    [
+      "p0_1",
+      "m0_1",
+      "x"
+    ],
+    [
+      "f1",
+      "m0_1",
+      "y"
+    ],
+    [
+      "p0_2",
+      "m0_2",
+      "x"
+    ],
+    [
+      "f2",
+      "m0_2",
+      "y"
+    ],
+    [
+      "p0_3",
+      "m0_3",
+      "x"
+    ],
+    [
+      "f3",
+      "m0_3",
+      "y"
+    ],
+    [
+      "p0_4",
+      "m0_4",
+      "x"
+    ],
+    [
+      "f4",
+      "m0_4",
+      "y"
+    ],
+    [
+      "p0_5",
+      "m0_5",
+      "x"
+    ],
+    [
+      "f5",
+      "m0_5",
+      "y"
+    ],
+    [
+      "p0_6",
+      "m0_6",
+      "x"
+    ],
+    [
+      "f6",
+      "m0_6",
+      "y"
+    ],
+    [
+      "p0_7",
+      "m0_7",
+      "x"
+    ],
+    [
+      "f7",
+      "m0_7",
+      "y"
+    ],
+    [
+      "p0_8",
+      "m0_8",
+      "x"
+    ],
+    [
+      "f8",
+      "m0_8",
+      "y"
+    ],
+    [
+      "p0_9",
+      "m0_9",
+      "x"
+    ],
+    [
+      "f9",
+      "m0_9",
+      "y"
+    ],
+    [
+      "p0_10",
+      "m0_10",
+      "x"
+    ],
+    [
+      "f10",
+      "m0_10",
+      "y"
+    ],
+    [
+      "p0_11",
+      "m0_11",
+      "x"
+    ],
+    [
+      "f11",
+      "m0_11",
+      "y"
+    ],
+    [
+      "p0_12",
+      "m0_12",
+      "x"
+    ],
+    [
+      "f12",
+      "m0_12",
+      "y"
+    ],
+    [
+      "p0_13",
+      "m0_13",
+      "x"
+    ],
+    [
+      "f13",
+      "m0_13",
+      "y"
+    ],
+    [
+      "p0_14",
+      "m0_14",
+      "x"
+    ],
+    [
+      "f14",
+      "m0_14",
+      "y"
+    ],
+    [
+      "p0_15",
+      "m0_15",
+      "x"
+    ],
+    [
+      "f15",
+      "m0_15",
+      "y"
+    ],
+    [
+      "p0_16",
+      "m0_16",
+      "x"
+    ],
+    [
+      "f16",
+      "m0_16",
+      "y"
+    ],
+    [
+      "p0_17",
+      "m0_17",
+      "x"
+    ],
+    [
+      "f17",
+      "m0_17",
+      "y"
+    ],
+    [
+      "p0_18",
+      "m0_18",
+      "x"
+    ],
+    [
+      "f18",
+      "m0_18",
+      "y"
+    ],
+    [
+      "p0_19",
+      "m0_19",
+      "x"
+    ],
+    [
+      "f19",
+      "m0_19",
+      "y"
+    ],
+    [
+      "p0_20",
+      "m0_20",
+      "x"
+    ],
+    [
+      "f20",
+      "m0_20",
+      "y"
+    ],
+    [
+      "p0_21",
+      "m0_21",
+      "x"
+    ],
+    [
+      "f21",
+      "m0_21",
+      "y"
+    ],
+    [
+      "p0_22",
+      "m0_22",
+      "x"
+    ],
+    [
+      "f22",
+      "m0_22",
+      "y"
+    ],
+    [
+      "p0_23",
+      "m0_23",
+      "x"
+    ],
+    [
+      "f23",
+      "m0_23",
+      "y"
+    ],
+    [
+      "p0_24",
+      "m0_24",
+      "x"
+    ],
+    [
+      "f24",
+      "m0_24",
+      "y"
+    ],
+    [
+      "p0_25",
+      "m0_25",
+      "x"
+    ],
+    [
+      "f25",
+      "m0_25",
+      "y"
+    ],
+    [
+      "p0_26",
+      "m0_26",
+      "x"
+    ],
+    [
+      "f26",
+      "m0_26",
+      "y"
+    ],
+    [
+      "p0_27",
+      "m0_27",
+      "x"
+    ],
+    [
+      "f27",
+      "m0_27",
+      "y"
+    ],
+    [
+      "p0_28",
+      "m0_28",
+      "x"
+    ],
+    [
+      "f28",
+      "m0_28",
+      "y"
+    ],
+    [
+      "p0_29",
+      "m0_29",
+      "x"
+    ],
+    [
+      "f29",
+      "m0_29",
+      "y"
+    ],
+    [
+      "p0_30",
+      "m0_30",
+      "x"
+    ],
+    [
+      "f30",
+      "m0_30",
+      "y"
+    ],
+    [
+      "p0_31",
+      "m0_31",
+      "x"
+    ],
+    [
+      "f31",
+      "m0_31",
+      "y"
+    ],
+    [
+      "p0_32",
+      "m0_32",
+      "x"
+    ],
+    [
+      "f32",
+      "m0_32",
+      "y"
+    ],
+    [
+      "p0_33",
+      "m0_33",
+      "x"
+    ],
+    [
+      "f33",
+      "m0_33",
+      "y"
+    ],
+    [
+      "p0_34",
+      "m0_34",
+      "x"
+    ],
+    [
+      "f34",
+      "m0_34",
+      "y"
+    ],
+    [
+      "p0_35",
+      "m0_35",
+      "x"
+    ],
+    [
+      "f35",
+      "m0_35",
+      "y"
+    ],
+    [
+      "p0_36",
+      "m0_36",
+      "x"
+    ],
+    [
+      "f36",
+      "m0_36",
+      "y"
+    ],
+    [
+      "p0_37",
+      "m0_37",
+      "x"
+    ],
+    [
+      "f37",
+      "m0_37",
+      "y"
+    ],
+    [
+      "p0_38",
+      "m0_38",
+      "x"
+    ],
+    [
+      "f38",
+      "m0_38",
+      "y"
+    ],
+    [
+      "p0_39",
+      "m0_39",
+      "x"
+    ],
+    [
+      "f39",
+      "m0_39",
+      "y"
+    ],
+    [
+      "p0_40",
+      "m0_40",
+      "x"
+    ],
+    [
+      "f40",
+      "m0_40",
+      "y"
+    ],
+    [
+      "p0_41",
+      "m0_41",
+      "x"
+    ],
+    [
+      "f41",
+      "m0_41",
+      "y"
+    ],
+    [
+      "p0_42",
+      "m0_42",
+      "x"
+    ],
+    [
+      "f42",
+      "m0_42",
+      "y"
+    ],
+    [
+      "p0_43",
+      "m0_43",
+      "x"
+    ],
+    [
+      "f43",
+      "m0_43",
+      "y"
+    ],
+    [
+      "m0_0",
+      "sum0_0",
+      "x"
+    ],
+    [
+      "m0_1",
+      "sum0_0",
+      "y"
+    ],
+    [
+      "sum0_0",
+      "sum0_1",
+      "x"
+    ],
+    [
+      "m0_2",
+      "sum0_1",
+      "y"
+    ],
+    [
+      "sum0_1",
+      "sum0_2",
+      "x"
+    ],
+    [
+      "m0_3",
+      "sum0_2",
+      "y"
+    ],
+    [
+      "sum0_2",
+      "sum0_3",
+      "x"
+    ],
+    [
+      "m0_4",
+      "sum0_3",
+      "y"
+    ],
+    [
+      "sum0_3",
+      "sum0_4",
+      "x"
+    ],
+    [
+      "m0_5",
+      "sum0_4",
+      "y"
+    ],
+    [
+      "sum0_4",
+      "sum0_5",
+      "x"
+    ],
+    [
+      "m0_6",
+      "sum0_5",
+      "y"
+    ],
+    [
+      "sum0_5",
+      "sum0_6",
+      "x"
+    ],
+    [
+      "m0_7",
+      "sum0_6",
+      "y"
+    ],
+    [
+      "sum0_6",
+      "sum0_7",
+      "x"
+    ],
+    [
+      "m0_8",
+      "sum0_7",
+      "y"
+    ],
+    [
+      "sum0_7",
+      "sum0_8",
+      "x"
+    ],
+    [
+      "m0_9",
+      "sum0_8",
+      "y"
+    ],
+    [
+      "sum0_8",
+      "sum0_9",
+      "x"
+    ],
+    [
+      "m0_10",
+      "sum0_9",
+      "y"
+    ],
+    [
+      "sum0_9",
+      "sum0_10",
+      "x"
+    ],
+    [
+      "m0_11",
+      "sum0_10",
+      "y"
+    ],
+    [
+      "sum0_10",
+      "sum0_11",
+      "x"
+    ],
+    [
+      "m0_12",
+      "sum0_11",
+      "y"
+    ],
+    [
+      "sum0_11",
+      "sum0_12",
+      "x"
+    ],
+    [
+      "m0_13",
+      "sum0_12",
+      "y"
+    ],
+    [
+      "sum0_12",
+      "sum0_13",
+      "x"
+    ],
+    [
+      "m0_14",
+      "sum0_13",
+      "y"
+    ],
+    [
+      "sum0_13",
+      "sum0_14",
+      "x"
+    ],
+    [
+      "m0_15",
+      "sum0_14",
+      "y"
+    ],
+    [
+      "sum0_14",
+      "sum0_15",
+      "x"
+    ],
+    [
+      "m0_16",
+      "sum0_15",
+      "y"
+    ],
+    [
+      "sum0_15",
+      "sum0_16",
+      "x"
+    ],
+    [
+      "m0_17",
+      "sum0_16",
+      "y"
+    ],
+    [
+      "sum0_16",
+      "sum0_17",
+      "x"
+    ],
+    [
+      "m0_18",
+      "sum0_17",
+      "y"
+    ],
+    [
+      "sum0_17",
+      "sum0_18",
+      "x"
+    ],
+    [
+      "m0_19",
+      "sum0_18",
+      "y"
+    ],
+    [
+      "sum0_18",
+      "sum0_19",
+      "x"
+    ],
+    [
+      "m0_20",
+      "sum0_19",
+      "y"
+    ],
+    [
+      "sum0_19",
+      "sum0_20",
+      "x"
+    ],
+    [
+      "m0_21",
+      "sum0_20",
+      "y"
+    ],
+    [
+      "sum0_20",
+      "sum0_21",
+      "x"
+    ],
+    [
+      "m0_22",
+      "sum0_21",
+      "y"
+    ],
+    [
+      "sum0_21",
+      "sum0_22",
+      "x"
+    ],
+    [
+      "m0_23",
+      "sum0_22",
+      "y"
+    ],
+    [
+      "sum0_22",
+      "sum0_23",
+      "x"
+    ],
+    [
+      "m0_24",
+      "sum0_23",
+      "y"
+    ],
+    [
+      "sum0_23",
+      "sum0_24",
+      "x"
+    ],
+    [
+      "m0_25",
+      "sum0_24",
+      "y"
+    ],
+    [
+      "sum0_24",
+      "sum0_25",
+      "x"
+    ],
+    [
+      "m0_26",
+      "sum0_25",
+      "y"
+    ],
+    [
+      "sum0_25",
+      "sum0_26",
+      "x"
+    ],
+    [
+      "m0_27",
+      "sum0_26",
+      "y"
+    ],
+    [
+      "sum0_26",
+      "sum0_27",
+      "x"
+    ],
+    [
+      "m0_28",
+      "sum0_27",
+      "y"
+    ],
+    [
+      "sum0_27",
+      "sum0_28",
+      "x"
+    ],
+    [
+      "m0_29",
+      "sum0_28",
+      "y"
+    ],
+    [
+      "sum0_28",
+      "sum0_29",
+      "x"
+    ],
+    [
+      "m0_30",
+      "sum0_29",
+      "y"
+    ],
+    [
+      "sum0_29",
+      "sum0_30",
+      "x"
+    ],
+    [
+      "m0_31",
+      "sum0_30",
+      "y"
+    ],
+    [
+      "sum0_30",
+      "sum0_31",
+      "x"
+    ],
+    [
+      "m0_32",
+      "sum0_31",
+      "y"
+    ],
+    [
+      "sum0_31",
+      "sum0_32",
+      "x"
+    ],
+    [
+      "m0_33",
+      "sum0_32",
+      "y"
+    ],
+    [
+      "sum0_32",
+      "sum0_33",
+      "x"
+    ],
+    [
+      "m0_34",
+      "sum0_33",
+      "y"
+    ],
+    [
+      "sum0_33",
+      "sum0_34",
+      "x"
+    ],
+    [
+      "m0_35",
+      "sum0_34",
+      "y"
+    ],
+    [
+      "sum0_34",
+      "sum0_35",
+      "x"
+    ],
+    [
+      "m0_36",
+      "sum0_35",
+      "y"
+    ],
+    [
+      "sum0_35",
+      "sum0_36",
+      "x"
+    ],
+    [
+      "m0_37",
+      "sum0_36",
+      "y"
+    ],
+    [
+      "sum0_36",
+      "sum0_37",
+      "x"
+    ],
+    [
+      "m0_38",
+      "sum0_37",
+      "y"
+    ],
+    [
+      "sum0_37",
+      "sum0_38",
+      "x"
+    ],
+    [
+      "m0_39",
+      "sum0_38",
+      "y"
+    ],
+    [
+      "sum0_38",
+      "sum0_39",
+      "x"
+    ],
+    [
+      "m0_40",
+      "sum0_39",
+      "y"
+    ],
+    [
+      "sum0_39",
+      "sum0_40",
+      "x"
+    ],
+    [
+      "m0_41",
+      "sum0_40",
+      "y"
+    ],
+    [
+      "sum0_40",
+      "sum0_41",
+      "x"
+    ],
+    [
+      "m0_42",
+      "sum0_41",
+      "y"
+    ],
+    [
+      "sum0_41",
+      "sum0_42",
+      "x"
+    ],
+    [
+      "m0_43",
+      "sum0_42",
+      "y"
+    ],
+    [
+      "sum0_42",
+      "action_router",
+      "priority_0"
+    ],
+    [
+      "action_router",
+      "action1",
+      "permit_1"
+    ],
+    [
+      "p1_0",
+      "m1_0",
+      "x"
+    ],
+    [
+      "f0",
+      "m1_0",
+      "y"
+    ],
+    [
+      "p1_1",
+      "m1_1",
+      "x"
+    ],
+    [
+      "f1",
+      "m1_1",
+      "y"
+    ],
+    [
+      "p1_2",
+      "m1_2",
+      "x"
+    ],
+    [
+      "f2",
+      "m1_2",
+      "y"
+    ],
+    [
+      "p1_3",
+      "m1_3",
+      "x"
+    ],
+    [
+      "f3",
+      "m1_3",
+      "y"
+    ],
+    [
+      "p1_4",
+      "m1_4",
+      "x"
+    ],
+    [
+      "f4",
+      "m1_4",
+      "y"
+    ],
+    [
+      "p1_5",
+      "m1_5",
+      "x"
+    ],
+    [
+      "f5",
+      "m1_5",
+      "y"
+    ],
+    [
+      "p1_6",
+      "m1_6",
+      "x"
+    ],
+    [
+      "f6",
+      "m1_6",
+      "y"
+    ],
+    [
+      "p1_7",
+      "m1_7",
+      "x"
+    ],
+    [
+      "f7",
+      "m1_7",
+      "y"
+    ],
+    [
+      "p1_8",
+      "m1_8",
+      "x"
+    ],
+    [
+      "f8",
+      "m1_8",
+      "y"
+    ],
+    [
+      "p1_9",
+      "m1_9",
+      "x"
+    ],
+    [
+      "f9",
+      "m1_9",
+      "y"
+    ],
+    [
+      "p1_10",
+      "m1_10",
+      "x"
+    ],
+    [
+      "f10",
+      "m1_10",
+      "y"
+    ],
+    [
+      "p1_11",
+      "m1_11",
+      "x"
+    ],
+    [
+      "f11",
+      "m1_11",
+      "y"
+    ],
+    [
+      "p1_12",
+      "m1_12",
+      "x"
+    ],
+    [
+      "f12",
+      "m1_12",
+      "y"
+    ],
+    [
+      "p1_13",
+      "m1_13",
+      "x"
+    ],
+    [
+      "f13",
+      "m1_13",
+      "y"
+    ],
+    [
+      "p1_14",
+      "m1_14",
+      "x"
+    ],
+    [
+      "f14",
+      "m1_14",
+      "y"
+    ],
+    [
+      "p1_15",
+      "m1_15",
+      "x"
+    ],
+    [
+      "f15",
+      "m1_15",
+      "y"
+    ],
+    [
+      "p1_16",
+      "m1_16",
+      "x"
+    ],
+    [
+      "f16",
+      "m1_16",
+      "y"
+    ],
+    [
+      "p1_17",
+      "m1_17",
+      "x"
+    ],
+    [
+      "f17",
+      "m1_17",
+      "y"
+    ],
+    [
+      "p1_18",
+      "m1_18",
+      "x"
+    ],
+    [
+      "f18",
+      "m1_18",
+      "y"
+    ],
+    [
+      "p1_19",
+      "m1_19",
+      "x"
+    ],
+    [
+      "f19",
+      "m1_19",
+      "y"
+    ],
+    [
+      "p1_20",
+      "m1_20",
+      "x"
+    ],
+    [
+      "f20",
+      "m1_20",
+      "y"
+    ],
+    [
+      "p1_21",
+      "m1_21",
+      "x"
+    ],
+    [
+      "f21",
+      "m1_21",
+      "y"
+    ],
+    [
+      "p1_22",
+      "m1_22",
+      "x"
+    ],
+    [
+      "f22",
+      "m1_22",
+      "y"
+    ],
+    [
+      "p1_23",
+      "m1_23",
+      "x"
+    ],
+    [
+      "f23",
+      "m1_23",
+      "y"
+    ],
+    [
+      "p1_24",
+      "m1_24",
+      "x"
+    ],
+    [
+      "f24",
+      "m1_24",
+      "y"
+    ],
+    [
+      "p1_25",
+      "m1_25",
+      "x"
+    ],
+    [
+      "f25",
+      "m1_25",
+      "y"
+    ],
+    [
+      "p1_26",
+      "m1_26",
+      "x"
+    ],
+    [
+      "f26",
+      "m1_26",
+      "y"
+    ],
+    [
+      "p1_27",
+      "m1_27",
+      "x"
+    ],
+    [
+      "f27",
+      "m1_27",
+      "y"
+    ],
+    [
+      "p1_28",
+      "m1_28",
+      "x"
+    ],
+    [
+      "f28",
+      "m1_28",
+      "y"
+    ],
+    [
+      "p1_29",
+      "m1_29",
+      "x"
+    ],
+    [
+      "f29",
+      "m1_29",
+      "y"
+    ],
+    [
+      "p1_30",
+      "m1_30",
+      "x"
+    ],
+    [
+      "f30",
+      "m1_30",
+      "y"
+    ],
+    [
+      "p1_31",
+      "m1_31",
+      "x"
+    ],
+    [
+      "f31",
+      "m1_31",
+      "y"
+    ],
+    [
+      "p1_32",
+      "m1_32",
+      "x"
+    ],
+    [
+      "f32",
+      "m1_32",
+      "y"
+    ],
+    [
+      "p1_33",
+      "m1_33",
+      "x"
+    ],
+    [
+      "f33",
+      "m1_33",
+      "y"
+    ],
+    [
+      "p1_34",
+      "m1_34",
+      "x"
+    ],
+    [
+      "f34",
+      "m1_34",
+      "y"
+    ],
+    [
+      "p1_35",
+      "m1_35",
+      "x"
+    ],
+    [
+      "f35",
+      "m1_35",
+      "y"
+    ],
+    [
+      "p1_36",
+      "m1_36",
+      "x"
+    ],
+    [
+      "f36",
+      "m1_36",
+      "y"
+    ],
+    [
+      "p1_37",
+      "m1_37",
+      "x"
+    ],
+    [
+      "f37",
+      "m1_37",
+      "y"
+    ],
+    [
+      "p1_38",
+      "m1_38",
+      "x"
+    ],
+    [
+      "f38",
+      "m1_38",
+      "y"
+    ],
+    [
+      "p1_39",
+      "m1_39",
+      "x"
+    ],
+    [
+      "f39",
+      "m1_39",
+      "y"
+    ],
+    [
+      "p1_40",
+      "m1_40",
+      "x"
+    ],
+    [
+      "f40",
+      "m1_40",
+      "y"
+    ],
+    [
+      "p1_41",
+      "m1_41",
+      "x"
+    ],
+    [
+      "f41",
+      "m1_41",
+      "y"
+    ],
+    [
+      "p1_42",
+      "m1_42",
+      "x"
+    ],
+    [
+      "f42",
+      "m1_42",
+      "y"
+    ],
+    [
+      "p1_43",
+      "m1_43",
+      "x"
+    ],
+    [
+      "f43",
+      "m1_43",
+      "y"
+    ],
+    [
+      "m1_0",
+      "sum1_0",
+      "x"
+    ],
+    [
+      "m1_1",
+      "sum1_0",
+      "y"
+    ],
+    [
+      "sum1_0",
+      "sum1_1",
+      "x"
+    ],
+    [
+      "m1_2",
+      "sum1_1",
+      "y"
+    ],
+    [
+      "sum1_1",
+      "sum1_2",
+      "x"
+    ],
+    [
+      "m1_3",
+      "sum1_2",
+      "y"
+    ],
+    [
+      "sum1_2",
+      "sum1_3",
+      "x"
+    ],
+    [
+      "m1_4",
+      "sum1_3",
+      "y"
+    ],
+    [
+      "sum1_3",
+      "sum1_4",
+      "x"
+    ],
+    [
+      "m1_5",
+      "sum1_4",
+      "y"
+    ],
+    [
+      "sum1_4",
+      "sum1_5",
+      "x"
+    ],
+    [
+      "m1_6",
+      "sum1_5",
+      "y"
+    ],
+    [
+      "sum1_5",
+      "sum1_6",
+      "x"
+    ],
+    [
+      "m1_7",
+      "sum1_6",
+      "y"
+    ],
+    [
+      "sum1_6",
+      "sum1_7",
+      "x"
+    ],
+    [
+      "m1_8",
+      "sum1_7",
+      "y"
+    ],
+    [
+      "sum1_7",
+      "sum1_8",
+      "x"
+    ],
+    [
+      "m1_9",
+      "sum1_8",
+      "y"
+    ],
+    [
+      "sum1_8",
+      "sum1_9",
+      "x"
+    ],
+    [
+      "m1_10",
+      "sum1_9",
+      "y"
+    ],
+    [
+      "sum1_9",
+      "sum1_10",
+      "x"
+    ],
+    [
+      "m1_11",
+      "sum1_10",
+      "y"
+    ],
+    [
+      "sum1_10",
+      "sum1_11",
+      "x"
+    ],
+    [
+      "m1_12",
+      "sum1_11",
+      "y"
+    ],
+    [
+      "sum1_11",
+      "sum1_12",
+      "x"
+    ],
+    [
+      "m1_13",
+      "sum1_12",
+      "y"
+    ],
+    [
+      "sum1_12",
+      "sum1_13",
+      "x"
+    ],
+    [
+      "m1_14",
+      "sum1_13",
+      "y"
+    ],
+    [
+      "sum1_13",
+      "sum1_14",
+      "x"
+    ],
+    [
+      "m1_15",
+      "sum1_14",
+      "y"
+    ],
+    [
+      "sum1_14",
+      "sum1_15",
+      "x"
+    ],
+    [
+      "m1_16",
+      "sum1_15",
+      "y"
+    ],
+    [
+      "sum1_15",
+      "sum1_16",
+      "x"
+    ],
+    [
+      "m1_17",
+      "sum1_16",
+      "y"
+    ],
+    [
+      "sum1_16",
+      "sum1_17",
+      "x"
+    ],
+    [
+      "m1_18",
+      "sum1_17",
+      "y"
+    ],
+    [
+      "sum1_17",
+      "sum1_18",
+      "x"
+    ],
+    [
+      "m1_19",
+      "sum1_18",
+      "y"
+    ],
+    [
+      "sum1_18",
+      "sum1_19",
+      "x"
+    ],
+    [
+      "m1_20",
+      "sum1_19",
+      "y"
+    ],
+    [
+      "sum1_19",
+      "sum1_20",
+      "x"
+    ],
+    [
+      "m1_21",
+      "sum1_20",
+      "y"
+    ],
+    [
+      "sum1_20",
+      "sum1_21",
+      "x"
+    ],
+    [
+      "m1_22",
+      "sum1_21",
+      "y"
+    ],
+    [
+      "sum1_21",
+      "sum1_22",
+      "x"
+    ],
+    [
+      "m1_23",
+      "sum1_22",
+      "y"
+    ],
+    [
+      "sum1_22",
+      "sum1_23",
+      "x"
+    ],
+    [
+      "m1_24",
+      "sum1_23",
+      "y"
+    ],
+    [
+      "sum1_23",
+      "sum1_24",
+      "x"
+    ],
+    [
+      "m1_25",
+      "sum1_24",
+      "y"
+    ],
+    [
+      "sum1_24",
+      "sum1_25",
+      "x"
+    ],
+    [
+      "m1_26",
+      "sum1_25",
+      "y"
+    ],
+    [
+      "sum1_25",
+      "sum1_26",
+      "x"
+    ],
+    [
+      "m1_27",
+      "sum1_26",
+      "y"
+    ],
+    [
+      "sum1_26",
+      "sum1_27",
+      "x"
+    ],
+    [
+      "m1_28",
+      "sum1_27",
+      "y"
+    ],
+    [
+      "sum1_27",
+      "sum1_28",
+      "x"
+    ],
+    [
+      "m1_29",
+      "sum1_28",
+      "y"
+    ],
+    [
+      "sum1_28",
+      "sum1_29",
+      "x"
+    ],
+    [
+      "m1_30",
+      "sum1_29",
+      "y"
+    ],
+    [
+      "sum1_29",
+      "sum1_30",
+      "x"
+    ],
+    [
+      "m1_31",
+      "sum1_30",
+      "y"
+    ],
+    [
+      "sum1_30",
+      "sum1_31",
+      "x"
+    ],
+    [
+      "m1_32",
+      "sum1_31",
+      "y"
+    ],
+    [
+      "sum1_31",
+      "sum1_32",
+      "x"
+    ],
+    [
+      "m1_33",
+      "sum1_32",
+      "y"
+    ],
+    [
+      "sum1_32",
+      "sum1_33",
+      "x"
+    ],
+    [
+      "m1_34",
+      "sum1_33",
+      "y"
+    ],
+    [
+      "sum1_33",
+      "sum1_34",
+      "x"
+    ],
+    [
+      "m1_35",
+      "sum1_34",
+      "y"
+    ],
+    [
+      "sum1_34",
+      "sum1_35",
+      "x"
+    ],
+    [
+      "m1_36",
+      "sum1_35",
+      "y"
+    ],
+    [
+      "sum1_35",
+      "sum1_36",
+      "x"
+    ],
+    [
+      "m1_37",
+      "sum1_36",
+      "y"
+    ],
+    [
+      "sum1_36",
+      "sum1_37",
+      "x"
+    ],
+    [
+      "m1_38",
+      "sum1_37",
+      "y"
+    ],
+    [
+      "sum1_37",
+      "sum1_38",
+      "x"
+    ],
+    [
+      "m1_39",
+      "sum1_38",
+      "y"
+    ],
+    [
+      "sum1_38",
+      "sum1_39",
+      "x"
+    ],
+    [
+      "m1_40",
+      "sum1_39",
+      "y"
+    ],
+    [
+      "sum1_39",
+      "sum1_40",
+      "x"
+    ],
+    [
+      "m1_41",
+      "sum1_40",
+      "y"
+    ],
+    [
+      "sum1_40",
+      "sum1_41",
+      "x"
+    ],
+    [
+      "m1_42",
+      "sum1_41",
+      "y"
+    ],
+    [
+      "sum1_41",
+      "sum1_42",
+      "x"
+    ],
+    [
+      "m1_43",
+      "sum1_42",
+      "y"
+    ],
+    [
+      "sum1_42",
+      "action_router",
+      "priority_1"
+    ],
+    [
+      "action_router",
+      "action2",
+      "permit_2"
+    ]
+  ],
+  "runtime": "old state -> pure reads and DAG -> synchronous hormone commit -> router permits -> explicit action sink",
+  "graphs": 2,
+  "hormone_reset": "zero each episode",
+  "mode": 4,
+  "record": {
+    "task": 7,
+    "seed": 104,
+    "mode": 4,
+    "features": [
+      [
+        0,
+        0,
+        0,
+        -1
+      ],
+      [
+        0,
+        1,
+        0,
+        -1
+      ],
+      [
+        0,
+        2,
+        0,
+        -1
+      ],
+      [
+        0,
+        3,
+        0,
+        -1
+      ],
+      [
+        0,
+        4,
+        0,
+        -1
+      ],
+      [
+        0,
+        5,
+        0,
+        -1
+      ],
+      [
+        0,
+        6,
+        0,
+        -1
+      ],
+      [
+        0,
+        7,
+        0,
+        -1
+      ],
+      [
+        7,
+        0,
+        0,
+        0
+      ],
+      [
+        7,
+        1,
+        0,
+        0
+      ],
+      [
+        7,
+        2,
+        0,
+        1
+      ],
+      [
+        7,
+        3,
+        0,
+        1
+      ],
+      [
+        0,
+        4,
+        0,
+        0
+      ],
+      [
+        4,
+        1,
+        3,
+        1
+      ],
+      [
+        2,
+        0,
+        13,
+        1
+      ],
+      [
+        6,
+        13,
+        5,
+        1
+      ],
+      [
+        3,
+        5,
+        9,
+        0
+      ],
+      [
+        0,
+        6,
+        0,
+        1
+      ],
+      [
+        4,
+        12,
+        7,
+        0
+      ],
+      [
+        1,
+        10,
+        6,
+        1
+      ],
+      [
+        6,
+        18,
+        3,
+        0
+      ],
+      [
+        4,
+        3,
+        1,
+        1
+      ],
+      [
+        5,
+        2,
+        14,
+        1
+      ],
+      [
+        5,
+        5,
+        10,
+        1
+      ],
+      [
+        2,
+        5,
+        3,
+        0
+      ],
+      [
+        3,
+        6,
+        5,
+        1
+      ],
+      [
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        2,
+        26,
+        6,
+        1
+      ],
+      [
+        3,
+        4,
+        10,
+        1
+      ],
+      [
+        6,
+        24,
+        5,
+        0
+      ],
+      [
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        4,
+        0,
+        1
+      ],
+      [
+        5,
+        11,
+        15,
+        1
+      ],
+      [
+        4,
+        19,
+        3,
+        1
+      ],
+      [
+        6,
+        1,
+        28,
+        1
+      ],
+      [
+        0,
+        2,
+        0,
+        0
+      ],
+      [
+        6,
+        5,
+        29,
+        0
+      ],
+      [
+        2,
+        20,
+        2,
+        0
+      ],
+      [
+        2,
+        3,
+        1,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        5,
+        4,
+        34,
+        1
+      ],
+      [
+        4,
+        34,
+        34,
+        1
+      ],
+      [
+        0,
+        6,
+        0,
+        1
+      ],
+      [
+        3,
+        14,
+        40,
+        1
+      ]
+    ],
+    "emissions": [
+      2,
+      38,
+      1,
+      7
+    ],
+    "weights": [
+      [
+        1.1778850313649605,
+        3.5470902356981107,
+        4.891294549102174,
+        -7.415791920962925,
+        -2.170606331539836,
+        -0.3292981619537764,
+        -4.765921216076541,
+        2.1743104428447166,
+        0.6350981705449432,
+        -1.73438525595412,
+        0.5455604342629569,
+        -2.0558847882623277,
+        -5.375995030929856,
+        -1.7875064489793955,
+        -2.0278971012129174,
+        4.481298225682561,
+        3.0011300050556007,
+        1.3992692906057007,
+        -0.19805169921066712,
+        -0.9487909556994922,
+        0.9351319453507736,
+        3.0375363020635002,
+        -1.3135560490322056,
+        0.7058107894101886,
+        -0.2627207314070706,
+        -0.8511447857479408,
+        1.8557074779439988,
+        -1.3526972349732418,
+        1.9506664318325566,
+        0.699084954388425,
+        -0.1133190469659262,
+        -2.240061003802698,
+        -0.12746612991903084,
+        -0.6605181233682805,
+        0.6053658776053432,
+        -0.23316153124884498,
+        -1.0927126340449587,
+        -0.20713664666446893,
+        -0.6498753952141357,
+        -0.03096566416704724,
+        1.2347026304082074,
+        0.7395532031895677,
+        1.2886384412866996,
+        0.22161462792556058
+      ],
+      [
+        -13.72162729408173,
+        -6.423364004694408,
+        -2.3637684061855078,
+        -0.5600424962307835,
+        -1.1067175224468022,
+        0.3873581018022183,
+        12.986537379622126,
+        -4.64459720458411,
+        -2.8349233251245347,
+        1.7781156638252438,
+        -3.6328614320954236,
+        4.476127670539171,
+        2.7862856928357065,
+        -4.282831810679044,
+        -2.5121446564757224,
+        1.584884461732731,
+        -6.538013180668572,
+        5.812003299509962,
+        3.890018953880064,
+        -0.9574141037918683,
+        0.9780893412637092,
+        -1.3995426871625665,
+        5.279680835964672,
+        -1.0322304141097132,
+        3.433409969761962,
+        2.643855103962774,
+        1.134967529504756,
+        0.7910887500058814,
+        -0.24001033879881017,
+        -1.0717067537287617,
+        0.47722104884165684,
+        0.5225622591688548,
+        0.6333235316864922,
+        -0.6732443096402905,
+        0.7906722830223238,
+        0.6989932769599984,
+        1.6375795794388945,
+        -0.23955535020201735,
+        -0.3020417695649495,
+        -1.0552481641558478,
+        0.9296912505819263,
+        -0.6792498548511248,
+        0.8393379151829222,
+        -1.0364141711384205
+      ]
+    ],
+    "enabled": true,
+    "graphs": 2,
+    "action_nodes": [
+      "flap",
+      "coast"
+    ],
+    "version": 5,
+    "epsilon": 0.0
+  }
+}

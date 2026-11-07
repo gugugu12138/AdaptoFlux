@@ -1,0 +1,18 @@
+{
+  "python": "3.12.9",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "packages": {
+    "numpy": "2.1.3",
+    "networkx": "3.4.2",
+    "pandas": "2.3.0",
+    "matplotlib": "3.10.3"
+  },
+  "core_source_hashes_collected_after_run": {
+    "ATF\\core\\adaptoflux.py": "6f2b470a9b25ab2ed0625a299174851232f18eab504662cedba5db2a79b09f82",
+    "ATF\\GraphProcessor\\graph_processor.py": "ddbe87b8f0a56c41437e6e2de0294bb8a998b12012f0522f87c442c0d7c39048",
+    "ATF\\PathGenerator\\path_generator.py": "ef8c980c2de6c2fb902556420a5e69bfe7162cc6d3ec665dce3bb287b4a543d7",
+    "ATF\\ModelTrainer\\GraphEvoTrainer\\graph_evo_trainer.py": "d8dc59a0d2253c153f2240318a4930b931f39a18f0811ac844e4c8d05a54c905",
+    "ATF\\ModelTrainer\\GraphEvoTrainer\\refinement_strategies.py": "d301d0e0a18d4d0bcc1578732c3ecd29454e2fbae0892c39be7c85deafc1b2f2",
+    "experiments\\minimal_stateful_comparison\\env.py": "b72964aa62ca6d9ed9cd96ae72807f3a18144e71a4bdbd4eb85b298541f615df"
+  }
+}

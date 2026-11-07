@@ -1,0 +1,112 @@
+{
+  "experiment": "matched native implicit/explicit state encoding",
+  "phase": "formal",
+  "catalog": ".\\type_search\\formal\\candidate_catalog.jsonl",
+  "catalog_sha256": "148e7bb44c1e5526acfaf8d82ae1c48e4eba1900f72970b52157dd0a5214a412",
+  "executor": "Unmodified ATF.GraphProcessor.graph_processor.GraphProcessor.infer_with_graph",
+  "candidate_selection": "All first-20-unique and final graph records exported by the frozen native type search",
+  "logical_candidate_budget": "Identical candidates; encoding is applied after search, not searched independently",
+  "semantics": "Immutable (pos,target) state token through every read/write in original topological order",
+  "encoding_cost": "One extra input/output port per state-access node, one token edge per such node plus final state output; no additional computation nodes",
+  "initial_states": [
+    [
+      -2,
+      -1
+    ],
+    [
+      -2,
+      0
+    ],
+    [
+      -2,
+      1
+    ],
+    [
+      -2,
+      2
+    ],
+    [
+      -1,
+      -2
+    ],
+    [
+      -1,
+      0
+    ],
+    [
+      -1,
+      1
+    ],
+    [
+      -1,
+      2
+    ],
+    [
+      0,
+      -2
+    ],
+    [
+      0,
+      -1
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      1,
+      -2
+    ],
+    [
+      1,
+      -1
+    ],
+    [
+      1,
+      0
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      2,
+      -2
+    ],
+    [
+      2,
+      -1
+    ],
+    [
+      2,
+      0
+    ],
+    [
+      2,
+      1
+    ]
+  ],
+  "maximum_episode_steps": 4,
+  "assertions": "Per-node numerical outputs, post-effect state, collapse output, every environment step, recorded accuracy/loss, poisoned-global-state isolation",
+  "timing": "Final graphs; one full warm-up; five paired order-randomized repetitions over all 20 episodes; includes native topological sorting, state construction/extraction, aggregation and episode loop",
+  "limitations": [
+    "Encoding equivalence is expected by construction and is not evidence of better search success.",
+    "This is not an independent explicit-state GP/CGP baseline or a test of automatic state-token discovery.",
+    "State-access annotations are supplied by the adapter; native type tags do not infer effects or rule out races.",
+    "The native implicit environment is evaluated one episode at a time.",
+    "Timing depends on this Python/object-port implementation and is not a universal representation ranking."
+  ],
+  "python": "3.12.9 | packaged by conda-forge | (main, Mar  4 2025, 22:37:18) [MSC v.1943 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "numpy": "2.1.3",
+  "networkx": "3.4.2",
+  "source_sha256": {
+    "experiments\\rebuttal_20261106\\state_encoding\\run_encoding.py": "5547381ef3d21b0efa09b1cc954cc7d38290afb46b70da873859d3cda936279e",
+    "ATF\\GraphProcessor\\graph_processor.py": "ddbe87b8f0a56c41437e6e2de0294bb8a998b12012f0522f87c442c0d7c39048",
+    "experiments\\minimal_stateful_comparison\\methods_constrained.py": "d9ac57a85682b947693d2d90732eee08c1b10273bf0d0aac132da769fe2dff36"
+  }
+}

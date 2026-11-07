@@ -1,0 +1,22 @@
+{
+  "candidate_records": 1007,
+  "checked_initial_conditions": 20140,
+  "checked_environment_steps": 70670,
+  "all_matched": true,
+  "fixture_checks": {
+    "native_object_state_ports": true,
+    "independent_two_sample_batch": true,
+    "explicit_does_not_access_global_state": true,
+    "all_state_reads_and_writes_ordered": true,
+    "immutable_tokens": true,
+    "legal_alternative_order_changes_result": true,
+    "original_order_result": 1,
+    "alternative_order_result": 2
+  },
+  "final_graphs": 90,
+  "mean_added_edges": 2.156901688182721,
+  "timing_run": true,
+  "timed_final_graphs": 90,
+  "median_explicit_over_implicit_ratio": 1.1368965572122633,
+  "timing_repeats": 5
+}

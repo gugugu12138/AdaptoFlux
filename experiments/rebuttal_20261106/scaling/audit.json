@@ -1,0 +1,19 @@
+{
+  "all_passed": true,
+  "formal_graphs": 30,
+  "raw_timing_measurements": 1260,
+  "source_and_protocol_and_data_hashes_verified": true,
+  "pilot_disjoint": true,
+  "counts_and_medians_verified": true,
+  "max_abs_serial_reference": 2.220446049250313e-16,
+  "max_abs_parallel_reference": 2.220446049250313e-16,
+  "all_serial_parallel_exact": true,
+  "serial_growth_32_to_1024": 33.18400639368154,
+  "parallel_growth_32_to_1024": 23.688348286174374,
+  "speedup_statistic": "Median of paired per-graph ratios, not ratio of aggregated medians",
+  "figure_error_bars": "minimum to maximum of five per-graph medians; not confidence intervals",
+  "figure_sha256": {
+    "scaling_summary.png": "913529ccb438699eccde8f7d7f6e31f418826b15ad71da08ea635e26b418e6fd",
+    "scaling_summary.svg": "fc7ac819bb4d57d67d5d9f4070baabe660ee3ab28648093e6f96139e59c0714b"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "candidate_records_including_repeated_final_graphs": 1007,
+  "paired_initial_conditions": 20140,
+  "paired_environment_step_comparisons": 70670,
+  "total_native_graph_executions_in_semantic_audit": 141340,
+  "all_matches": true,
+  "mean_extra_state_edges_final_graphs": 2.188888888888889,
+  "median_paired_timing_ratio": 1.1368965572122633,
+  "paired_timing_ratio_quartiles": [
+    1.0862981773952454,
+    1.1368965572122633,
+    1.1971669134220093
+  ],
+  "by_type_mode": {
+    "fine": {
+      "final_graphs": 30,
+      "successful_final_graphs": 29,
+      "mean_extra_state_edges": 2.1,
+      "median_implicit_seconds_per_20_episodes": 0.0011055000000000001,
+      "median_explicit_seconds_per_20_episodes": 0.001289,
+      "median_paired_explicit_over_implicit": 1.160880030629638
+    },
+    "coarse": {
+      "final_graphs": 30,
+      "successful_final_graphs": 15,
+      "mean_extra_state_edges": 1.7333333333333334,
+      "median_implicit_seconds_per_20_episodes": 0.00122185,
+      "median_explicit_seconds_per_20_episodes": 0.00134315,
+      "median_paired_explicit_over_implicit": 1.129365951266394
+    },
+    "flat": {
+      "final_graphs": 30,
+      "successful_final_graphs": 1,
+      "mean_extra_state_edges": 2.7333333333333334,
+      "median_implicit_seconds_per_20_episodes": 0.00236765,
+      "median_explicit_seconds_per_20_episodes": 0.00275515,
+      "median_paired_explicit_over_implicit": 1.1245059360597396
+    }
+  },
+  "timing_context": "After native type search and scaling benchmark finished; no concurrent agent experiment computation. One warm-up, five paired randomized-order repetitions. Common adapter interface overhead included."
+}

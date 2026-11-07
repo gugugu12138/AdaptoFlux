@@ -1,0 +1,7 @@
+!*.json
+!*.svg
+!action_example/reference/models/
+!action_example/reference/models/*.json
+__pycache__/
+cache/
+*.py[cod]

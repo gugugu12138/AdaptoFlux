@@ -1,0 +1,322 @@
+{
+  "stage": "formal",
+  "n_attempted": 90,
+  "arms": {
+    "fine": {
+      "n_completed": 30,
+      "n_failed": 0,
+      "successes": 29,
+      "success_rate": 0.9666666666666667,
+      "success_wilson_95": [
+        0.8332960900859082,
+        0.9940914096183874
+      ],
+      "legacy_successes_ge_095": 29,
+      "initial_successes": 20,
+      "loss": {
+        "mean": 0.06666666666666667,
+        "median": 0.0,
+        "min": 0.0,
+        "max": 2.0
+      },
+      "accuracy": {
+        "mean": 0.9666666666666667,
+        "median": 1.0,
+        "min": 0.0,
+        "max": 1.0
+      },
+      "loss_calls": {
+        "mean": 53.03333333333333,
+        "median": 52.5,
+        "min": 10,
+        "max": 75
+      },
+      "accuracy_calls": {
+        "mean": 6.433333333333334,
+        "median": 6.0,
+        "min": 6,
+        "max": 10
+      },
+      "callback_evaluations": {
+        "mean": 59.46666666666667,
+        "median": 59.0,
+        "min": 20,
+        "max": 81
+      },
+      "unique_candidates": {
+        "mean": 6.866666666666666,
+        "median": 6.0,
+        "min": 3,
+        "max": 13
+      },
+      "elapsed_seconds": {
+        "mean": 0.16889183666886917,
+        "median": 0.17522930000268389,
+        "min": 0.06093420000979677,
+        "max": 0.22422860001097433
+      },
+      "accepted_refinements": {
+        "mean": 0,
+        "median": 0.0,
+        "min": 0,
+        "max": 0
+      },
+      "native_refinement_attempts": {
+        "mean": 46.9,
+        "median": 46.5,
+        "min": 0,
+        "max": 69
+      },
+      "first_success_callback_successes_only": [
+        1,
+        1,
+        3,
+        5,
+        1,
+        5,
+        1,
+        11,
+        10,
+        10,
+        1,
+        3,
+        10,
+        1,
+        11,
+        10,
+        3,
+        5,
+        1,
+        1,
+        3,
+        1,
+        3,
+        10,
+        10,
+        10,
+        1,
+        3,
+        1
+      ],
+      "first_success_unique_candidate_successes_only": [
+        1,
+        1,
+        2,
+        3,
+        1,
+        3,
+        1,
+        5,
+        5,
+        5,
+        1,
+        2,
+        5,
+        1,
+        6,
+        5,
+        2,
+        3,
+        1,
+        1,
+        2,
+        1,
+        2,
+        4,
+        4,
+        5,
+        1,
+        2,
+        1
+      ]
+    },
+    "coarse": {
+      "n_completed": 30,
+      "n_failed": 0,
+      "successes": 15,
+      "success_rate": 0.5,
+      "success_wilson_95": [
+        0.33154125640533766,
+        0.6684587435946623
+      ],
+      "legacy_successes_ge_095": 15,
+      "initial_successes": 4,
+      "loss": {
+        "mean": 0.99,
+        "median": 0.85,
+        "min": 0.0,
+        "max": 2.0
+      },
+      "accuracy": {
+        "mean": 0.5033333333333333,
+        "median": 0.55,
+        "min": 0.0,
+        "max": 1.0
+      },
+      "loss_calls": {
+        "mean": 73.23333333333333,
+        "median": 52.5,
+        "min": 10,
+        "max": 310
+      },
+      "accuracy_calls": {
+        "mean": 8.433333333333334,
+        "median": 9.0,
+        "min": 6,
+        "max": 11
+      },
+      "callback_evaluations": {
+        "mean": 81.66666666666667,
+        "median": 59.5,
+        "min": 20,
+        "max": 320
+      },
+      "unique_candidates": {
+        "mean": 5.6,
+        "median": 5.5,
+        "min": 2,
+        "max": 16
+      },
+      "elapsed_seconds": {
+        "mean": 0.23362664666686517,
+        "median": 0.1633181999932276,
+        "min": 0.03782389999832958,
+        "max": 1.0683564999781083
+      },
+      "accepted_refinements": {
+        "mean": 0.03333333333333333,
+        "median": 0.0,
+        "min": 0,
+        "max": 1
+      },
+      "native_refinement_attempts": {
+        "mean": 65.23333333333333,
+        "median": 46.5,
+        "min": 0,
+        "max": 300
+      },
+      "first_success_callback_successes_only": [
+        10,
+        10,
+        5,
+        11,
+        10,
+        10,
+        13,
+        11,
+        9,
+        10,
+        10,
+        1,
+        10,
+        1,
+        1
+      ],
+      "first_success_unique_candidate_successes_only": [
+        5,
+        5,
+        3,
+        5,
+        5,
+        5,
+        7,
+        5,
+        4,
+        5,
+        5,
+        1,
+        5,
+        1,
+        1
+      ]
+    },
+    "flat": {
+      "n_completed": 30,
+      "n_failed": 0,
+      "successes": 1,
+      "success_rate": 0.03333333333333333,
+      "success_wilson_95": [
+        0.005908590381612455,
+        0.16670390991409173
+      ],
+      "legacy_successes_ge_095": 1,
+      "initial_successes": 0,
+      "loss": {
+        "mean": 1.0666666666666667,
+        "median": 1.1,
+        "min": 0.0,
+        "max": 1.2
+      },
+      "accuracy": {
+        "mean": 0.32,
+        "median": 0.3,
+        "min": 0.2,
+        "max": 1.0
+      },
+      "loss_calls": {
+        "mean": 728.1666666666666,
+        "median": 760.0,
+        "min": 120,
+        "max": 760
+      },
+      "accuracy_calls": {
+        "mean": 10.5,
+        "median": 11.0,
+        "min": 7,
+        "max": 13
+      },
+      "callback_evaluations": {
+        "mean": 738.6666666666666,
+        "median": 770.5,
+        "min": 127,
+        "max": 771
+      },
+      "unique_candidates": {
+        "mean": 22.766666666666666,
+        "median": 23.0,
+        "min": 10,
+        "max": 44
+      },
+      "elapsed_seconds": {
+        "mean": 2.5793621400031648,
+        "median": 2.5958018499950413,
+        "min": 0.34002189998864196,
+        "max": 3.2216660999984015
+      },
+      "accepted_refinements": {
+        "mean": 0.6,
+        "median": 1.0,
+        "min": 0,
+        "max": 3
+      },
+      "native_refinement_attempts": {
+        "mean": 718.3,
+        "median": 750.0,
+        "min": 114,
+        "max": 750
+      },
+      "first_success_callback_successes_only": [
+        10
+      ],
+      "first_success_unique_candidate_successes_only": [
+        5
+      ]
+    }
+  },
+  "paired_comparisons": {
+    "fine_vs_flat": {
+      "paired_n": 30,
+      "fine_only": 28,
+      "other_only": 0,
+      "exact_mcnemar_two_sided_p": 7.450580596923828e-09,
+      "multiplicity_adjusted": false
+    },
+    "fine_vs_coarse": {
+      "paired_n": 30,
+      "fine_only": 14,
+      "other_only": 0,
+      "exact_mcnemar_two_sided_p": 0.0001220703125,
+      "multiplicity_adjusted": false
+    }
+  }
+}

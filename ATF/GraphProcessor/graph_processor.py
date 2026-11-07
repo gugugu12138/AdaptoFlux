@@ -12,10 +12,12 @@ _ALREADY_WARNED_OLD_MODEL = False
 
 from threading import RLock
 from .execution_runtime import ExecutionRuntime, prepare_graph, transactional_graph_edit
+from .execution_plan import validate_effect_ordering
 
 
 class GraphProcessor(ExecutionRuntime):
-    def __init__(self, graph: nx.MultiDiGraph, methods: dict, collapse_method=CollapseMethod.SUM):
+    def __init__(self, graph: nx.MultiDiGraph, methods: dict, collapse_method=CollapseMethod.SUM,
+                 *, enable_effect_ordering=True):
         """
         初始化图处理器。
         
@@ -23,7 +25,10 @@ class GraphProcessor(ExecutionRuntime):
             graph (nx.MultiDiGraph): 初始图结构
             methods (dict): 可用方法字典 {method_name: {"function": ..., "input_count": int, "output_count": int}}
             collapse_method (callable): 聚合函数，默认为 sum
+            enable_effect_ordering (bool): 默认开启状态访问排序。False 只按数据依赖
+                调度，并按节点处理整批输入；仍保留正常图/端口校验与错误处理。
         """
+        self._enable_effect_ordering = validate_effect_ordering(enable_effect_ordering)
         self._execution_lock = RLock()
         self.discard_node_method_name = "null"
         self.graph = graph.copy() if graph else nx.MultiDiGraph()
@@ -36,7 +41,7 @@ class GraphProcessor(ExecutionRuntime):
         if not hasattr(new_graph, 'nodes') or not hasattr(new_graph, 'edges'):
             raise ValueError("new_graph 不是一个有效的图对象")
         with self._execution_lock:
-            prepare_graph(new_graph, self.methods)
+            prepare_graph(new_graph, self.methods, enable_effect_ordering=self.enable_effect_ordering)
             self.graph = new_graph
             self.layer = self.get_max_layer_from_graph()
         print(f"图结构已更新，当前最大层数：{self.layer}。")
@@ -52,7 +57,7 @@ class GraphProcessor(ExecutionRuntime):
             raise TypeError("methods 必须是方法名到方法元数据的字典")
         with self._execution_lock:
             candidate = copy.deepcopy(self.graph)
-            prepare_graph(candidate, new_methods)
+            prepare_graph(candidate, new_methods, enable_effect_ordering=self.enable_effect_ordering)
             self.methods = new_methods
         print("Methods 已更新。")
 
@@ -278,11 +283,11 @@ class GraphProcessor(ExecutionRuntime):
 
     # 该部分存在技术残留导致的全量中间缓存，作者有时间可能会改
     def infer_with_graph(self, values):
-        """按冻结的语义顺序串行执行；隐式状态读写也属于程序顺序的一部分。"""
+        """串行执行；开启副作用排序时使用冻结顺序，关闭时使用数据拓扑顺序。"""
         return self._infer_with_execution_plan(values)
 
     def infer_with_task_parallel(self, values, num_workers=4):
-        """仅并行执行数据依赖和副作用依赖都已经满足的节点。"""
+        """并行执行；始终等待数据前驱，仅在开启排序时额外等待副作用前驱。"""
         return self._infer_with_execution_plan(values, workers=num_workers)
 
     def infer_with_graph_single(self, sample, use_pipeline=False, num_workers=4):
@@ -333,7 +338,7 @@ class GraphProcessor(ExecutionRuntime):
             candidate = nx.relabel_nodes(copy.deepcopy(self.graph), {old_node_id: new_id}, copy=True)
             candidate.nodes[new_id].update(method_name=new_method_name, layer=layer,
                                           is_passthrough=new_method_name == self.discard_node_method_name)
-            prepare_graph(candidate, self.methods)
+            prepare_graph(candidate, self.methods, enable_effect_ordering=self.enable_effect_ordering)
             self.graph.clear()
             self.graph.graph.update(candidate.graph)
             self.graph.add_nodes_from(candidate.nodes(data=True))

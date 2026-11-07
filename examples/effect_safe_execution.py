@@ -69,6 +69,17 @@ def main():
     assert changed == 3
     print(f"显式改序后的新程序：{changed}")
 
+    # 也可以在构造 AdaptoFlux 时传 enable_effect_ordering=False。
+    # 这里演示已有模型的关闭/重新开启接口。关闭后没有额外控制边，但数据
+    # 前驱仍须完成；不使用一次偶然的线程运行结果宣称共享状态仍然确定。
+    model.set_effect_ordering(False)
+    assert not model.enable_effect_ordering
+    assert processor.prepare_execution_plan().control_edges == ()
+    print("关闭副作用排序：只按数据依赖调度")
+    model.set_effect_ordering(True)
+    assert model.enable_effect_ordering
+    print("重新开启：", processor.prepare_execution_plan().order)
+
 
 if __name__ == "__main__":
     main()

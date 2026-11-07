@@ -1,6 +1,43 @@
 ATF 副作用顺序与并行执行：集成说明
 分支：codex/effect-safe-execution
 
+零、开关用法与保存约定
+
+默认开启，不改变此分支已有的默认行为。创建时明确关闭：
+  model = AdaptoFlux(values=X, input_types_list=['scalar'],
+                    enable_effect_ordering=False)
+独立使用图处理器也支持同一参数：
+  processor = GraphProcessor(graph, methods, enable_effect_ordering=False)
+
+已有模型通过接口切换，不能直接写只读属性：
+  model.set_effect_ordering(False)       # 关闭
+  model.set_effect_ordering(True)        # 重新开启
+  print(model.enable_effect_ordering)   # 查看当前选择
+独立处理器同样有set_effect_ordering接口。开关只接受True/False。
+
+开启：冻结副作用顺序，等待冲突状态访问完成；状态图逐个完成整个样本。
+关闭：只等待数据前驱，不生成额外控制依赖，不约束旧的冻结顺序；恢复按
+节点处理整批样本的方式（A1,A2,B1,B2），允许原有向量化及标量回退。
+关闭不会把方法声明改成pure，也不会移除端口、DAG、签名、文件一致性校验
+及实例锁；这是调度模式开关，不是把执行器代码整体退回历史版本。
+因此关闭也不能理解为完全消除计划准备开销。压缩器仍遵守纯函数限制。
+
+关闭后，具有共享状态且没有显式数据依赖的节点可能因线程完成顺序或图
+拓扑顺序变化产生不同结果；文件重排也不再承诺恢复相同的隐式状态顺序。
+重新开启时以当前数据图选择并冻结新顺序，必须重新评价任务表现；切换
+不会重置环境，也不会自动重新训练或刷新已有评分。关闭时调用显式的
+set_execution_order会报错，因为该模式不承诺执行这个额外顺序。
+
+模型复制、内置训练和保存加载保持开关。加载以文件中保存的设置为准，
+而不是接收实例的构造参数；不带开关字段的旧计划按开启解释，无计划的
+旧模型沿用此前的保守迁移方式。图元数据与计划中的开关冲突会拒绝加载。
+若需要更改一个已加载模型的模式，请在load_model之后调用切换接口。
+
+新抽取的复合方法继承来源模型的模式，并作为其内部执行契约保存。已有
+复合方法可能被多个模型共享，切换外层模型不会递归改写这些方法的模式；
+若要求所有内部图都关闭，应从关闭模式的模型重新抽取相应复合方法。
+以下关于冻结顺序、状态逐样本和跨调度一致性的说明均以开启模式为前提。
+
 一、解决的问题
 
 类型兼容和DAG无环，只能约束数据传递，不能自动决定共享状态的访问顺序。
@@ -104,7 +141,9 @@ AdaptoFlux.save_model保存graph.json及execution_plan.json，JSON图内也包�
 从仓库根目录运行：
   python -B -m examples.effect_safe_execution
   python -B -m pytest Test/test_effect_execution.py Test/test_effect_plan.py
-      Test/test_effect_training.py Test/test_effect_persistence.py -q -p no:cacheprovider
+      Test/test_effect_training.py Test/test_effect_persistence.py
+      Test/test_effect_toggle_execution.py Test/test_effect_toggle_training.py
+      Test/test_effect_toggle_persistence.py -q -p no:cacheprovider
 上面的pytest命令请合并为一行。
 
 测试覆盖非交换状态写入、读写顺序、全部合法调度的小图核验、资源通配、

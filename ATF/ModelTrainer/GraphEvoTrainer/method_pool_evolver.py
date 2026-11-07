@@ -9,7 +9,9 @@ import networkx as nx
 from networkx.algorithms.isomorphism import DiGraphMatcher
 
 from ...core.evolved_method import EvolvedMethod
-from ...GraphProcessor.execution_plan import aggregate_effects, effects_for_method, set_execution_order
+from ...GraphProcessor.execution_plan import (
+    aggregate_effects, effects_for_method, set_execution_order, EFFECT_ORDERING_KEY,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -187,7 +189,9 @@ class MethodPoolEvolver:
         for graph, count in zip(graphs, counts):
             originals = {inverse[n] for n in graph if n in inverse}
             positions = [i for i, node in enumerate(effects) if node in originals]
-            interleaved = bool(positions) and any(
+            # 关闭模式明确放弃副作用顺序保护，因此不再用已冻结的访问顺序
+            # 限制抽取范围；零输出边界是提取器的结构限制，仍必须单独检查。
+            interleaved = template.graph_processor.enable_effect_ordering and bool(positions) and any(
                 node not in originals for node in effects[min(positions):max(positions) + 1])
             # 旧提取器靠 collapse 返回数值，不能为零输出动作凭空造一个数值端口。
             # 原图运行器仍支持零输出 sink；这里只限制当前复合方法提取流程。
@@ -711,9 +715,12 @@ class MethodPoolEvolver:
             # 共识图的节点 ID 是结构签名，重建时的插入顺序未必等于原程序顺序。
             # 先把模板已冻结的顺序投影到选中节点，再映射为新的可执行节点 ID。
             # 这样复合方法内部不会因为重命名、序列化重排而交换状态读写时机。
-            projected = sorted(internal_nodes,
-                               key=lambda n: source_rank[sig_to_original_node[n]])
-            set_execution_order(g_full, [mapping[node] for node in projected])
+            source_mode = template_snapshot.graph_processor.enable_effect_ordering
+            g_full.graph[EFFECT_ORDERING_KEY] = source_mode
+            if source_mode:
+                projected = sorted(internal_nodes,
+                                   key=lambda n: source_rank[sig_to_original_node[n]])
+                set_execution_order(g_full, [mapping[node] for node in projected])
             
             # === 按层重分配 data_coord（执行关键）| Reassign data_coord per layer (execution critical) ===
             layer_edges = defaultdict(list)  # layer → 边列表 | layer → list of edges
@@ -837,7 +844,11 @@ class MethodPoolEvolver:
                 name=name,
                 graph=g_full,
                 methods_ref=adaptoflux_instance.methods,
-                metadata=meta
+                metadata=meta,
+                # 重建阶段记录了来源快照的开关，注册目标模型可能是另一个
+                # 实例；必须优先继承来源，不能在抽取完成后改变子程序语义。
+                enable_effect_ordering=g_full.graph.get(
+                    EFFECT_ORDERING_KEY, adaptoflux_instance.graph_processor.enable_effect_ordering),
             )
             
             # 注册到方法池 | Register to method pool

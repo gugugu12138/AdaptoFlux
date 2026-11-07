@@ -26,7 +26,19 @@ PLAN_VERSION = 1
 UID_KEY = "_atf_uid"
 ORDER_KEY = "_atf_execution_order"
 VERSION_KEY = "_atf_execution_plan_version"
+EFFECT_ORDERING_KEY = "_atf_enable_effect_ordering"
 BOUNDARIES = frozenset(("root", "collapse"))
+
+
+def validate_effect_ordering(value):
+    """开关只接受真正的布尔值，避免字符串 'False' 被当作真值误开启。
+
+    构造、切换和文件加载共用此校验；拒绝输入发生在修改图或调用方法之前。
+    不使用 bool(value) 强制转换，也不接受 0/1 代替显式的 True/False。
+    """
+    if type(value) is not bool:
+        raise ValueError("enable_effect_ordering must be True or False")
+    return value
 
 
 def _resources(value, label):
@@ -288,7 +300,7 @@ def _canonical(value):
     return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
 
 
-def _export_payload(graph, methods, order, uids, effects, control_edges):
+def _export_payload(graph, methods, order, uids, effects, control_edges, enable_effect_ordering):
     """生成可核验的计划快照，记录实际影响执行的端口与方法声明。
 
     节点身份按 UID 保存；节点显示名称仅供人阅读。数据边以多重集保存，
@@ -311,7 +323,8 @@ def _export_payload(graph, methods, order, uids, effects, control_edges):
                              ("output_index", "input_slot", "data_coord", "data_type")}}
                   for source, target, attributes in graph.edges(data=True)]
     data_edges.sort(key=_canonical)
-    return {"version": PLAN_VERSION, "order": [uids[node] for node in order],
+    return {"version": PLAN_VERSION, "enable_effect_ordering": enable_effect_ordering,
+            "order": [uids[node] for node in order],
             "nodes": nodes, "data_edges": data_edges,
             "control_edges": [[uids[source], uids[target]] for source, target in control_edges]}
 
@@ -331,30 +344,42 @@ class ExecutionPlan:
     effects: dict
     has_effects: bool
     uids: dict
+    enable_effect_ordering: bool
     _payload: dict = field(repr=False)
 
     def to_dict(self):
         return copy.deepcopy(self._payload)
 
 
-def compile_execution_plan(graph, methods):
-    """冻结/更新语义顺序，再生成数据依赖与副作用依赖的并集。
+def compile_execution_plan(graph, methods, *, enable_effect_ordering=True):
+    """按指定模式生成计划；开启时冻结顺序并合并副作用依赖。
 
     编译应发生在候选首次评价之前；运行器也会检查计划，避免直接修改图后
     沿用失效计划。旧节点顺序跨存储重排、UID 保留的重命名和正常生长保持。
     要逆转旧顺序，必须调用 set_execution_order 并把它作为新程序重新评价。
 
     成功前不提交 UID 或顺序元数据；失败不会把半成品计划留在原图。数据边
-    始终不变，参数绑定仍由原数据图负责。
+    始终不变，参数绑定仍由原数据图负责。关闭时不生成副作用依赖，order
+    只是本次数据拓扑序快照，不约束下次编译；has_effects 仍反映真实声明，
+    以免压缩器把关闭排序错误理解成所有函数都纯净。
     """
+    enable_effect_ordering = validate_effect_ordering(enable_effect_ordering)
+    previous_mode = validate_effect_ordering(graph.graph.get(EFFECT_ORDERING_KEY, True))
     _validate_data_graph(graph)
     uids = _node_uids(graph)
-    order = _semantic_order(graph, uids)
+    # 关闭时只看当前数据图，不让之前冻结的副作用顺序限制结构搜索。
+    # 从关闭重新开启也以当前图为新的语义起点，不能复活已经过期的旧顺序。
+    # 开启期间的普通重编译仍严格保持原有顺序，与此前版本行为一致。
+    if enable_effect_ordering and previous_mode:
+        order = _semantic_order(graph, uids)
+    else:
+        order = tuple(node for node in nx.topological_sort(graph) if node not in BOUNDARIES)
     effects = {node: _node_effects(graph.nodes[node], methods) for node in order}
     order_index = {node: index for index, node in enumerate(order)}
     data_dependencies = {(source, target) for source, target in graph.edges()
                          if source not in BOUNDARIES and target not in BOUNDARIES}
-    control = _effect_dependencies(order, effects) - data_dependencies
+    control = (_effect_dependencies(order, effects) - data_dependencies
+               if enable_effect_ordering else set())
     control_edges = tuple(sorted(control, key=lambda pair: (order_index[pair[0]], order_index[pair[1]])))
     dependencies = data_dependencies | control
     predecessors = {node: [] for node in order}
@@ -366,14 +391,17 @@ def compile_execution_plan(graph, methods):
         successors[source].append(target)
     predecessors = {node: tuple(sorted(items, key=order_index.__getitem__)) for node, items in predecessors.items()}
     successors = {node: tuple(sorted(items, key=order_index.__getitem__)) for node, items in successors.items()}
-    payload = _export_payload(graph, methods, order, uids, effects, control_edges)
+    payload = _export_payload(graph, methods, order, uids, effects, control_edges,
+                              enable_effect_ordering)
     # 所有检查和导出均成功后，才提交身份与顺序，避免拒绝候选留下半成品。
     for node, uid in uids.items():
         graph.nodes[node][UID_KEY] = uid
     graph.graph[ORDER_KEY] = [uids[node] for node in order]
     graph.graph[VERSION_KEY] = PLAN_VERSION
+    graph.graph[EFFECT_ORDERING_KEY] = enable_effect_ordering
     return ExecutionPlan(order, predecessors, successors, control_edges, effects,
-                         any(spec["kind"] != "pure" for spec in effects.values()), uids, payload)
+                         any(spec["kind"] != "pure" for spec in effects.values()), uids,
+                         enable_effect_ordering, payload)
 
 
 def set_execution_order(graph, order):
@@ -397,11 +425,13 @@ def set_execution_order(graph, order):
         graph.nodes[node][UID_KEY] = uid
     graph.graph[ORDER_KEY] = [uids[node] for node in selected]
     graph.graph[VERSION_KEY] = PLAN_VERSION
+    # 显式指定顺序属于开启模式；运行器关闭时会在调用本函数前拒绝该请求。
+    graph.graph[EFFECT_ORDERING_KEY] = True
 
 
-def export_execution_plan(graph, methods):
+def export_execution_plan(graph, methods, *, enable_effect_ordering=True):
     """重新校验当前图并导出计划，避免保存失效的旧控制依赖。"""
-    return compile_execution_plan(graph, methods).to_dict()
+    return compile_execution_plan(graph, methods, enable_effect_ordering=enable_effect_ordering).to_dict()
 
 
 def restore_execution_plan(graph, methods, payload):
@@ -415,8 +445,14 @@ def restore_execution_plan(graph, methods, payload):
     if not isinstance(payload, Mapping) or payload.get("version") != PLAN_VERSION:
         raise ValueError("Invalid or unsupported saved execution plan")
     required = {"version", "order", "nodes", "data_edges", "control_edges"}
-    if set(payload) != required:
+    if set(payload) not in (required, required | {"enable_effect_ordering"}):
         raise ValueError("Saved execution plan has missing or unknown fields")
+    # 开关加入前的计划没有此字段，其语义一直是开启。兼容加载必须沿用开启，
+    # 不能根据当前实例配置猜测，否则同一个模型会因加载入口不同而改变行为。
+    enabled = validate_effect_ordering(payload.get("enable_effect_ordering", True))
+    if EFFECT_ORDERING_KEY in graph.graph:
+        if validate_effect_ordering(graph.graph[EFFECT_ORDERING_KEY]) != enabled:
+            raise ValueError("Graph metadata and saved plan disagree on enable_effect_ordering")
     stored_order = payload["order"]
     if not isinstance(stored_order, list) or any(not isinstance(uid, str) for uid in stored_order):
         raise ValueError("Saved order must be a list of node UIDs")
@@ -433,17 +469,31 @@ def restore_execution_plan(graph, methods, payload):
     candidate = graph.copy()
     candidate.graph[ORDER_KEY] = list(stored_order)
     candidate.graph[VERSION_KEY] = PLAN_VERSION
-    plan = compile_execution_plan(candidate, methods)
+    candidate.graph[EFFECT_ORDERING_KEY] = enabled
+    plan = compile_execution_plan(candidate, methods, enable_effect_ordering=enabled)
     actual, expected = plan.to_dict(), copy.deepcopy(dict(payload))
+    expected.setdefault("enable_effect_ordering", True)
     # 节点显示名称允许变化；稳定 UID、方法声明、端口和依赖仍必须严格一致。
     try:
         for value in (actual, expected):
             for node in value["nodes"]:
                 node.pop("node", None)
-    except (TypeError, AttributeError) as exc:
+            if not enabled:
+                # 关闭模式没有冻结顺序保证；文件重排可选择另一合法拓扑序。
+                # 仍逐节点核验声明/端口，且必须没有控制边，不能放宽其他契约。
+                value["nodes"].sort(key=lambda node: node["uid"])
+    except (TypeError, AttributeError, KeyError) as exc:
         raise ValueError("Malformed saved node declarations") from exc
+    if not enabled:
+        by_uid = {uid: index for index, uid in enumerate(stored_order)}
+        for source, target in graph.edges():
+            if source not in BOUNDARIES and target not in BOUNDARIES:
+                if by_uid[graph.nodes[source][UID_KEY]] >= by_uid[graph.nodes[target][UID_KEY]]:
+                    raise ValueError("Saved data-only order violates data dependencies")
+        actual["order"] = list(stored_order)
     if _canonical(actual) != _canonical(expected):
         raise ValueError("Saved execution plan differs from graph dependencies or method/effect declarations")
     graph.graph[ORDER_KEY] = list(stored_order)
     graph.graph[VERSION_KEY] = PLAN_VERSION
+    graph.graph[EFFECT_ORDERING_KEY] = enabled
     return plan

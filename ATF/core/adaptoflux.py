@@ -18,7 +18,6 @@ from ..GraphProcessor.graph_processor import GraphProcessor
 from ..GraphProcessor.execution_plan import (
     compile_execution_plan,
     effects_for_method,
-    export_execution_plan,
     restore_execution_plan,
 )
 from ..PathGenerator.path_generator import PathGenerator
@@ -33,7 +32,8 @@ class AdaptoFlux:
         methods_path=None,
         collapse_method=CollapseMethod.SUM,
         type_equivalence_map=None,
-        input_types_list=None  # ← 新增参数
+        input_types_list=None,
+        enable_effect_ordering=True,
     ):
         """
         初始化 AdaptoFlux 类的实例
@@ -42,7 +42,14 @@ class AdaptoFlux:
         :param labels: 每个值对应的标签列表
         :param collapse_method: 选择的坍缩方法，默认为 SUM
         :param methods_path: 存储方法路径的文件路径，默认为 "methods.py"
+        :param enable_effect_ordering: 是否按状态读写声明添加控制依赖，默认开启。
+            关闭后仅根据数据边调度；同一状态的独立访问不再保证固定先后关系。
+            此设置属于模型配置，训练候选、克隆及保存加载均继承同一取值。
         """
+        # 必须显式传入布尔值，避免字符串 "False" 等真值被误解为开启状态。
+        # 在读取方法文件等初始化操作之前验证，错误参数不会触发额外初始化。
+        if type(enable_effect_ordering) is not bool:
+            raise ValueError("enable_effect_ordering must be a boolean")
         if values is not None and labels is not None:
             # 1. labels 必须是一维
             if hasattr(labels, 'shape'):
@@ -154,7 +161,8 @@ class AdaptoFlux:
         self.graph_processor = GraphProcessor(
             graph=graph,
             methods=self.methods,
-            collapse_method=collapse_method
+            collapse_method=collapse_method,
+            enable_effect_ordering=enable_effect_ordering,
         )
         
         self.path_generator = PathGenerator(
@@ -167,6 +175,21 @@ class AdaptoFlux:
     def graph(self):
         """提供图的访问接口"""
         return self.graph_processor.graph
+
+    @property
+    def enable_effect_ordering(self):
+        """读取实际运行器的开关，避免模型外层和训练器各保存一份不同配置。"""
+        return self.graph_processor.enable_effect_ordering
+
+    def set_effect_ordering(self, enabled):
+        """切换状态顺序控制，并由运行器原子验证新的执行配置。
+
+        训练器与推理入口共用同一个运行器，因此无须分别设置训练/推理开关。
+        切换可能改变有状态程序的输出及批量执行顺序；已有分数不会自动重算，
+        继续训练或比较模型之前应按新模式重新评价。方法声明仍保留，不会因
+        关闭调度约束而将用户函数改写为 pure。
+        """
+        return self.graph_processor.set_effect_ordering(enabled)
 
     def get_input_dimension(self):
         """
@@ -388,8 +411,9 @@ class AdaptoFlux:
         import json
         from networkx.readwrite import json_graph
 
-        self.graph_processor.prepare_execution_plan()
-        plan = export_execution_plan(self.graph, self.methods)
+        # 直接保存当前运行器生成的计划，其中包含开关。不能再以编译器的
+        # 默认参数重新导出，否则关闭模式的模型会在保存时被意外重新开启。
+        plan = self.graph_processor.prepare_execution_plan().to_dict()
         data = json_graph.node_link_data(self.graph, edges="edges")
         data["execution_plan"] = plan
         # 在真正写文件前先完成计划校验和 JSON 编码。类型/效果元数据不可序列化
@@ -467,6 +491,9 @@ class AdaptoFlux:
         saved_plan = sidecar_plan if sidecar_plan is not None else embedded_plan
         if saved_plan is not None:
             restore_execution_plan(candidate_graph, self.methods, saved_plan)
+            # 文件保存的是该程序实际使用的模式，优先于接收对象构造时的配置。
+            # 不带此字段的早期执行计划一律解释为开启，保持旧版本的计划语义。
+            saved_effect_ordering = saved_plan.get("enable_effect_ordering", True)
         else:
             if any("_atf_uid" in d for _, d in candidate_graph.nodes(data=True)):
                 raise ValueError("A model with persistent node UIDs requires a saved execution plan (embedded JSON or execution_plan.json).")
@@ -474,8 +501,10 @@ class AdaptoFlux:
             # 节点插入顺序重新决定语义。JSON 和 GEXF 都采用相同规则：带新 UID
             # 却没有保存计划时直接拒绝，不能把损坏的新模型误认作旧模型重建顺序。
             compile_execution_plan(candidate_graph, self.methods)
+            saved_effect_ordering = True
 
-        candidate_processor = self._create_graph_processor(candidate_graph)
+        candidate_processor = self._create_graph_processor(
+            candidate_graph, enable_effect_ordering=saved_effect_ordering)
         candidate_processor.prepare_execution_plan()
         # 先在独立候选图/运行器上完成所有校验，失败时原模型仍可继续使用。
         # 正式替换后同步 PathGenerator 的图引用，避免下一次训练增长旧图。
@@ -504,7 +533,7 @@ class AdaptoFlux:
         return self.graph_processor.get_method_counter()
     
 
-    def _create_graph_processor(self, graph):
+    def _create_graph_processor(self, graph, *, enable_effect_ordering=None):
         """
         工厂方法：创建一个图处理器（GraphProcessor）实例。
 
@@ -527,12 +556,17 @@ class AdaptoFlux:
         # --- 修改开始 ---
         # 获取旧的 graph_processor 的 collapse_manager
         old_collapse_manager = self.graph_processor.collapse_manager
+        # 普通候选构建继承当前模式；模型加载可以明确传入文件中的模式。
+        # 使用 None 区分“继承”和显式 False，不能用 enabled or current 写法。
+        if enable_effect_ordering is None:
+            enable_effect_ordering = self.enable_effect_ordering
         
         if old_collapse_manager.collapse_method == CollapseMethod.CUSTOM:
             # 创建新的 GraphProcessor 实例
             gp = GraphProcessor(
                 graph=graph,
                 methods=self.methods,              # 可用的方法集合（如加法、乘法、激活函数等）
+                enable_effect_ordering=enable_effect_ordering,
             )
             
             gp.collapse_manager.set_custom_collapse(old_collapse_manager.custom_function)
@@ -540,7 +574,8 @@ class AdaptoFlux:
             gp = GraphProcessor(
                 graph=graph,
                 methods=self.methods,              # 可用的方法集合（如加法、乘法、激活函数等）
-                collapse_method=old_collapse_manager.collapse_method  # 继承旧的坍缩方法
+                collapse_method=old_collapse_manager.collapse_method,  # 继承旧的坍缩方法
+                enable_effect_ordering=enable_effect_ordering,
             )
             
         return gp
@@ -583,6 +618,7 @@ class AdaptoFlux:
             graph=copy.deepcopy(self.graph),
             methods=cloned.methods,
             collapse_method=self.graph_processor.collapse_manager.collapse_method,
+            enable_effect_ordering=self.enable_effect_ordering,
         )
         cloned.graph_processor.collapse_manager = copy.deepcopy(self.graph_processor.collapse_manager)
         cloned.graph_processor.prepare_execution_plan()

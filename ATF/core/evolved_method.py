@@ -4,7 +4,10 @@ from networkx.readwrite import json_graph
 from ..GraphProcessor.graph_processor import GraphProcessor
 from ..CollapseManager.collapse_functions import CollapseMethod
 import numpy as np
-from ..GraphProcessor.execution_plan import aggregate_effects, normalize_effect_spec, restore_execution_plan
+from ..GraphProcessor.execution_plan import (
+    aggregate_effects, normalize_effect_spec, restore_execution_plan,
+    validate_effect_ordering,
+)
 
 import logging
 logger = logging.getLogger(__name__)
@@ -26,7 +29,9 @@ class EvolvedMethod:
         name: str,
         graph: nx.MultiDiGraph,
         methods_ref: Dict[str, Any],          # ← 新增：对全局 methods 的引用
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
+        *,
+        enable_effect_ordering: bool = True,
     ):
         """
         初始化一个进化方法实例。
@@ -47,10 +52,23 @@ class EvolvedMethod:
             - 'is_evolved': bool，标记为进化方法
             - 'occurrence_count': int，出现频次
             - 'evolved_at': str，进化时间（ISO 格式）
+        enable_effect_ordering : bool, keyword-only
+            控制本复合方法内部是否加入状态访问控制依赖，默认 True。抽取器
+            应传入来源模型的设置；该设置独立保存，不跟随使用它的外层模型
+            临时改变。关闭后仍保存真实副作用声明，供其他模型正确调度本方法。
         """
         self.name = name
         self.methods_ref = methods_ref        # 全局方法池引用
         self.metadata = dict(metadata or {})
+        # 复合方法是可共享的独立可调用对象，内部运行模式属于它自身的契约。
+        # 外层模型切换模式时不能偷偷修改它，否则共享该方法的其他模型也会变。
+        # 新抽取的方法显式继承来源模式；独立创建或加载历史文件时默认开启。
+        self._enable_effect_ordering = validate_effect_ordering(enable_effect_ordering)
+        if "enable_effect_ordering" in self.metadata:
+            saved_mode = validate_effect_ordering(self.metadata["enable_effect_ordering"])
+            if saved_mode != self._enable_effect_ordering:
+                raise ValueError("Composite execution mode differs from its metadata")
+        self.metadata["enable_effect_ordering"] = self._enable_effect_ordering
         # 复合方法的副作用来自内部方法，不能只信任外部传入的“pure”标签。
         # 构造时核对已保存声明，可发现加载时方法库效果契约发生了变化。
         self.effects = aggregate_effects(graph, methods_ref)
@@ -59,11 +77,18 @@ class EvolvedMethod:
             raise ValueError("Composite effect declaration differs from its constituent methods")
         self.metadata["effects"] = self.effects
         self._processor: Optional[GraphProcessor] = GraphProcessor(
-            graph=graph, methods=methods_ref, collapse_method=CollapseMethod.IDENTITY)
-        # 注册进方法池前就冻结内部计划；不能等首次被并行调用时才确定状态顺序。
+            graph=graph, methods=methods_ref, collapse_method=CollapseMethod.IDENTITY,
+            enable_effect_ordering=self._enable_effect_ordering)
+        # 注册前先按选定模式准备内部计划；开启时冻结状态顺序，关闭时只校验
+        # 数据依赖。不能因为复合方法另建处理器而把已关闭的功能重新打开。
         # 运行锁属于 GraphProcessor，其复制/恢复钩子负责重建，不写入模型元数据。
         self._processor.prepare_execution_plan()
         self.graph = self._processor.graph
+
+    @property
+    def enable_effect_ordering(self):
+        """返回复合方法创建时选择的模式，避免外层开关改写共享方法的行为。"""
+        return self._enable_effect_ordering
         
     def __call__(self, *inputs):
         """
@@ -79,7 +104,8 @@ class EvolvedMethod:
             self._processor = GraphProcessor(
                 graph=self.graph,
                 methods=self.methods_ref,
-                collapse_method=CollapseMethod.IDENTITY
+                collapse_method=CollapseMethod.IDENTITY,
+                enable_effect_ordering=self.enable_effect_ordering,
             )
 
         # === 将 *inputs 组织为 sample（list 或 tuple）===
@@ -179,7 +205,11 @@ class EvolvedMethod:
         # 加载元属性
         with open(base_path + ".meta.json", 'r', encoding='utf-8') as f:
             meta = json.load(f)
-        return cls(name=meta['name'], graph=graph, metadata=meta, methods_ref=methods_ref)
+        # 运行模式以已核验的计划为准，不能由加载位置的默认设置覆盖。
+        # 构造函数还会核对独立元属性文件，避免两个文件给出相反的开关值。
+        mode = saved_plan.get("enable_effect_ordering", True) if saved_plan is not None else True
+        return cls(name=meta['name'], graph=graph, metadata=meta, methods_ref=methods_ref,
+                   enable_effect_ordering=mode)
 
     def save(self, dir_path: str):
         """
@@ -205,6 +235,10 @@ class EvolvedMethod:
 
         # 保存已评价的程序顺序。JSON 节点或边即使被重排，载入后也按保存的
         # 稳定身份恢复语义顺序，而不是根据文件中的先后位置重新选一个拓扑序。
+        # 内部处理器不属于公开的模式修改接口。若调用方直接改动了它，拒绝
+        # 导出相互矛盾的计划和元属性；否则重载后可能得到另一种程序行为。
+        if self._processor.enable_effect_ordering != self.enable_effect_ordering:
+            raise ValueError("Composite execution mode differs from its processor")
         plan = self._processor.prepare_execution_plan()
         self.graph = self._processor.graph
         effects = aggregate_effects(self.graph, self.methods_ref)

@@ -15,7 +15,7 @@ from threading import RLock
 
 import numpy as np
 
-from .execution_plan import UID_KEY, compile_execution_plan, set_execution_order
+from .execution_plan import UID_KEY, compile_execution_plan, set_execution_order, validate_effect_ordering
 
 
 def is_passthrough(data):
@@ -26,7 +26,7 @@ def is_passthrough(data):
     return name is None or str(name).lower() in {"null", "unmatched"}
 
 
-def prepare_graph(graph, methods):
+def prepare_graph(graph, methods, *, enable_effect_ordering=True):
     """执行前检查数据端口，并把旧格式隐含的参数位置显式固定下来。
 
     旧图可能没有 input_slot，原执行器依赖入边的插入顺序绑定参数。仅固定
@@ -34,6 +34,7 @@ def prepare_graph(graph, methods):
     因此首次准备时把原有绑定写成 input_slot；混合格式、越界输出、重复的
     聚合坐标都会在任何用户函数执行之前被拒绝。
     """
+    validate_effect_ordering(enable_effect_ordering)
     if graph is None:
         raise ValueError("No graph has been configured")
     bindings = []
@@ -78,7 +79,7 @@ def prepare_graph(graph, methods):
         data["input_slot"] = slot
     try:
         # 导出的计划必须包含已经冻结的端口，避免侧车计划与 graph.json 不一致。
-        return compile_execution_plan(graph, methods)
+        return compile_execution_plan(graph, methods, enable_effect_ordering=enable_effect_ordering)
     except Exception:
         # 顺序与新数据依赖冲突时撤销本次端口补全，不留下半完成的准备工作。
         for data, _, had_slot in bindings:
@@ -133,7 +134,34 @@ class ExecutionRuntime:
 
     def __setstate__(self, state):
         self.__dict__.update(state)
+        # 开关引入前的 pickle/deepcopy 状态对应开启语义，恢复时保持旧版本契约。
+        self._enable_effect_ordering = validate_effect_ordering(state.get("_enable_effect_ordering", True))
         self._execution_lock = RLock()
+
+    @property
+    def enable_effect_ordering(self):
+        """当前实例是否启用副作用排序；通过 set_effect_ordering 原子切换。"""
+        return self._enable_effect_ordering
+
+    def set_effect_ordering(self, enabled):
+        """显式切换模式，在新模式验证通过后同时提交配置与图元数据。
+
+        关闭仅移除额外控制依赖与冻结顺序约束，数据端口、DAG 和方法签名检查
+        仍保留。重新开启会冻结当前图的合法顺序；切换属于执行语义变化，调用方
+        应重新评价模型，不能沿用另一模式的训练分数。实例锁避免推理执行到一半
+        才切换；不递归修改方法池里可能由其他模型共享的复合方法实例。
+        """
+        validate_effect_ordering(enabled)
+        with self._execution_lock:
+            candidate = copy.deepcopy(self.graph)
+            plan = prepare_graph(candidate, self.methods, enable_effect_ordering=enabled)
+            # 保留原图对象，PathGenerator 等组件继续引用同一个已验证的数据图。
+            self.graph.clear()
+            self.graph.graph.update(candidate.graph)
+            self.graph.add_nodes_from(candidate.nodes(data=True))
+            self.graph.add_edges_from(candidate.edges(keys=True, data=True))
+            self._enable_effect_ordering = enabled
+            return plan
 
     def prepare_execution_plan(self):
         """在内置评分或自定义评分前冻结/校验候选，供训练器显式调用。
@@ -142,7 +170,8 @@ class ExecutionRuntime:
         以每次重检换取正确性；以后若加缓存，必须同时追踪图和效果声明版本。
         """
         with self._execution_lock:
-            return prepare_graph(self.graph, self.methods)
+            return prepare_graph(self.graph, self.methods,
+                                 enable_effect_ordering=self.enable_effect_ordering)
 
     def set_execution_order(self, order):
         """显式修改程序的内部节点顺序，调用方必须重新评价任务表现。
@@ -151,6 +180,10 @@ class ExecutionRuntime:
         排序会改变程序语义；只有作为经过评价的新候选才能在训练中被接受。
         """
         with self._execution_lock:
+            # 关闭模式只接受数据图给出的调度关系。拒绝一个随后会被忽略的显式
+            # 顺序，避免用户误以为这个接口仍能提供共享状态顺序保证。
+            if not self.enable_effect_ordering:
+                raise ValueError("set_execution_order requires enable_effect_ordering=True")
             previous = copy.deepcopy(self.graph.graph)
             previous_uids = {node: data.get(UID_KEY) for node, data in self.graph.nodes(data=True)}
             try:
@@ -195,8 +228,9 @@ class ExecutionRuntime:
         info = self.methods[name]
         function, output_count = info["function"], info["output_count"]
         if info.get("vectorized", False) and sample_count > 1:
-            # 仅纯函数整批执行会走这里。有副作用时外层按完整样本逐个运行，
-            # sample_count 恒为 1，因此不会因向量化失败而重复执行一次副作用。
+            # 开启排序时，仅纯函数图会整批执行；有副作用时外层逐样本运行，
+            # 不会因向量化失败重复执行副作用。关闭时恢复旧式批处理与回退，
+            # 此时调用方自行负责向量化方法的状态行为，不再提供上述保证。
             try:
                 batched = []
                 for column in columns:
@@ -217,7 +251,7 @@ class ExecutionRuntime:
                 if result.shape == (sample_count, output_count):
                     return result.tolist()
             except Exception:
-                # 纯函数的向量化失败可以安全回退；纯净声明错误不属于可保证范围。
+                # 开启时纯函数可安全回退；关闭时沿用原有回退约定。
                 pass
         results = []
         for index in range(sample_count):
@@ -305,7 +339,7 @@ class ExecutionRuntime:
             for index, sample in enumerate(samples):
                 if len(sample) < required:
                     raise ValueError(f"Input sample {index} has {len(sample)} features; graph needs at least {required}")
-            if plan.has_effects:
+            if self.enable_effect_ordering and plan.has_effects:
                 # 全局/外部状态通常被多个样本共享。按“完整样本1→完整样本2”
                 # 执行，避免原先按节点批处理形成“A1,A2,B1,B2”的交错语义。
                 results = []

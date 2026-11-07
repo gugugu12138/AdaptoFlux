@@ -1,0 +1,31 @@
+ATF controlled execution scaling — supplementary experiment
+
+Complete: 30 validated graphs, 5 independent seeds per width; 2 warmups and 7 repeats per metric.
+All times below are medians across graph-level repetition medians; milliseconds for batch 32.
+Depth 8, fixed binary scalar CPU operator, 16 tanh iterations per invocation; 4 worker threads.
+Host: Intel64 Family 6 Model 183 Stepping 1, GenuineIntel; Python 3.12.9; NetworkX 3.4.2.
+
+Ops | Edges | Build ms | Type pass ms | Topology ms | Serial ms [seed min,max] | Parallel4 ms [seed min,max] | Speedup
+  32 |    68 | 0.278 | 0.051 | 0.090 | 2.127 [2.075,2.211] | 3.478 [3.328,3.571] | 0.610x
+  64 |   136 | 0.415 | 0.096 | 0.164 | 4.086 [3.936,4.159] | 5.782 [5.686,7.975] | 0.697x
+ 128 |   272 | 0.731 | 0.181 | 0.305 | 8.022 [7.781,8.454] | 10.482 [10.373,11.155] | 0.754x
+ 256 |   544 | 1.356 | 0.367 | 0.598 | 16.894 [15.787,18.828] | 20.436 [19.808,27.157] | 0.805x
+ 512 |  1088 | 2.558 | 0.753 | 1.163 | 32.621 [31.381,40.288] | 40.360 [39.682,51.885] | 0.808x
+1024 |  2176 | 4.858 | 1.448 | 2.310 | 70.586 [63.939,84.891] | 82.379 [77.902,97.543] | 0.811x
+
+Validity and scope:
+- Every graph is acyclic, has exactly the specified counts/depth, and all nodes feed the final output.
+- Native serial and native parallel outputs match an independently implemented vectorized NumPy reference at 1e-12 tolerance.
+- The type pass uses native PathGenerator._is_type_compatible on declared source/target types. This is a separate benchmark pass, not an existing full compiler validator. A deliberately incompatible signature is rejected.
+- Serial timing includes its per-call topological sort. Parallel timing includes per-call dependency bookkeeping and creation/destruction of the thread pool. The separate topology timing is not deducted from either.
+- Graph construction excludes the native processor's graph copy/layer scan; processor_init_ms is separately recorded in CSV.
+- Edges increase with nodes at fixed arity: this does not isolate edge density. Depth, batch and numerical workload stay fixed.
+- Python scalar CPU work holds the GIL; slower threaded execution is a meaningful result. No artificial sleep or I/O workload was used.
+- tracemalloc peaks are measured in separate calls and exclude preexisting inference inputs/graph; they are Python allocation peaks, not total process RAM.
+- Graph variability across 5 seeds and timing repetition dispersion are available. This is one shared host; no cross-machine or universally linear scaling claim is justified.
+- No claim about search scalability, arbitrary side effects, or type-system soundness follows from this benchmark.
+
+Formal phase wall time: 41.14 s; process CPU: 40.12 s (includes validation and separately traced calls).
+Protocol and source SHA-256 were frozen before formal cases; completion_manifest.json verifies source hashes stayed unchanged.
+Pilot cases are disjoint from formal cases. Formal results were not used to tune the workload or protocol.
+No ATF core, prior experiment, or ATF-nodes file was modified.

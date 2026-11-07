@@ -1,0 +1,40 @@
+Native GraphEvo type-prior replication: completed 90/90 formal runs
+
+Design
+30 fixed formal seeds 110600..110629; pilot seed 110500 excluded. Nine original operator bodies unchanged. Fine: pos_type,target_type; coarse: quantity,quantity (distinct from scalar); flat: scalar,scalar. Every callback exhaustively evaluates all 20 unequal positions/targets in {-2,-1,0,1,2}, at most four graph executions per episode. Every evaluation asserts unchanged Python/NumPy RNG states. No evaluation caching.
+
+Primary results (strict success on all 20 states)
+mode | successes | Wilson 95% interval | mean final accuracy | mean loss | mean loss callbacks | mean accuracy callbacks | mean distinct graphs
+fine | 29/30 | 83.3%-99.4% | 0.9667 | 0.0667 | 53.03 | 6.43 | 6.87
+coarse | 15/30 | 33.2%-66.8% | 0.5033 | 0.9900 | 73.23 | 8.43 | 5.60
+flat | 1/30 | 0.6%-16.7% | 0.3200 | 1.0667 | 728.17 | 10.50 | 22.77
+
+The legacy >=95% threshold yields the same run-success counts. Initialization alone succeeds in 20/30 fine, 4/30 coarse, and 0/30 flat runs. Final full-search results therefore must not be described as entirely initialization-only.
+
+Interpretation
+Task-semantic type declarations strongly reduce the candidate space and improve success in this controlled tiny environment. Merging position/target types degrades success, showing that directional role information contributes beyond a generic numeric-type distinction. This is evidence for a supplied type prior and routing mechanism, not proof of universal search superiority or a uniquely stateful semantics.
+
+Audit caveats
+GraphEvoTrainer.train breaks for early stopping before adding that cycle's steps_taken to total_refinement_steps and before updating the best snapshot. Hence result.json accepted_refinements is the raw native counter, incomplete on success; model/final plus final reevaluation is authoritative, not model/best.
+Native random_single calls accuracy once for each initial model (3), once at each refinement phase start (cycles_completed), once per accepted substitution, and twice at final/best reporting. Thus accepted replacements = accuracy_calls - 3 - cycles_completed - 2. This follows the inspected native call sites; callback totals are independently verified against evaluation_events.jsonl.
+Other experiments ran concurrently; wall times are execution records and must not be used for comparative speed claims.
+Nominal search caps matched; observed callback/unique graph budgets differ. Prefix success tables below are post-hoc descriptive summaries, not separately rerun equal-budget trials.
+Ordered attributed graph signatures, excluding literal node names; not semantic equivalence or isomorphism classes. Node replacement may change insertion order and execution order.
+
+Acceptance counts (native logged / reconstructed total)
+fine: 0 / 9
+coarse: 1 / 13
+flat: 18 / 19
+
+Artifacts
+protocol_planned.json and protocol_frozen.json: fixed design and hashes.
+validation.json: target/no-action cases and function-body checks.
+formal/per_seed.csv and formal/summary.json: all runs and aggregate results.
+formal/<mode>/<seed>/evaluation_events.jsonl: every evaluation callback with outcomes and counters.
+formal/candidate_catalog.jsonl: first 20 unique candidates per run plus final graph; node/edge iteration order, method signatures and explicit topological order retained.
+formal/<mode>/<seed>/result.json: final graph and all 20 trajectories, including failures.
+formal/audit.json: count checks, deterministic repeated-graph outcomes, acceptance reconstruction and post-hoc budget-prefix summaries.
+environment.json: package versions and source hashes.
+
+Execution
+Set PYTHONHASHSEED=0 and PYTHONDONTWRITEBYTECODE=1. Use python -B run_type_search.py prepare, pilot, freeze, formal in sequence. The runner refuses to overwrite a completed stage. All writes are confined to this new type_search directory; ATF core and ATF-nodes were not modified.

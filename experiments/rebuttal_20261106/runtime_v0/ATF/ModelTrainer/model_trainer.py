@@ -1,0 +1,259 @@
+# model_trainer.py
+import random
+import numpy as np
+from collections import Counter
+from ..GraphProcessor.graph_processor import GraphProcessor
+import networkx as nx
+from ..ModelGenerator.model_generator import ModelGenerator
+from abc import ABC, abstractmethod
+import logging
+import traceback
+import sys
+
+
+logger = logging.getLogger(__name__)
+
+
+class ModelTrainer(ABC):
+    """
+    所有训练器的基类。
+    负责绑定 AdaptoFlux 实例、管理模型生成器，并提供统一的损失与准确率评估接口。
+    """
+
+    # 静态损失函数定义
+    @staticmethod
+    def _mse_loss(pred, target):
+        return np.mean((pred - target) ** 2)
+
+    @staticmethod
+    def _mae_loss(pred, target):
+        return np.mean(np.abs(pred - target))
+
+    @staticmethod
+    def _rmse_loss(pred, target):
+        return np.sqrt(np.mean((pred - target) ** 2))
+
+    @staticmethod
+    def _huber_loss(pred, target, delta=1.0):
+        diff = np.abs(target - pred)
+        return np.mean(np.where(diff < delta,
+                                0.5 * (diff ** 2),
+                                delta * diff - 0.5 * (delta ** 2)))
+
+    @staticmethod
+    def _binary_crossentropy_loss(pred, target):
+        pred = np.clip(pred, 1e-8, 1 - 1e-8)
+        return -np.mean(target * np.log(pred) + (1 - target) * np.log(1 - pred))
+
+    @staticmethod
+    def _categorical_crossentropy_loss(pred, target):
+        pred = np.clip(pred, 1e-8, 1 - 1e-8)
+        return -np.mean(np.sum(target * np.log(pred), axis=1))
+
+    # 损失函数映射
+    _LOSS_FUNCTIONS = {
+        'mse': _mse_loss.__func__,
+        'mae': _mae_loss.__func__,
+        'rmse': _rmse_loss.__func__,
+        'huber': _huber_loss.__func__,
+        'binary_crossentropy': _binary_crossentropy_loss.__func__,
+        'categorical_crossentropy': _categorical_crossentropy_loss.__func__
+    }
+
+    def __init__(
+        self,
+        adaptoflux_instance,
+        loss_fn='mse',
+        task_type='regression',
+        use_pipeline=False,      # ← 新增
+        num_workers=4,           # ← 新增
+        custom_loss_evaluator=None,      # ← 新增：自定义损失评估器
+        custom_accuracy_evaluator=None,   # ← 新增：自定义准确率评估器
+        acceptance_strategy=None  # ← 新增：自定义接受策略
+    ):
+        """
+        初始化训练器，绑定 AdaptoFlux 实例。
+
+        :param adaptoflux_instance: 已初始化的 AdaptoFlux 对象
+        :param loss_fn: 损失函数名 (字符串) 或可调用对象
+        :param task_type: 任务类型 ('regression', 'binary_classification', 'multiclass_classification')
+        :param use_pipeline: 是否使用并行流水线推理（影响所有评估）
+        :param num_workers: 并行线程数（仅在 use_pipeline=True 时有效）
+        :param custom_loss_evaluator: 可调用对象，签名为 func(model, input_data, target) -> float
+        :param custom_accuracy_evaluator: 可调用对象，签名为 func(model, input_data, target) -> float
+        """
+        self.adaptoflux = adaptoflux_instance
+        self.model_generator = ModelGenerator(adaptoflux_instance)
+        self.task_type = task_type
+        self.use_pipeline = use_pipeline      # ← 保存
+        self.num_workers = num_workers        # ← 保存
+        self.custom_loss_evaluator = custom_loss_evaluator
+        self.custom_accuracy_evaluator = custom_accuracy_evaluator
+        self.acceptance_strategy = acceptance_strategy  # ← 保存策略
+        self._set_loss_fn(loss_fn, task_type)
+
+    def _should_accept(self, old_loss: float, new_loss: float) -> bool:
+        """
+        判断是否接受新模型（例如新层）。
+        默认策略：贪心（new_loss < old_loss）。
+        
+        可通过子类重写，或在初始化时传入 acceptance_strategy 函数来自定义。
+        
+        :param old_loss: 旧模型的损失
+        :param new_loss: 新模型的损失
+        :return: True 表示接受，False 表示拒绝
+        """
+        if self.acceptance_strategy is not None:
+            try:
+                return bool(self.acceptance_strategy(old_loss, new_loss))
+            except Exception as e:
+                logger.warning(f"Custom acceptance strategy failed: {e}. Falling back to default.")
+        
+        # 默认策略：严格改进（贪心）
+        return new_loss < old_loss
+        
+    def _set_loss_fn(self, loss_fn, task_type):
+        """根据参数设置 self.loss_fn 方法。"""
+        if callable(loss_fn):
+            self.loss_fn = loss_fn
+        else:
+            loss_fn_name = loss_fn
+            if loss_fn_name is None:
+                default_map = {
+                    'regression': 'mse',
+                    'binary_classification': 'binary_crossentropy',
+                    'multiclass_classification': 'categorical_crossentropy'
+                }
+                loss_fn_name = default_map.get(task_type, 'mse')
+
+            if loss_fn_name not in self._LOSS_FUNCTIONS:
+                raise ValueError(f"Unknown loss function: {loss_fn_name}. "
+                               f"Available: {list(self._LOSS_FUNCTIONS.keys())}")
+
+            self.loss_fn = self._LOSS_FUNCTIONS[loss_fn_name]
+
+    def _evaluate_loss(
+        self,
+        input_data: np.ndarray,
+        target: np.ndarray,
+        adaptoflux_instance=None
+    ) -> float:
+        """
+        核心机制的 "Evaluate" 步骤。
+        在指定图结构上执行前向传播并计算损失。
+
+        :param input_data: 用于评估的输入数据
+        :param target: 对应的标签
+        :param adaptoflux_instance: 可选，临时指定的 AdaptoFlux 实例；若为 None，则使用 self.adaptoflux
+        :return: 损失值，失败时返回 float('inf')（但当前逻辑会直接终止程序）
+        """
+
+        af = adaptoflux_instance if adaptoflux_instance is not None else self.adaptoflux
+        # 优先使用自定义评估器（适用于具身任务）
+        if self.custom_loss_evaluator is not None:
+            try:
+                return float(self.custom_loss_evaluator(af, input_data, target))
+            except Exception as e:
+                logger.exception("Custom loss evaluation failed – terminating program.")
+                sys.exit(1)
+
+        try:
+            if self.use_pipeline:
+                output = af.infer_with_task_parallel(values=input_data, num_workers=self.num_workers)
+            else:
+                output = af.infer_with_graph(values=input_data)
+
+            if output.shape[0] != target.shape[0]:
+                print(f"Output shape: {output.shape}, Target shape: {target.shape}")
+                raise ValueError(f"Output batch size {output.shape[0]} != target batch size {target.shape[0]}")
+
+            loss = self.loss_fn(output, target)
+            return float(loss)
+
+        except Exception as e:
+            logger.exception("Loss evaluation failed – terminating program.")
+            sys.exit(1)
+
+    def _evaluate_accuracy(
+        self,
+        input_data: np.ndarray,
+        target: np.ndarray,
+        task_type: str = None,
+        adaptoflux_instance=None
+    ) -> float:
+        """
+        计算指定图结构的准确率（或回归伪准确率）。
+
+        :param input_data: 输入数据
+        :param target: 真实标签
+        :param task_type: 任务类型（None 表示使用 self.task_type）
+        :param adaptoflux_instance: 可选，临时指定的 AdaptoFlux 实例；若为 None，则使用 self.adaptoflux
+        :return: 准确率 (0~1)，失败时程序终止
+        """
+
+        af = adaptoflux_instance if adaptoflux_instance is not None else self.adaptoflux
+
+        # 优先使用自定义评估器
+        if self.custom_accuracy_evaluator is not None:
+            try:
+                return float(self.custom_accuracy_evaluator(af, input_data, target))
+            except Exception as e:
+                logger.exception("Custom accuracy evaluation failed – terminating program.")
+                sys.exit(1)
+
+        if task_type is None:
+            task_type = getattr(self, 'task_type', 'auto')
+
+        internal_task = {
+            'binary_classification': 'binary',
+            'multiclass_classification': 'multiclass',
+            'regression': 'regression'
+        }.get(task_type, task_type)
+
+        try:
+            if self.use_pipeline:
+                output = af.infer_with_task_parallel(values=input_data, num_workers=self.num_workers)
+            else:
+                output = af.infer_with_graph(values=input_data)
+
+            output = np.array(output)
+            true_labels = np.array(target).flatten()
+
+            if internal_task == 'regression':
+                output = output.flatten()
+                rel_error = np.abs(output - true_labels) / (np.abs(true_labels) + 1e-8)
+                pseudo_acc = float(np.mean(rel_error < 0.01))
+                return pseudo_acc
+
+            if internal_task == "auto":
+                if len(output.shape) == 1 or (output.ndim == 2 and output.shape[1] == 1):
+                    internal_task = "binary"
+                else:
+                    internal_task = "multiclass"
+
+            if internal_task == "binary":
+                if output.ndim == 2 and output.shape[1] == 1:
+                    output = output.flatten()
+                elif output.ndim > 1 and output.shape[1] != 1:
+                    raise ValueError("Binary task expects output shape [N,] or [N, 1].")
+                pred_classes = (output >= 0.5).astype(int)
+            elif internal_task == "multiclass":
+                if output.ndim == 1:
+                    pred_classes = output.astype(int)
+                else:
+                    pred_classes = np.argmax(output, axis=1)
+            else:
+                raise ValueError(f"Unsupported task_type: {internal_task}")
+
+            pred_classes = pred_classes.flatten()
+            accuracy = float(np.mean(pred_classes == true_labels))
+            return accuracy
+
+        except Exception as e:
+            logger.exception("Accuracy evaluation failed – terminating program.")
+            sys.exit(1)
+
+    @abstractmethod
+    def train(self, **kwargs):
+        """所有子类必须实现 train 方法"""
+        pass

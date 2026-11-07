@@ -1,0 +1,2 @@
+# Preserve frozen artifact bytes and SHA-256 provenance across checkout.
+* -text

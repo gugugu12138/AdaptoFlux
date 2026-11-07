@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>共享特征动作结构：原生 ATF 核验</title>
+<style>body{font:16px/1.7 system-ui,sans-serif;max-width:1000px;margin:36px auto;padding:0 24px;color:#183047;background:#f7f9fb}article{background:white;border:1px solid #dce4ec;border-radius:12px;padding:28px;margin:20px 0}h1{font-size:28px;line-height:1.4}h2{font-size:21px}table{border-collapse:collapse;width:100%;font-size:15px}th,td{padding:9px 12px;border-bottom:1px solid #dce4ec;text-align:left}th{background:#eef4f8}.pass{font-weight:700;color:#176245}.sub{color:#5b6f80}.flow{font-weight:650;background:#edf5fb;padding:18px;border-radius:8px}code{font-size:14px}a{color:#175f97}.note{border-left:4px solid #a5b8c9;padding-left:15px}</style></head><body>
+<h1>共享特征、动作评分与互斥路由<br>在原生 ATF 上的冻结模型核验</h1>
+<p class="sub">2026-11-06 · seed 104 · 飞鸟模型 · 全部新增文件位于 ATF 补充实验目录</p>
+<article><p class="pass">通过：20 个固定回合、20,480 步逐步一致；特征、评分、状态的最大绝对误差均为 0。</p>
+<p>此核验将后续研究的冻结动作控制器通过显式适配器放入未修改的 <code>GraphProcessor.infer_with_graph</code> 串行执行。每一步均与原 <code>kernel.tick</code> 函数体和独立 Python 解释器比较。它支持这种结构能够迁移到原生表示执行，不是新的训练成绩或泛化估计。</p>
+<table><tr><th>检查</th><th>范围</th><th>结果</th></tr><tr><td>原生节点执行与两种参考实现</td><td>20 回合 / 20,480 步</td><td>全部一致</td></tr><tr><td>直接比较已有冻结轨迹归档</td><td>前 2 回合 / 2,048 步</td><td>全部一致</td></tr><tr><td>平局、探索、禁用与状态配置边界</td><td>49 个固定探针</td><td>全部一致</td></tr><tr><td>打乱节点及边的插入顺序</td><td>重复相同 49 个探针</td><td>全部一致</td></tr><tr><td>来源模型、解释器与原生核心</td><td>运行前后 SHA256</td><td>一致</td></tr></table>
+<p class="sub">前 20 个回合连续取自此前已使用的冻结测试流，未按结果挑选；均成功仅作为轨迹记录。正式核验约 48.22 秒，不作为执行器性能比较。</p></article>
+<article><h2>执行结构</h2><p class="flow">观察＋旧状态快照 → 共享特征 → 各动作的独立加权求和 → 同步状态提交 → 互斥许可 → 零输出动作 sink → 图后统一环境推进</p>
+<p>44 个特征、88 个冻结系数及乘法、加法均分别展开为真实原生节点。提交节点依赖全部评分，因此所有特征和评分已读取旧状态后才会提交新状态；路由又依赖提交完成 token。这些依赖由适配器显式表达，不依赖节点插入顺序。</p>
+<p>共享模式保存四个槽位，提交后两两相同，因此只有两个独立状态通道。随机探索与平局使用外部显式输入的同一个随机数。两个动作 sink 均声明零输出，只有获得许可的 sink 将动作身份写入 StepContext 回执；整张图结束后再统一调用环境推进。</p>
+<p class="note">这不是“无适配即可兼容”，也不证明原生核心自动发现副作用依赖、自动消除共享状态写冲突或保证并发安全。本次只核验上述显式提交协议的串行执行。</p></article>
+<article><h2>计数差异透明披露</h2><table><tr><th>图</th><th>节点</th><th>边</th></tr><tr><td>原冻结导出图</td><td>314</td><td>411</td></tr><tr><td>原生适配图（包括观察边）</td><td>316</td><td>565</td></tr></table>
+<p>root 替代 observation，新增 collapse 和 state_commit，共多 2 个节点。多出的 154 条边由 88 条常数调用触发边、4 条旧状态读取边、8 条提交输入边、2 条路由控制输入边和 52 条核验观察边组成。动作 sink 始终没有输出或出边。</p>
+<p>常数触发边是为满足原执行器“处理节点必须有前驱”的接口要求；52 条 collapse 边只观察特征、评分、许可与新状态，不决定策略。适配器的端口和元数据检查没有被归为原核心的新能力。</p></article>
+<article><h2>论文可以如何使用</h2><p>适合用作“通用动作控制结构的可执行实例”：共享特征供不同动作评分复用，跨步状态显式保留，动作副作用通过互斥许可提交。整体模板由人提供，训练主要学习混合系数，飞鸟模型还保留了有限的通用算术特征生长。该核验补充了原生执行证据，未分离模板、生长、状态和优化器各自的训练收益。</p>
+<p>正文可用一张小结构图和简短说明，详细人工先验、适配协议与逐步核验放附录。结构生长收益与无状态可训练性的结论仍应依赖重新训练对照。</p>
+<p><a href="README.txt">完整说明与复现命令</a> · <a href="protocol_formal.json">执行前设定</a> · <a href="results_formal.json">正式结果</a> · <a href="native_graph_bird.json">原生图</a> · <a href="boundary_checks_formal.json">边界检查</a> · <a href="native_trace_bird_formal.npz">完整逐步记录</a></p></article>
+</body></html>

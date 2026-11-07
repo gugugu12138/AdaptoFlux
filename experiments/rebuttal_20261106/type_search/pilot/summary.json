@@ -1,0 +1,226 @@
+{
+  "stage": "pilot",
+  "n_attempted": 3,
+  "arms": {
+    "fine": {
+      "n_completed": 1,
+      "n_failed": 0,
+      "successes": 0,
+      "success_rate": 0.0,
+      "success_wilson_95": [
+        0.0,
+        0.7934506856227626
+      ],
+      "legacy_successes_ge_095": 0,
+      "initial_successes": 0,
+      "loss": {
+        "mean": 2.0,
+        "median": 2.0,
+        "min": 2.0,
+        "max": 2.0
+      },
+      "accuracy": {
+        "mean": 0.0,
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "loss_calls": {
+        "mean": 10,
+        "median": 10,
+        "min": 10,
+        "max": 10
+      },
+      "accuracy_calls": {
+        "mean": 10,
+        "median": 10,
+        "min": 10,
+        "max": 10
+      },
+      "callback_evaluations": {
+        "mean": 20,
+        "median": 20,
+        "min": 20,
+        "max": 20
+      },
+      "unique_candidates": {
+        "mean": 3,
+        "median": 3,
+        "min": 3,
+        "max": 3
+      },
+      "elapsed_seconds": {
+        "mean": 0.06171329997596331,
+        "median": 0.06171329997596331,
+        "min": 0.06171329997596331,
+        "max": 0.06171329997596331
+      },
+      "accepted_refinements": {
+        "mean": 0,
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "native_refinement_attempts": {
+        "mean": 0,
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "first_success_callback_successes_only": [],
+      "first_success_unique_candidate_successes_only": []
+    },
+    "coarse": {
+      "n_completed": 1,
+      "n_failed": 0,
+      "successes": 0,
+      "success_rate": 0.0,
+      "success_wilson_95": [
+        0.0,
+        0.7934506856227626
+      ],
+      "legacy_successes_ge_095": 0,
+      "initial_successes": 0,
+      "loss": {
+        "mean": 2.0,
+        "median": 2.0,
+        "min": 2.0,
+        "max": 2.0
+      },
+      "accuracy": {
+        "mean": 0.0,
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "loss_calls": {
+        "mean": 10,
+        "median": 10,
+        "min": 10,
+        "max": 10
+      },
+      "accuracy_calls": {
+        "mean": 10,
+        "median": 10,
+        "min": 10,
+        "max": 10
+      },
+      "callback_evaluations": {
+        "mean": 20,
+        "median": 20,
+        "min": 20,
+        "max": 20
+      },
+      "unique_candidates": {
+        "mean": 3,
+        "median": 3,
+        "min": 3,
+        "max": 3
+      },
+      "elapsed_seconds": {
+        "mean": 0.053768299985677004,
+        "median": 0.053768299985677004,
+        "min": 0.053768299985677004,
+        "max": 0.053768299985677004
+      },
+      "accepted_refinements": {
+        "mean": 0,
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "native_refinement_attempts": {
+        "mean": 0,
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "first_success_callback_successes_only": [],
+      "first_success_unique_candidate_successes_only": []
+    },
+    "flat": {
+      "n_completed": 1,
+      "n_failed": 0,
+      "successes": 0,
+      "success_rate": 0.0,
+      "success_wilson_95": [
+        0.0,
+        0.7934506856227626
+      ],
+      "legacy_successes_ge_095": 0,
+      "initial_successes": 0,
+      "loss": {
+        "mean": 0.4,
+        "median": 0.4,
+        "min": 0.4,
+        "max": 0.4
+      },
+      "accuracy": {
+        "mean": 0.6,
+        "median": 0.6,
+        "min": 0.6,
+        "max": 0.6
+      },
+      "loss_calls": {
+        "mean": 760,
+        "median": 760,
+        "min": 760,
+        "max": 760
+      },
+      "accuracy_calls": {
+        "mean": 11,
+        "median": 11,
+        "min": 11,
+        "max": 11
+      },
+      "callback_evaluations": {
+        "mean": 771,
+        "median": 771,
+        "min": 771,
+        "max": 771
+      },
+      "unique_candidates": {
+        "mean": 34,
+        "median": 34,
+        "min": 34,
+        "max": 34
+      },
+      "elapsed_seconds": {
+        "mean": 2.9209036999964155,
+        "median": 2.9209036999964155,
+        "min": 2.9209036999964155,
+        "max": 2.9209036999964155
+      },
+      "accepted_refinements": {
+        "mean": 1,
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "native_refinement_attempts": {
+        "mean": 750,
+        "median": 750,
+        "min": 750,
+        "max": 750
+      },
+      "first_success_callback_successes_only": [],
+      "first_success_unique_candidate_successes_only": []
+    }
+  },
+  "paired_comparisons": {
+    "fine_vs_flat": {
+      "paired_n": 1,
+      "fine_only": 0,
+      "other_only": 0,
+      "exact_mcnemar_two_sided_p": 1.0,
+      "multiplicity_adjusted": false
+    },
+    "fine_vs_coarse": {
+      "paired_n": 1,
+      "fine_only": 0,
+      "other_only": 0,
+      "exact_mcnemar_two_sided_p": 1.0,
+      "multiplicity_adjusted": false
+    }
+  }
+}

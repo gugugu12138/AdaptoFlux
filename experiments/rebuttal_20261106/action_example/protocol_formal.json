@@ -1,0 +1,39 @@
+{
+  "purpose": "Execution equivalence of frozen controllers; no retraining or new generalization estimate",
+  "tasks": [
+    "bird"
+  ],
+  "episodes_per_task": 20,
+  "training_seed": 104,
+  "environment_seed": 200000104,
+  "episode_start": 83000000,
+  "selection": "First consecutive episodes from the previously used frozen test stream; no outcome selection",
+  "native_executor": "Unmodified GraphProcessor.infer_with_graph, serial execution",
+  "references": [
+    "Unmodified portable interpreter graph_tick",
+    "Exact original kernel.tick function body, AST-isolated without its JIT decorator/imports",
+    "Previously archived final_raw.npz trajectories wherever available in the fixed episode prefix"
+  ],
+  "randomness": "Same externally supplied draw(seed,episode,tick,1900+task) for all executors",
+  "tolerance": {
+    "rtol": 1e-12,
+    "atol": 1e-12
+  },
+  "source_sha256": {
+    "action_example/reference\\reproduce.py": "2d2dd66ab9ef5b805bce1462235897d007fe68ebcc954a8592b5803040b48898",
+    "action_example/reference\\kernel.py": "1893336762e544fa80e7ae8a70dc505e6a7e6d5cb0e08b0152591d05aff7284d",
+    "action_example/reference\\world_test.npz": "08482bc0cefc27f8d8ab9c1bb5eb8bbfc4d090a087e88e627c06f83936bcd0dc",
+    "action_example/reference\\final_raw.npz": "1ad81ed4bb6e7c961b3517da8ccc414c63833a7bd1feecb4bf82ed61f895e334",
+    "action_example/reference\\models\\system_s104.json": "4c09052e01ae14ba75fa1f08bab41535eac3189874c9a6433d33370c1a295a06",
+    "runtime_v0/ATF\\GraphProcessor\\graph_processor.py": "ddbe87b8f0a56c41437e6e2de0294bb8a998b12012f0522f87c442c0d7c39048",
+    "runtime_v0/ATF\\CollapseManager\\collapse_functions.py": "8495b0650c7c33a50e822bf7566e051f6ee7f74325296876b649e1f743649db5",
+    ".\\action_example\\verify_native.py": "10474c331c2ee9d0208abad23e793702f19ec5141f9569dec6ef9f8803d3d3bd",
+    "action_example/reference\\models\\graph_s104_bird.json": "df5f114e3df0d81b394c0cf7361d2425c8484a634442d325adfaf9bc67ccb622"
+  },
+  "limitations": [
+    "Adapter explicitly implements synchronous commit and routing methods.",
+    "Not proof of automatic effect scheduling or arbitrary concurrent safety.",
+    "No training, search, optimization, or evaluation-driven model selection.",
+    "Boundary probes modify configurations only to test executor behavior; they are not performance ablations."
+  ]
+}

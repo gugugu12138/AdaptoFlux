@@ -1,0 +1,30 @@
+Post-run clarification (frozen protocol and measurements remain unchanged)
+
+Hardware name: Intel(R) Core(TM) i7-14650HX, verified using the read-only Windows
+registry ProcessorNameString after the run. The frozen environment contains the
+platform.processor fallback because its CIM lookup returned no processor name.
+The host has 16 physical cores, 24 logical CPUs, and 51,257,880,576 bytes of RAM.
+No CPU affinity was imposed. The one-second CPU utilization sample immediately
+before formal measurement was 10.1%. Other ATF experimental timing/training was
+coordinated to stop during this run, but this was not a dedicated isolated host.
+
+Speedup is the median of five paired graph-level serial/parallel timing ratios.
+It is not the ratio of independently aggregated serial and parallel medians.
+Figure error bars span the minimum and maximum across the five graph-level
+medians. They are not confidence intervals. No outlier or seed was excluded.
+
+Independent audit confirmed all 30 formal cases, 1,260 raw timing measurements,
+CSV/JSON medians, node/edge counts, pilot exclusion, and source/protocol/data
+hashes. Maximum native-output error against the independent NumPy reference is
+2.22e-16; serial and parallel outputs are exactly equal on all 30 graphs.
+
+The 32x increase in operation count gives 33.18x higher serial median wall time
+in this tested range. This supports an approximately proportional execution-cost
+trend for this controlled workload, not a universal asymptotic performance claim.
+Median 4-thread speedup is below 1 at all six sizes (0.610x to 0.811x). This is
+consistent with Python scalar workload and scheduling/GIL overhead; the benchmark
+does not isolate which overhead is responsible for each part of the difference.
+
+Scientific figure: scaling_summary.png and editable vector scaling_summary.svg.
+The figure has been rendered and visually inspected. FIGURE_CAPTION.txt provides
+a reusable English caption. No content was inserted into the paper or its PDF.

@@ -1,0 +1,982 @@
+[
+  {
+    "case": "frozen",
+    "u": 0.0,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "frozen",
+    "u": 0.049,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "frozen",
+    "u": 0.05,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "frozen",
+    "u": 0.099999,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "frozen",
+    "u": 0.1,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "frozen",
+    "u": 0.5,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "frozen",
+    "u": 0.999999999,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "uniform_ties",
+    "u": 0.0,
+    "action": 1,
+    "permits": [
+      true,
+      false
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:1",
+      "sink:coast:0"
+    ]
+  },
+  {
+    "case": "uniform_ties",
+    "u": 0.049,
+    "action": 1,
+    "permits": [
+      true,
+      false
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:1",
+      "sink:coast:0"
+    ]
+  },
+  {
+    "case": "uniform_ties",
+    "u": 0.05,
+    "action": 1,
+    "permits": [
+      true,
+      false
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:1",
+      "sink:coast:0"
+    ]
+  },
+  {
+    "case": "uniform_ties",
+    "u": 0.099999,
+    "action": 1,
+    "permits": [
+      true,
+      false
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:1",
+      "sink:coast:0"
+    ]
+  },
+  {
+    "case": "uniform_ties",
+    "u": 0.1,
+    "action": 1,
+    "permits": [
+      true,
+      false
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:1",
+      "sink:coast:0"
+    ]
+  },
+  {
+    "case": "uniform_ties",
+    "u": 0.5,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "uniform_ties",
+    "u": 0.999999999,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "exploration_and_ties",
+    "u": 0.0,
+    "action": 1,
+    "permits": [
+      true,
+      false
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:1",
+      "sink:coast:0"
+    ]
+  },
+  {
+    "case": "exploration_and_ties",
+    "u": 0.049,
+    "action": 1,
+    "permits": [
+      true,
+      false
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:1",
+      "sink:coast:0"
+    ]
+  },
+  {
+    "case": "exploration_and_ties",
+    "u": 0.05,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "exploration_and_ties",
+    "u": 0.099999,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "exploration_and_ties",
+    "u": 0.1,
+    "action": 1,
+    "permits": [
+      true,
+      false
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:1",
+      "sink:coast:0"
+    ]
+  },
+  {
+    "case": "exploration_and_ties",
+    "u": 0.5,
+    "action": 1,
+    "permits": [
+      true,
+      false
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:1",
+      "sink:coast:0"
+    ]
+  },
+  {
+    "case": "exploration_and_ties",
+    "u": 0.999999999,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "disabled",
+    "u": 0.0,
+    "action": 0,
+    "permits": [
+      false,
+      false
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:0"
+    ]
+  },
+  {
+    "case": "disabled",
+    "u": 0.049,
+    "action": 0,
+    "permits": [
+      false,
+      false
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:0"
+    ]
+  },
+  {
+    "case": "disabled",
+    "u": 0.05,
+    "action": 0,
+    "permits": [
+      false,
+      false
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:0"
+    ]
+  },
+  {
+    "case": "disabled",
+    "u": 0.099999,
+    "action": 0,
+    "permits": [
+      false,
+      false
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:0"
+    ]
+  },
+  {
+    "case": "disabled",
+    "u": 0.1,
+    "action": 0,
+    "permits": [
+      false,
+      false
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:0"
+    ]
+  },
+  {
+    "case": "disabled",
+    "u": 0.5,
+    "action": 0,
+    "permits": [
+      false,
+      false
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:0"
+    ]
+  },
+  {
+    "case": "disabled",
+    "u": 0.999999999,
+    "action": 0,
+    "permits": [
+      false,
+      false
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:0"
+    ]
+  },
+  {
+    "case": "no_state",
+    "u": 0.0,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "no_state",
+    "u": 0.049,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "no_state",
+    "u": 0.05,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "no_state",
+    "u": 0.099999,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "no_state",
+    "u": 0.1,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "no_state",
+    "u": 0.5,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "no_state",
+    "u": 0.999999999,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "instant_shared",
+    "u": 0.0,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "instant_shared",
+    "u": 0.049,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "instant_shared",
+    "u": 0.05,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "instant_shared",
+    "u": 0.099999,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "instant_shared",
+    "u": 0.1,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "instant_shared",
+    "u": 0.5,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "instant_shared",
+    "u": 0.999999999,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "private_memory",
+    "u": 0.0,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "private_memory",
+    "u": 0.049,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "private_memory",
+    "u": 0.05,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "private_memory",
+    "u": 0.099999,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "private_memory",
+    "u": 0.1,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "private_memory",
+    "u": 0.5,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  },
+  {
+    "case": "private_memory",
+    "u": 0.999999999,
+    "action": 2,
+    "permits": [
+      false,
+      true
+    ],
+    "max_errors_features_scores_state": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "event_order": [
+      "state_commit",
+      "exclusive_route",
+      "sink:flap:0",
+      "sink:coast:1"
+    ]
+  }
+]

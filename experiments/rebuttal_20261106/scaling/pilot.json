@@ -1,0 +1,35 @@
+{
+  "code_sha256": {
+    "experiments\\rebuttal_20261106\\scaling\\run_scaling.py": "30a2f975c07f640df149ef9f1b0a4c013b799d477a6cbc32a9bdb6f8cdcbfe69",
+    "ATF\\GraphProcessor\\graph_processor.py": "ddbe87b8f0a56c41437e6e2de0294bb8a998b12012f0522f87c442c0d7c39048",
+    "ATF\\PathGenerator\\path_generator.py": "ef8c980c2de6c2fb902556420a5e69bfe7162cc6d3ec665dce3bb287b4a543d7",
+    "ATF\\CollapseManager\\collapse_functions.py": "8495b0650c7c33a50e822bf7566e051f6ee7f74325296876b649e1f743649db5"
+  },
+  "validated": [
+    {
+      "width": 4,
+      "seed": 49001,
+      "operation_nodes": 32,
+      "total_nodes": 34,
+      "edges": 68,
+      "node_function_calls_per_inference": 1024,
+      "max_abs_serial_reference": 2.220446049250313e-16,
+      "max_abs_parallel_reference": 2.220446049250313e-16,
+      "max_abs_serial_parallel": 0.0,
+      "output_sha256": "486ad2cad56585b7b1e4d1097366908b68a47ac7b6aec94c57202160aeb20c06"
+    },
+    {
+      "width": 128,
+      "seed": 49002,
+      "operation_nodes": 1024,
+      "total_nodes": 1026,
+      "edges": 2176,
+      "node_function_calls_per_inference": 32768,
+      "max_abs_serial_reference": 5.551115123125783e-17,
+      "max_abs_parallel_reference": 5.551115123125783e-17,
+      "max_abs_serial_parallel": 0.0,
+      "output_sha256": "ea66b1cc5c5fac690c7578dc4ee118889676ce183c61d5d3b95e31445da10c05"
+    }
+  ],
+  "purpose": "correctness and interface validation only; excluded from formal dataset"
+}

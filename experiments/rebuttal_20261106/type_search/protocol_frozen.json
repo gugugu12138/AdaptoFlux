@@ -1,0 +1,185 @@
+{
+  "experiment": "native Graphevo type-prior replication, exhaustive finite task",
+  "status": "frozen_after_validation_and_pilot_before_formal",
+  "formal_seeds": [
+    110600,
+    110601,
+    110602,
+    110603,
+    110604,
+    110605,
+    110606,
+    110607,
+    110608,
+    110609,
+    110610,
+    110611,
+    110612,
+    110613,
+    110614,
+    110615,
+    110616,
+    110617,
+    110618,
+    110619,
+    110620,
+    110621,
+    110622,
+    110623,
+    110624,
+    110625,
+    110626,
+    110627,
+    110628,
+    110629
+  ],
+  "pilot_seeds": [
+    110500
+  ],
+  "modes": [
+    "fine",
+    "coarse",
+    "flat"
+  ],
+  "root_types": {
+    "fine": [
+      "pos_type",
+      "target_type"
+    ],
+    "coarse": [
+      "quantity",
+      "quantity"
+    ],
+    "flat": [
+      "scalar",
+      "scalar"
+    ]
+  },
+  "coarse_definition": "pos_type and target_type merged as quantity; quantity remains distinct from scalar",
+  "operators": "All nine original operator bodies, arities, groups, weights and ordering unchanged; only type declarations/root token types differ.",
+  "search_config": {
+    "verbose": false,
+    "init_mode": "fixed",
+    "max_init_layers": 3,
+    "num_initial_models": 3,
+    "max_refinement_steps": 30,
+    "enable_evolution": false,
+    "candidate_pool_mode": "all"
+  },
+  "train_config": {
+    "max_evo_cycles": 5,
+    "enable_early_stop": true,
+    "early_stop_eps": 0.0,
+    "save_model": true
+  },
+  "evaluation": {
+    "initial_states": [
+      [
+        -2,
+        -1
+      ],
+      [
+        -2,
+        0
+      ],
+      [
+        -2,
+        1
+      ],
+      [
+        -2,
+        2
+      ],
+      [
+        -1,
+        -2
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -1,
+        1
+      ],
+      [
+        -1,
+        2
+      ],
+      [
+        0,
+        -2
+      ],
+      [
+        0,
+        -1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        -2
+      ],
+      [
+        1,
+        -1
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        -2
+      ],
+      [
+        2,
+        -1
+      ],
+      [
+        2,
+        0
+      ],
+      [
+        2,
+        1
+      ]
+    ],
+    "max_steps": 4,
+    "loss": "mean absolute final integer distance",
+    "accuracy": "fraction reaching target within four graph executions",
+    "success": "accuracy == 1.0 (all 20 initial states)",
+    "legacy_secondary_success": "accuracy >= 0.95",
+    "randomness": "none; reset STATE.pos and STATE.target explicitly for each episode; every callback reevaluates all 20 states without caching"
+  },
+  "randomness": "random.seed and numpy.random.seed reset to run seed before each arm; evaluator asserts their states unchanged; PYTHONHASHSEED=0 at interpreter startup",
+  "candidate_uniqueness": "SHA256 of ordered node attrs and ordered multiedge attrs after mapping node IDs to insertion ordinals, omitting literal node IDs; not graph isomorphism or functional deduplication",
+  "candidate_export": {
+    "rule": "first 20 distinct ordered graph signatures in callback order per seed/mode, plus final graph even if repeated",
+    "file": "<stage>/candidate_catalog.jsonl",
+    "schema": "run_seed,type_mode,candidate_index,kind,fingerprint,callback_index,loss,accuracy,graph{nodes:[{id,attributes}],edges:[{source,target,key,attributes}],topological_order,graph_attributes,methods:[{name,attributes}],root_types,collapse_method}"
+  },
+  "budgets": "Native nominal caps retained, actual loss and accuracy callback counts plus unique graph counts reported. First success counted at first successful callback; separate first-success unique-candidate index.",
+  "analysis": "Report all seeds, strict success with Wilson 95% CI, mean accuracy/loss, actual budget distributions; paired exact McNemar fine-flat and fine-coarse as exploratory comparisons.",
+  "scope_limits": "Tiny fully enumerated environment; no held-out generalization claim; task-specific type semantics are a strong supplied prior; all groups retain the goal-aware move operator.",
+  "source_sha256": "d9ac57a85682b947693d2d90732eee08c1b10273bf0d0aac132da769fe2dff36",
+  "method_files_sha256": {
+    "fine": "d9ac57a85682b947693d2d90732eee08c1b10273bf0d0aac132da769fe2dff36",
+    "coarse": "94197d7bc9ca1a2bdaeef3a225a05911c98f779a18c21d8137486887a49f3d38",
+    "flat": "5c4b7d97f01de0c876611271ed938efc5ab4d22cf4df12f597cb8793f1ed8aae"
+  },
+  "runner_sha256": "0f24e93b4b151ac52227845f1bc4c6d00d6264645d8f299ce05b48b0babdd5fe",
+  "pilot_summary_sha256": "d0aa312fe32bc3e31e66e4c0efd65250e14b83ca788e24d3ecba051a41db25dd",
+  "validation_sha256": "f40e6efaecab7a84606b0045eb0ab676d3c4e793f23516efa561d42bcfbddf47",
+  "frozen_unix_time": 1793979917.1287546
+}

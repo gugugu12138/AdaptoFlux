@@ -1,0 +1,530 @@
+{
+  "run_seed": 110613,
+  "type_mode": "fine",
+  "status": "completed",
+  "loss": 0.0,
+  "accuracy": 1.0,
+  "success": true,
+  "legacy_success_ge_095": true,
+  "loss_calls": 63,
+  "accuracy_calls": 7,
+  "callback_evaluations": 70,
+  "unique_candidates": 13,
+  "first_success": {
+    "run_seed": 110613,
+    "type_mode": "fine",
+    "callback_index": 10,
+    "callback_kind": "loss",
+    "candidate_index": 5,
+    "fingerprint": "ea95595a5f3e6cc73f5cc6e28c396ab3343753268b2dc11a0c17449ec0850ddd",
+    "loss": 0.0,
+    "accuracy": 1.0,
+    "new_candidate": true,
+    "loss_calls": 6,
+    "accuracy_calls": 4,
+    "elapsed_seconds": 0.029069899988826364
+  },
+  "elapsed_seconds": 0.19615309999790043,
+  "accepted_refinements": 0,
+  "native_refinement_attempts": 57,
+  "cycles_completed": 1,
+  "initial_loss": 2.0,
+  "initial_accuracy": 0.0,
+  "extra_final_validation_evaluations": 1,
+  "final_graph": {
+    "nodes": [
+      {
+        "id": "root",
+        "attributes": {}
+      },
+      {
+        "id": "collapse",
+        "attributes": {}
+      },
+      {
+        "id": "1_0_calc_direction",
+        "attributes": {
+          "method_name": "calc_direction",
+          "layer": 1,
+          "is_passthrough": false
+        }
+      },
+      {
+        "id": "3_0_sin_op",
+        "attributes": {
+          "method_name": "sin_op",
+          "layer": 3,
+          "is_passthrough": false
+        }
+      },
+      {
+        "id": "2_0_move_towards_target",
+        "attributes": {
+          "method_name": "move_towards_target",
+          "layer": 2,
+          "is_passthrough": false
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "root",
+        "target": "1_0_calc_direction",
+        "key": 0,
+        "attributes": {
+          "output_index": 0,
+          "data_coord": 0,
+          "data_type": "pos_type",
+          "input_slot": 0
+        }
+      },
+      {
+        "source": "root",
+        "target": "1_0_calc_direction",
+        "key": 1,
+        "attributes": {
+          "output_index": 1,
+          "data_coord": 1,
+          "data_type": "target_type",
+          "input_slot": 1
+        }
+      },
+      {
+        "source": "1_0_calc_direction",
+        "target": "2_0_move_towards_target",
+        "key": 0,
+        "attributes": {
+          "output_index": 0,
+          "data_coord": 0,
+          "data_type": "scalar",
+          "input_slot": 0
+        }
+      },
+      {
+        "source": "3_0_sin_op",
+        "target": "collapse",
+        "key": 0,
+        "attributes": {
+          "output_index": 0,
+          "data_coord": 0,
+          "data_type": "scalar"
+        }
+      },
+      {
+        "source": "2_0_move_towards_target",
+        "target": "3_0_sin_op",
+        "key": 0,
+        "attributes": {
+          "output_index": 0,
+          "data_coord": 0,
+          "data_type": "scalar",
+          "input_slot": 0
+        }
+      }
+    ],
+    "topological_order": [
+      "root",
+      "1_0_calc_direction",
+      "2_0_move_towards_target",
+      "3_0_sin_op",
+      "collapse"
+    ],
+    "graph_attributes": {},
+    "methods": [
+      {
+        "name": "add",
+        "attributes": {
+          "input_count": 2,
+          "output_count": 1,
+          "input_types": [
+            "scalar",
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "group": "pure_computation",
+          "weight": 1.0,
+          "vectorized": false
+        }
+      },
+      {
+        "name": "calc_direction",
+        "attributes": {
+          "input_count": 2,
+          "output_count": 1,
+          "input_types": [
+            "pos_type",
+            "target_type"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "group": "pure_computation",
+          "weight": 1.0,
+          "vectorized": false
+        }
+      },
+      {
+        "name": "cos_op",
+        "attributes": {
+          "input_count": 1,
+          "output_count": 1,
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "group": "pure_computation",
+          "weight": 1.0,
+          "vectorized": false
+        }
+      },
+      {
+        "name": "identity",
+        "attributes": {
+          "input_count": 1,
+          "output_count": 1,
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "group": "pure_computation",
+          "weight": 1.0,
+          "vectorized": false
+        }
+      },
+      {
+        "name": "move_towards_target",
+        "attributes": {
+          "input_count": 1,
+          "output_count": 1,
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "group": "stateful_action",
+          "weight": 1.0,
+          "vectorized": false
+        }
+      },
+      {
+        "name": "multiply",
+        "attributes": {
+          "input_count": 2,
+          "output_count": 1,
+          "input_types": [
+            "scalar",
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "group": "pure_computation",
+          "weight": 1.0,
+          "vectorized": false
+        }
+      },
+      {
+        "name": "read_current_pos",
+        "attributes": {
+          "input_count": 1,
+          "output_count": 1,
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "pos_type"
+          ],
+          "group": "state_read",
+          "weight": 1.0,
+          "vectorized": false
+        }
+      },
+      {
+        "name": "read_target",
+        "attributes": {
+          "input_count": 1,
+          "output_count": 1,
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "target_type"
+          ],
+          "group": "state_read",
+          "weight": 1.0,
+          "vectorized": false
+        }
+      },
+      {
+        "name": "sin_op",
+        "attributes": {
+          "input_count": 1,
+          "output_count": 1,
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "group": "pure_computation",
+          "weight": 1.0,
+          "vectorized": false
+        }
+      }
+    ],
+    "root_types": [
+      "pos_type",
+      "target_type"
+    ],
+    "collapse_method": "SUM"
+  },
+  "final_traces": [
+    {
+      "pos": -2,
+      "target": -1,
+      "distance": 0,
+      "success": true,
+      "steps": 1,
+      "trajectory": [
+        -2,
+        -1
+      ]
+    },
+    {
+      "pos": -2,
+      "target": 0,
+      "distance": 0,
+      "success": true,
+      "steps": 2,
+      "trajectory": [
+        -2,
+        -1,
+        0
+      ]
+    },
+    {
+      "pos": -2,
+      "target": 1,
+      "distance": 0,
+      "success": true,
+      "steps": 3,
+      "trajectory": [
+        -2,
+        -1,
+        0,
+        1
+      ]
+    },
+    {
+      "pos": -2,
+      "target": 2,
+      "distance": 0,
+      "success": true,
+      "steps": 4,
+      "trajectory": [
+        -2,
+        -1,
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "pos": -1,
+      "target": -2,
+      "distance": 0,
+      "success": true,
+      "steps": 1,
+      "trajectory": [
+        -1,
+        -2
+      ]
+    },
+    {
+      "pos": -1,
+      "target": 0,
+      "distance": 0,
+      "success": true,
+      "steps": 1,
+      "trajectory": [
+        -1,
+        0
+      ]
+    },
+    {
+      "pos": -1,
+      "target": 1,
+      "distance": 0,
+      "success": true,
+      "steps": 2,
+      "trajectory": [
+        -1,
+        0,
+        1
+      ]
+    },
+    {
+      "pos": -1,
+      "target": 2,
+      "distance": 0,
+      "success": true,
+      "steps": 3,
+      "trajectory": [
+        -1,
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "pos": 0,
+      "target": -2,
+      "distance": 0,
+      "success": true,
+      "steps": 2,
+      "trajectory": [
+        0,
+        -1,
+        -2
+      ]
+    },
+    {
+      "pos": 0,
+      "target": -1,
+      "distance": 0,
+      "success": true,
+      "steps": 1,
+      "trajectory": [
+        0,
+        -1
+      ]
+    },
+    {
+      "pos": 0,
+      "target": 1,
+      "distance": 0,
+      "success": true,
+      "steps": 1,
+      "trajectory": [
+        0,
+        1
+      ]
+    },
+    {
+      "pos": 0,
+      "target": 2,
+      "distance": 0,
+      "success": true,
+      "steps": 2,
+      "trajectory": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "pos": 1,
+      "target": -2,
+      "distance": 0,
+      "success": true,
+      "steps": 3,
+      "trajectory": [
+        1,
+        0,
+        -1,
+        -2
+      ]
+    },
+    {
+      "pos": 1,
+      "target": -1,
+      "distance": 0,
+      "success": true,
+      "steps": 2,
+      "trajectory": [
+        1,
+        0,
+        -1
+      ]
+    },
+    {
+      "pos": 1,
+      "target": 0,
+      "distance": 0,
+      "success": true,
+      "steps": 1,
+      "trajectory": [
+        1,
+        0
+      ]
+    },
+    {
+      "pos": 1,
+      "target": 2,
+      "distance": 0,
+      "success": true,
+      "steps": 1,
+      "trajectory": [
+        1,
+        2
+      ]
+    },
+    {
+      "pos": 2,
+      "target": -2,
+      "distance": 0,
+      "success": true,
+      "steps": 4,
+      "trajectory": [
+        2,
+        1,
+        0,
+        -1,
+        -2
+      ]
+    },
+    {
+      "pos": 2,
+      "target": -1,
+      "distance": 0,
+      "success": true,
+      "steps": 3,
+      "trajectory": [
+        2,
+        1,
+        0,
+        -1
+      ]
+    },
+    {
+      "pos": 2,
+      "target": 0,
+      "distance": 0,
+      "success": true,
+      "steps": 2,
+      "trajectory": [
+        2,
+        1,
+        0
+      ]
+    },
+    {
+      "pos": 2,
+      "target": 1,
+      "distance": 0,
+      "success": true,
+      "steps": 1,
+      "trajectory": [
+        2,
+        1
+      ]
+    }
+  ]
+}

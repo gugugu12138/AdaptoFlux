@@ -1,0 +1,178 @@
+{
+  "passed": true,
+  "tasks": [
+    {
+      "task": "bird",
+      "episodes": 20,
+      "steps_checked": 20480,
+      "all_matched": true,
+      "max_absolute_error_features_scores_state": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "outcomes": [
+        {
+          "episode": 83000000,
+          "success": 1,
+          "progress": 1.0,
+          "steps": 1024
+        },
+        {
+          "episode": 83000001,
+          "success": 1,
+          "progress": 1.0,
+          "steps": 1024
+        },
+        {
+          "episode": 83000002,
+          "success": 1,
+          "progress": 1.0,
+          "steps": 1024
+        },
+        {
+          "episode": 83000003,
+          "success": 1,
+          "progress": 1.0,
+          "steps": 1024
+        },
+        {
+          "episode": 83000004,
+          "success": 1,
+          "progress": 1.0,
+          "steps": 1024
+        },
+        {
+          "episode": 83000005,
+          "success": 1,
+          "progress": 1.0,
+          "steps": 1024
+        },
+        {
+          "episode": 83000006,
+          "success": 1,
+          "progress": 1.0,
+          "steps": 1024
+        },
+        {
+          "episode": 83000007,
+          "success": 1,
+          "progress": 1.0,
+          "steps": 1024
+        },
+        {
+          "episode": 83000008,
+          "success": 1,
+          "progress": 1.0,
+          "steps": 1024
+        },
+        {
+          "episode": 83000009,
+          "success": 1,
+          "progress": 1.0,
+          "steps": 1024
+        },
+        {
+          "episode": 83000010,
+          "success": 1,
+          "progress": 1.0,
+          "steps": 1024
+        },
+        {
+          "episode": 83000011,
+          "success": 1,
+          "progress": 1.0,
+          "steps": 1024
+        },
+        {
+          "episode": 83000012,
+          "success": 1,
+          "progress": 1.0,
+          "steps": 1024
+        },
+        {
+          "episode": 83000013,
+          "success": 1,
+          "progress": 1.0,
+          "steps": 1024
+        },
+        {
+          "episode": 83000014,
+          "success": 1,
+          "progress": 1.0,
+          "steps": 1024
+        },
+        {
+          "episode": 83000015,
+          "success": 1,
+          "progress": 1.0,
+          "steps": 1024
+        },
+        {
+          "episode": 83000016,
+          "success": 1,
+          "progress": 1.0,
+          "steps": 1024
+        },
+        {
+          "episode": 83000017,
+          "success": 1,
+          "progress": 1.0,
+          "steps": 1024
+        },
+        {
+          "episode": 83000018,
+          "success": 1,
+          "progress": 1.0,
+          "steps": 1024
+        },
+        {
+          "episode": 83000019,
+          "success": 1,
+          "progress": 1.0,
+          "steps": 1024
+        }
+      ],
+      "features": 44,
+      "actions": 2,
+      "frozen_graph_nodes": 314,
+      "frozen_graph_edges": 411,
+      "native_adapter_nodes": 316,
+      "native_adapter_edges": 565,
+      "zero_output_sinks": [
+        "flap",
+        "coast"
+      ],
+      "independent_shared_channels": 2,
+      "steps_also_checked_against_preexisting_saved_trace": 2048,
+      "seconds": 47.48778280001716
+    }
+  ],
+  "total_steps": 20480,
+  "boundary_probes": 49,
+  "boundary_reordered_probes": 49,
+  "protected_sources_unchanged": true,
+  "source_sha256": {
+    "action_example/reference\\reproduce.py": "2d2dd66ab9ef5b805bce1462235897d007fe68ebcc954a8592b5803040b48898",
+    "action_example/reference\\kernel.py": "1893336762e544fa80e7ae8a70dc505e6a7e6d5cb0e08b0152591d05aff7284d",
+    "action_example/reference\\world_test.npz": "08482bc0cefc27f8d8ab9c1bb5eb8bbfc4d090a087e88e627c06f83936bcd0dc",
+    "action_example/reference\\final_raw.npz": "1ad81ed4bb6e7c961b3517da8ccc414c63833a7bd1feecb4bf82ed61f895e334",
+    "action_example/reference\\models\\system_s104.json": "4c09052e01ae14ba75fa1f08bab41535eac3189874c9a6433d33370c1a295a06",
+    "runtime_v0/ATF\\GraphProcessor\\graph_processor.py": "ddbe87b8f0a56c41437e6e2de0294bb8a998b12012f0522f87c442c0d7c39048",
+    "runtime_v0/ATF\\CollapseManager\\collapse_functions.py": "8495b0650c7c33a50e822bf7566e051f6ee7f74325296876b649e1f743649db5",
+    ".\\action_example\\verify_native.py": "10474c331c2ee9d0208abad23e793702f19ec5141f9569dec6ef9f8803d3d3bd",
+    "action_example/reference\\models\\graph_s104_bird.json": "df5f114e3df0d81b394c0cf7361d2425c8484a634442d325adfaf9bc67ccb622"
+  },
+  "python": "3.12.9 | packaged by conda-forge | (main, Mar  4 2025, 22:37:18) [MSC v.1943 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "numpy": "2.1.3",
+  "networkx": "3.4.2",
+  "seconds": 48.220109099987894,
+  "interpretation": "Execution equivalence of frozen controllers; no retraining or new generalization estimate",
+  "limitations": [
+    "Adapter explicitly implements synchronous commit and routing methods.",
+    "Not proof of automatic effect scheduling or arbitrary concurrent safety.",
+    "No training, search, optimization, or evaluation-driven model selection.",
+    "Boundary probes modify configurations only to test executor behavior; they are not performance ablations."
+  ]
+}

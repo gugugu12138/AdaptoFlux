@@ -1,0 +1,1 @@
+from .collapse_functions import CollapseFunctionManager, CollapseMethod

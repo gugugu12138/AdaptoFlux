@@ -9,6 +9,9 @@ import networkx as nx
 from networkx.algorithms.isomorphism import DiGraphMatcher
 
 from ...core.evolved_method import EvolvedMethod
+from ...GraphProcessor.execution_plan import (
+    aggregate_effects, effects_for_method, set_execution_order, EFFECT_ORDERING_KEY,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -131,6 +134,9 @@ class MethodPoolEvolver:
             enable_graph_isomorphism_clustering,
             subgraph_selection_policy
         )
+
+        selected_graphs, selected_counts = self._filter_effect_safe_candidates(
+            selected_graphs, selected_counts, node_id_to_sig, snapshots[0])
         
         # 无候选子图则返回 | Return if no candidates
         if not selected_graphs:
@@ -157,6 +163,47 @@ class MethodPoolEvolver:
         
         result['consensus_graph'] = consensus_graph
         return result
+
+    def _filter_effect_safe_candidates(self, graphs, counts, node_id_to_sig, template):
+        """过滤不能安全封装成一次复合方法调用的状态访问片段。
+
+        若源顺序为 A(写状态) -> 外部 B(读状态) -> C(写状态)，将 A、C
+        封成一个不可中断的方法就无法保留 B 的观察时机。当前提取器没有
+        “复合方法执行一半后让出给外部节点”的接口，因此保守拒绝这种抽取。
+        未声明效果的方法同样视为有副作用，不把未知方法自动当成纯函数。
+        """
+        plan = template.graph_processor.prepare_execution_plan()
+        source = template.graph_processor.graph
+        inverse = {}
+        for node, signature in node_id_to_sig.items():
+            inverse.setdefault(signature, node)
+        effects = []
+        for node in plan.order:
+            data = source.nodes[node]
+            if data.get("is_passthrough", False):
+                continue
+            info = template.methods.get(data.get("method_name"), {})
+            if effects_for_method(info)["kind"] != "pure":
+                effects.append(node)
+        accepted, accepted_counts = [], []
+        for graph, count in zip(graphs, counts):
+            originals = {inverse[n] for n in graph if n in inverse}
+            positions = [i for i, node in enumerate(effects) if node in originals]
+            # 关闭模式明确放弃副作用顺序保护，因此不再用已冻结的访问顺序
+            # 限制抽取范围；零输出边界是提取器的结构限制，仍必须单独检查。
+            interleaved = template.graph_processor.enable_effect_ordering and bool(positions) and any(
+                node not in originals for node in effects[min(positions):max(positions) + 1])
+            # 旧提取器靠 collapse 返回数值，不能为零输出动作凭空造一个数值端口。
+            # 原图运行器仍支持零输出 sink；这里只限制当前复合方法提取流程。
+            unsupported_sink = any(
+                template.methods.get(source.nodes[node].get("method_name"), {}).get("output_count") == 0
+                for node in originals)
+            if interleaved or unsupported_sink:
+                logger.debug("Skipping composite with interleaved effects or a zero-output boundary")
+                continue
+            accepted.append(graph)
+            accepted_counts.append(count)
+        return accepted, accepted_counts
     
     # -------------------------------------------------------------------------
     # 阶段 1: 拓扑签名频次统计 | Stage 1: Topological Signature Frequency Counting
@@ -534,6 +581,8 @@ class MethodPoolEvolver:
         """
         reconstructed = []
         template_graph = template_snapshot.graph_processor.graph
+        template_order = template_snapshot.graph_processor.prepare_execution_plan().order
+        source_rank = {node: index for index, node in enumerate(template_order)}
         
         # 构建反向映射：签名 → 原始节点ID（用于恢复边属性）| Build reverse mapping: signature → original node ID
         sig_to_original_node = {}
@@ -662,6 +711,16 @@ class MethodPoolEvolver:
                 mapping[node] = f"{layer}_{idx}_{method}"
             
             g_full = nx.relabel_nodes(g_full, mapping)
+
+            # 共识图的节点 ID 是结构签名，重建时的插入顺序未必等于原程序顺序。
+            # 先把模板已冻结的顺序投影到选中节点，再映射为新的可执行节点 ID。
+            # 这样复合方法内部不会因为重命名、序列化重排而交换状态读写时机。
+            source_mode = template_snapshot.graph_processor.enable_effect_ordering
+            g_full.graph[EFFECT_ORDERING_KEY] = source_mode
+            if source_mode:
+                projected = sorted(internal_nodes,
+                                   key=lambda n: source_rank[sig_to_original_node[n]])
+                set_execution_order(g_full, [mapping[node] for node in projected])
             
             # === 按层重分配 data_coord（执行关键）| Reassign data_coord per layer (execution critical) ===
             layer_edges = defaultdict(list)  # layer → 边列表 | layer → list of edges
@@ -776,13 +835,20 @@ class MethodPoolEvolver:
                 'vectorized': False,
                 'is_evolved': True
             }
+            meta['effects'] = aggregate_effects(g_full, adaptoflux_instance.methods)
+            # 复合方法向外暴露所有内部读写资源的并集；只要有一个未知效果，
+            # 整个复合方法就保持 unknown，不能用输入输出类型代替副作用声明。
             
             # 创建进化方法包装器 | Create evolved method wrapper
             evolved_method = EvolvedMethod(
                 name=name,
                 graph=g_full,
                 methods_ref=adaptoflux_instance.methods,
-                metadata=meta
+                metadata=meta,
+                # 重建阶段记录了来源快照的开关，注册目标模型可能是另一个
+                # 实例；必须优先继承来源，不能在抽取完成后改变子程序语义。
+                enable_effect_ordering=g_full.graph.get(
+                    EFFECT_ORDERING_KEY, adaptoflux_instance.graph_processor.enable_effect_ordering),
             )
             
             # 注册到方法池 | Register to method pool
@@ -795,6 +861,7 @@ class MethodPoolEvolver:
                 'group': meta['group'],
                 'weight': meta['weight'],
                 'vectorized': meta['vectorized'],
+                'effects': evolved_method.effects,
                 'is_evolved': True
             }
             
@@ -807,6 +874,7 @@ class MethodPoolEvolver:
                 graph=adaptoflux_instance.graph
             )
             adaptoflux_instance.graph_processor.layer = current_layer
+            adaptoflux_instance.path_generator.graph = adaptoflux_instance.graph_processor.graph
             
             # 可选保存 | Optional save
             if save_dir:

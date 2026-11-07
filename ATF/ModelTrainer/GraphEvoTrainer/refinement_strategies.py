@@ -6,6 +6,28 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
+def _prepare_candidate(adaptoflux_instance, target_node, method_name):
+    """先构造完整候选，再评价将来真正可能接受的那张图及其执行计划。"""
+    # 深拷贝隔离候选的节点属性、控制顺序及方法字典，失败候选不能修改当前模型。
+    # GraphProcessor 自己负责复制时重建运行锁；这里不删除锁，也不手工复用锁对象。
+    # 注意普通 Python 函数的闭包仍可能指向同一个外部环境，评估器仍须自行重置环境。
+    candidate = copy.deepcopy(adaptoflux_instance)
+    processor = candidate.graph_processor
+    processor.replace_node_method(target_node, method_name)
+    processor.prepare_execution_plan()
+    candidate.path_generator.graph = processor.graph
+    return candidate
+
+
+def _accept_candidate_graph(adaptoflux_instance, processor, graph):
+    # 旧实现评分时只改方法名，接受时再删节点重建；二者可能产生不同的拓扑顺序。
+    # 现在直接接受已评分的图和其中的稳定节点身份/语义顺序，不再执行第二次替换。
+    # 再复制一次是为了使接受后的模型不与记录下来的候选快照共享可变图属性。
+    processor.set_graph(copy.deepcopy(graph))
+    processor.prepare_execution_plan()
+    adaptoflux_instance.path_generator.graph = processor.graph
+
 def refine_random_single_step(
     train,
     adaptoflux_instance,
@@ -40,6 +62,9 @@ def refine_random_single_step(
     if not processing_nodes:
         return False, current_loss, 0.0, 0, processing_nodes
 
+    # 在复制任何候选前固定父图顺序，使所有候选继承同一基准程序语义。
+    gp.prepare_execution_plan()
+
     # 随机选择一个待优化节点
     target_node = random.choice(processing_nodes)
     original_method_name = gp.graph.nodes[target_node]['method_name']
@@ -51,6 +76,7 @@ def refine_random_single_step(
     )
 
     best_candidate = None
+    best_graph = None
     best_loss = current_loss  # 初始化为当前损失，用于比较
 
     attempts_in_step = 0
@@ -70,27 +96,25 @@ def refine_random_single_step(
         attempts_in_step += 1
 
         # 创建临时副本，避免污染原模型
-        temp_af = copy.deepcopy(adaptoflux_instance)
-        temp_gp = temp_af.graph_processor
-        # 尝试替换节点方法
-        temp_gp.graph.nodes[target_node]['method_name'] = candidate_method_name
+        try:
+            temp_af = _prepare_candidate(adaptoflux_instance, target_node, candidate_method_name)
+        except ValueError as error:
+            logger.warning("Rejected invalid replacement %s at %s: %s",
+                           candidate_method_name, target_node, error)
+            continue
 
-        
-        # 评估替换后的损失
         new_loss = train._evaluate_loss(input_data, target, adaptoflux_instance=temp_af)
 
         # 记录损失更低的最优候选
         if new_loss < best_loss:
             best_loss = new_loss
             best_candidate = candidate_method_name
+            best_graph = copy.deepcopy(temp_af.graph)
 
     # 如果找到更优方法，则应用到原图
     if best_candidate and train._should_accept(current_loss, best_loss):
-        # === 替换节点（自动更新 ID 和边） ===
-        new_node_id = gp.replace_node_method(target_node, best_candidate)
-        
-        # 注意：target_node 已被删除，后续操作应使用 new_node_id（但本策略不需要）
-        # 如果作者有空而且没忘记可能会在gp里面加一个刷新图节点id的方法提升可读性
+        # 接受已评价的节点、边和执行计划，不再重新构造替换。
+        _accept_candidate_graph(adaptoflux_instance, gp, best_graph)
 
         # 重新评估准确率
         new_acc = train._evaluate_accuracy(input_data, target, adaptoflux_instance=adaptoflux_instance)
@@ -138,6 +162,9 @@ def refine_full_sweep_step(
     if not processing_nodes:
         return False, current_loss, 0.0, 0, processing_nodes
 
+    # 完整遍历策略和单点策略遵守相同的“先冻结，再提案，再评价”规则。
+    gp.prepare_execution_plan()
+
     # 随机打乱节点顺序，避免顺序偏差（例如总是先优化靠前的节点）
     nodes_to_try = random.sample(processing_nodes, len(processing_nodes))
     improvement_made = False
@@ -165,6 +192,7 @@ def refine_full_sweep_step(
         )
 
         best_candidate = None
+        best_graph = None
         best_loss = current_loss  # 以当前全局损失为基准进行比较
 
         # 尝试所有兼容方法（跳过当前方法）
@@ -182,18 +210,14 @@ def refine_full_sweep_step(
 
             # 创建临时副本进行安全评估，避免污染原模型
             try:
-                temp_af = copy.deepcopy(adaptoflux_instance)
-                temp_gp = temp_af.graph_processor
-                # 安全替换：使用图处理器的标准方法（会处理输入/输出类型变化）
-                # 注意：这里我们模拟替换，但不实际调用 replace_node_method（因为只是评估）
-                # 所以直接修改 method_name 是安全的，前提是不依赖边结构变化
-                temp_gp.graph.nodes[target_node]['method_name'] = candidate_method_name
+                temp_af = _prepare_candidate(adaptoflux_instance, target_node, candidate_method_name)
 
                 new_loss = train._evaluate_loss(input_data, target, adaptoflux_instance=temp_af)
 
                 if new_loss < best_loss:
                     best_loss = new_loss
                     best_candidate = candidate_method_name
+                    best_graph = copy.deepcopy(temp_af.graph)
             except Exception as e:
                 logger.warning(f"Failed to evaluate candidate method '{candidate_method_name}' "
                                 f"for node '{target_node}': {e}")
@@ -202,8 +226,8 @@ def refine_full_sweep_step(
         # 如果找到更优方法，立即应用到原图（贪心策略）
         if best_candidate and train._should_accept(current_loss, best_loss):
             try:
-                # 使用图处理器的标准替换方法，确保图结构一致性（如边更新、ID刷新等）
-                new_node_id = gp.replace_node_method(target_node, best_candidate)
+                # 接受已评价的候选图及其冻结顺序。
+                _accept_candidate_graph(adaptoflux_instance, gp, best_graph)
                 # 更新当前损失和准确率
                 current_loss = best_loss
                 current_acc = train._evaluate_accuracy(input_data, target, adaptoflux_instance=adaptoflux_instance)
@@ -214,7 +238,7 @@ def refine_full_sweep_step(
                     logger.info(f"  Replacement {total_replacements}: Node '{target_node}' "
                                 f"{original_method_name} → {best_candidate}, Loss: {current_loss:.6f}")
 
-                # 重要：节点替换后，原 target_node 可能已被删除或重命名（new_node_id）
+                # 节点替换后，原 target_node 可能已被删除或重命名。
                 # 因此需要重新获取当前所有处理节点，确保后续操作基于最新图状态
                 processing_nodes = [
                     node for node in gp.graph.nodes()

@@ -149,6 +149,9 @@ class ModelTrainer(ABC):
         """
 
         af = adaptoflux_instance if adaptoflux_instance is not None else self.adaptoflux
+        # 自定义评估器可能完全绕过普通 infer 接口，因此统一在回调之前
+        # 校验并冻结候选执行计划，避免“评分时没有顺序，部署时才选顺序”。
+        af.graph_processor.prepare_execution_plan()
         # 优先使用自定义评估器（适用于具身任务）
         if self.custom_loss_evaluator is not None:
             try:
@@ -192,6 +195,8 @@ class ModelTrainer(ABC):
         """
 
         af = adaptoflux_instance if adaptoflux_instance is not None else self.adaptoflux
+        # 准确率回调也可能独立于损失回调调用，不能假定前者已经冻结过计划。
+        af.graph_processor.prepare_execution_plan()
 
         # 优先使用自定义评估器
         if self.custom_accuracy_evaluator is not None:

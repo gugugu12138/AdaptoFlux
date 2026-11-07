@@ -5,7 +5,10 @@ def method_profile(
     group: str = "default",
     weight: float = 1.0,
     is_internal_decorator: bool = False,
-    vectorized: bool = False
+    vectorized: bool = False,
+    pure: bool | None = None,
+    reads=None,
+    writes=None,
 ):
     """
     装饰器：标注方法的输入输出结构、所属组、选择权重和是否支持向量化处理
@@ -21,7 +24,18 @@ def method_profile(
         weight (float): 在组内的选择概率权重，越大越可能被选中，该部分也可通过遗传算法优化
         is_internal_decorator (bool): 是否为内部装饰器（用于系统内部逻辑）
         vectorized (bool): 是否为向量化函数（可接受批量输入），当前版本非常不建议启动该选项，几乎必然出现问题
+        pure (bool | None): True 表示方法不访问图外可变状态。未声明时按 unknown
+            保守处理，不能因为输入输出都是数值就把旧函数认作纯函数。
+        reads, writes: 方法读取、写入的外部资源名称，例如 {"environment"}。
+            这些声明独立于输入输出类型，只用于决定哪些节点必须按顺序执行。
+            声明由方法作者负责，系统不会自动分析任意 Python 函数的真实副作用。
     """
+    from ..GraphProcessor.execution_plan import normalize_effects
+
+    # 注册时就检查矛盾声明（例如 pure=True 却声明写状态），同时把资源名称
+    # 排序、去重，得到可以进入模型文件且不依赖集合迭代顺序的统一表示。
+    effects = normalize_effects(pure=pure, reads=reads, writes=writes)
+
     def decorator(func):
         # 确定 output_types 列表
         resolved_output_types = output_types if output_types is not None else []
@@ -40,6 +54,10 @@ def method_profile(
         func.weight = weight
         func.is_internal_decorator = is_internal_decorator
         func.vectorized = vectorized
+        # 每个函数持有自己的声明副本，避免同一个装饰器被复用时共享可变列表。
+        func.effects = {"kind": effects["kind"],
+                        "reads": list(effects["reads"]),
+                        "writes": list(effects["writes"])}
         return func
     return decorator
 

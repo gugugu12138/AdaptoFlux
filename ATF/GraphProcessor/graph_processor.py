@@ -10,7 +10,11 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 _ALREADY_WARNED_OLD_MODEL = False
 
-class GraphProcessor:
+from threading import RLock
+from .execution_runtime import ExecutionRuntime, prepare_graph, transactional_graph_edit
+
+
+class GraphProcessor(ExecutionRuntime):
     def __init__(self, graph: nx.MultiDiGraph, methods: dict, collapse_method=CollapseMethod.SUM):
         """
         初始化图处理器。
@@ -20,6 +24,7 @@ class GraphProcessor:
             methods (dict): 可用方法字典 {method_name: {"function": ..., "input_count": int, "output_count": int}}
             collapse_method (callable): 聚合函数，默认为 sum
         """
+        self._execution_lock = RLock()
         self.discard_node_method_name = "null"
         self.graph = graph.copy() if graph else nx.MultiDiGraph()
         self.methods = methods
@@ -30,18 +35,28 @@ class GraphProcessor:
     def set_graph(self, new_graph):
         if not hasattr(new_graph, 'nodes') or not hasattr(new_graph, 'edges'):
             raise ValueError("new_graph 不是一个有效的图对象")
-        self.graph = new_graph
-        # 自动同步 layer 状态
-        self.layer = self.get_max_layer_from_graph()
+        with self._execution_lock:
+            prepare_graph(new_graph, self.methods)
+            self.graph = new_graph
+            self.layer = self.get_max_layer_from_graph()
         print(f"图结构已更新，当前最大层数：{self.layer}。")
 
     def set_methods(self, new_methods):
-        """更新 methods（函数字典或模块）"""
-        if not isinstance(new_methods, dict) and not callable(new_methods):
-            raise TypeError("methods 应该是一个函数字典或可调用对象")
-        self.methods = new_methods
+        """验证新方法池后原子替换，避免在旧计划执行期间换入新函数。
+
+        直接修改共享字典无法由本接口拦截，调用方不得与推理并发做这种修改。
+        注册表的验证使用图副本；失败不会改变已接受模型的端口或执行计划。
+        """
+        import copy
+        if not isinstance(new_methods, dict):
+            raise TypeError("methods 必须是方法名到方法元数据的字典")
+        with self._execution_lock:
+            candidate = copy.deepcopy(self.graph)
+            prepare_graph(candidate, new_methods)
+            self.methods = new_methods
         print("Methods 已更新。")
 
+    @transactional_graph_edit
     def append_nx_layer(self, result, discard_unmatched='to_discard', discard_node_method_name="null"):
         """
         向图中添加一层新节点。
@@ -225,6 +240,7 @@ class GraphProcessor:
             g.add_edge(u, v, **d)
         return len(ordered)
 
+    @transactional_graph_edit
     def remove_last_nx_layer(self):
         """
         删除图中的最后一层节点。
@@ -262,569 +278,12 @@ class GraphProcessor:
 
     # 该部分存在技术残留导致的全量中间缓存，作者有时间可能会改
     def infer_with_graph(self, values):
-        """
-        使用图结构对输入数据进行推理，支持任意对象（非仅数值）。
-        
-        参数:
-            values: 
-                - 若为 numpy array: 必须是 (N, D) shape，dtype 可为 object
-                - 若为 list: 必须是 [[feat0, feat1, ...], ...] 的二维结构
-        
-        返回:
-            collapsed_output: 1D numpy array of scalars (shape [N,])
-        """
-        import numpy as np
+        """按冻结的语义顺序串行执行；隐式状态读写也属于程序顺序的一部分。"""
+        return self._infer_with_execution_plan(values)
 
-        # === 1. 标准化输入为 list of lists（样本 × 输入特征）===
-        if isinstance(values, np.ndarray):
-            if values.ndim != 2:
-                raise ValueError(f"Input values must be 2D, got shape {values.shape}")
-            # 转为 list of lists，保留对象引用
-            input_samples = [list(row) for row in values]
-        elif isinstance(values, list):
-            if not all(isinstance(row, (list, tuple)) for row in values):
-                raise ValueError("Each sample in values must be a list/tuple of features.")
-            input_samples = [list(row) for row in values]
-        else:
-            raise TypeError("values must be a 2D numpy array or list of lists.")
-
-        num_samples = len(input_samples)
-        if num_samples == 0:
-            return np.array([])
-
-        # === 2. 初始化节点输出字典 ===
-        node_outputs = {}
-        node_outputs["root"] = input_samples  # list of lists
-
-        # === 3. 拓扑排序（排除 root 和 collapse）===
-        nodes_in_order = list(nx.topological_sort(self.graph))
-        nodes_in_order = [n for n in nodes_in_order if n not in {"root", "collapse"}]
-
-        # === 4. 逐节点执行 ===
-        for node in nodes_in_order:
-            node_data = self.graph.nodes[node]
-            method_name = node_data.get("method_name")
-
-            # === 处理 is_passthrough（兼容老模型）===
-            if "is_passthrough" not in node_data:
-                is_passthrough = (
-                    method_name is None or 
-                    (isinstance(method_name, str) and method_name.lower() == 'null') or
-                    (isinstance(method_name, str) and method_name.lower() == 'unmatched')
-                )
-                global _ALREADY_WARNED_OLD_MODEL
-                if not _ALREADY_WARNED_OLD_MODEL:
-                    logger.warning(
-                        f'当前使用的为老模型，节点 "{node}" 未显式标记 "is_passthrough"。'
-                        f'推断其为 passthrough={is_passthrough}。建议重训练或回退版本。'
-                        f'之后的版本可能取消对老版本的兼容'
-                    )
-                    _ALREADY_WARNED_OLD_MODEL = True
-            else:
-                is_passthrough = bool(node_data.get("is_passthrough", False))
-
-            # === 收集所有输入特征（按样本对齐）===
-            predecessors = list(self.graph.predecessors(node))
-            if not predecessors:
-                raise ValueError(f"Node '{node}' has no predecessors.")
-
-            # === 收集所有输入特征（按 input_slot 对齐）===
-            # === 收集所有输入特征 ===
-            input_pairs = []  # 用于新逻辑：(input_slot, extracted)
-            input_feature_lists_old = []  # 用于老逻辑：直接 append
-
-            has_input_slot = None  # None=未确定, True=有, False=无
-
-            for src in predecessors:
-                edges_from_src = self.graph[src][node]  # MultiEdge dict
-                for edge_key, edge_data in edges_from_src.items():
-                    output_idx = edge_data.get("output_index")
-                    input_slot = edge_data.get("input_slot")  # 可能为 None
-                    src_output = node_outputs[src]
-
-                    if output_idx is None:
-                        extracted = [sample_output for sample_output in src_output]
-                    else:
-                        extracted = [sample_output[output_idx] for sample_output in src_output]
-
-                    # 判断是否使用 input_slot
-                    current_has_slot = input_slot is not None
-
-                    if has_input_slot is None:
-                        has_input_slot = current_has_slot
-                    elif has_input_slot != current_has_slot:
-                        raise ValueError(
-                            f"Node '{node}': mixed use of 'input_slot' in incoming edges. "
-                            "All edges must either have 'input_slot' or all must omit it."
-                        )
-
-                    if has_input_slot:
-                        if not isinstance(input_slot, int):
-                            raise ValueError(f"input_slot must be an integer, got {input_slot} (type {type(input_slot)})")
-                        input_pairs.append((input_slot, extracted))
-                    else:
-                        input_feature_lists_old.append(extracted)
-
-            # === 根据是否有 input_slot 选择路径 ===
-            if has_input_slot:
-                # --- 新逻辑：按 input_slot 排序 ---
-                input_pairs.sort(key=lambda x: x[0])
-                input_slots = [slot for slot, _ in input_pairs]
-                expected_slots = list(range(len(input_pairs)))
-                if input_slots != expected_slots:
-                    raise ValueError(
-                        f"Node '{node}' has inconsistent input_slot indices. "
-                        f"Expected {expected_slots}, got {input_slots}."
-                    )
-                input_feature_lists = [data for _, data in input_pairs]
-            else:
-                # --- 老逻辑：保持边遍历顺序 ---
-                input_feature_lists = input_feature_lists_old
-
-            if is_passthrough:
-                if len(input_feature_lists) != 1:
-                    raise ValueError(f"Passthrough node '{node}' must have exactly one input, got {len(input_feature_lists)}")
-                
-                # input_feature_lists[0] is a list of N elements: [feat_sample0, feat_sample1, ..., feat_sampleN-1]
-                extracted_per_sample = input_feature_lists[0]  # length = N
-                
-                # ✅ 正确格式：每个样本一个 list（即使只有一个输出）
-                node_outputs[node] = [[feat] for feat in extracted_per_sample]
-                continue
-
-            # === 正常方法执行 ===
-            if method_name not in self.methods:
-                raise ValueError(f"Unknown method: {method_name}")
-
-            method_info = self.methods[method_name]
-            func = method_info["function"]
-            expected_input_count = method_info["input_count"]
-            expected_output_count = method_info["output_count"]
-            is_vectorized = method_info.get("vectorized", False)
-
-            if len(input_feature_lists) != expected_input_count:
-                raise ValueError(
-                    f"Node '{node}' method '{method_name}' expects {expected_input_count} inputs, "
-                    f"but got {len(input_feature_lists)} from edges."
-                )
-
-            # 尝试向量化执行（仅当方法标记为 vectorized=True）
-            node_output_samples = None
-            if is_vectorized and num_samples > 1:
-                try:
-                    # === 尝试构建批量输入 ===
-                    batched_inputs = []
-                    for input_list in input_feature_lists:
-                        # 检查是否所有元素类型一致且可堆叠
-                        first = input_list[0]
-                        
-                        # 情况1: 全是标量（int/float/np.number）
-                        if all(isinstance(x, (int, float, np.number)) for x in input_list):
-                            batched = np.array(input_list)
-                        # 情况2: 全是 numpy 数组且 shape 一致
-                        elif all(isinstance(x, np.ndarray) for x in input_list):
-                            shapes = [x.shape for x in input_list]
-                            if all(s == shapes[0] for s in shapes):
-                                batched = np.stack(input_list, axis=0)  # (N, ...)
-                            else:
-                                raise ValueError("Array shapes mismatch, cannot vectorize")
-                        # 情况3: 其他类型（str, dict 等）→ 无法向量化
-                        else:
-                            raise ValueError("Non-numeric or mixed types, cannot vectorize")
-                            
-                        batched_inputs.append(batched)
-                    
-                    batched_outputs = func(*batched_inputs)  # 应返回 (N, output_count) 或 tuple of (N,)
-                    
-                    # === 标准化输出为 list of lists ===
-                    if isinstance(batched_outputs, tuple):
-                        # 多输出：每个是 (N,) 或 (N, ...)
-                        if len(batched_outputs) != expected_output_count:
-                            raise ValueError(f"Expected {expected_output_count} outputs, got {len(batched_outputs)}")
-                        # 转置: [(N,), (N,)] → [(out0_s0, out1_s0), ...]
-                        node_output_samples = []
-                        for i in range(num_samples):
-                            sample_outs = [batched_outputs[j][i] for j in range(expected_output_count)]
-                            # 如果输出是数组，保留为数组（不强制标量）
-                            node_output_samples.append(sample_outs)
-                    else:
-                        # 单输出或 (N, output_count)
-                        if batched_outputs.ndim == 1:
-                            # (N,) → 每个样本一个标量
-                            if expected_output_count != 1:
-                                raise ValueError(f"Expected {expected_output_count} outputs, but got 1D array")
-                            node_output_samples = [[x] for x in batched_outputs]
-                        elif batched_outputs.ndim == 2:
-                            # (N, output_count)
-                            if batched_outputs.shape[1] != expected_output_count:
-                                raise ValueError(f"Output shape {batched_outputs.shape} mismatches output_count={expected_output_count}")
-                            node_output_samples = batched_outputs.tolist()
-                        else:
-                            raise ValueError(f"Unsupported output ndim: {batched_outputs.ndim}")
-                            
-                except Exception as e:
-                    # 回退到逐样本模式（保持兼容性）
-                    logger.warning(
-                        f"Vectorized execution failed for method '{method_name}' (inputs: {[type(x[0]) for x in input_feature_lists]}), "
-                        f"fallback to sample-by-sample. Error: {e}"
-                    )
-                    is_vectorized = False  # 触发下方逐样本逻辑
-
-            # === 回退：逐样本执行（原逻辑）===
-            else:
-                node_output_samples = []
-                for sample_idx in range(num_samples):
-                    sample_inputs = [input_list[sample_idx] for input_list in input_feature_lists]
-                    try:
-                        result = func(*sample_inputs)
-                    except Exception as e:
-                        raise RuntimeError(
-                            f"Error in method '{method_name}' at sample {sample_idx}:\n"
-                            f"  Inputs: {sample_inputs}\n"
-                            f"  Error: {e}"
-                        ) from e
-
-                    if not isinstance(result, (list, tuple)):
-                        result = [result]
-                    result = list(result)
-
-                    if len(result) != expected_output_count:
-                        raise ValueError(
-                            f"Method '{method_name}' returned {len(result)} outputs, "
-                            f"but expected {expected_output_count} (output_count)."
-                        )
-
-                    node_output_samples.append(result)
-
-            # 保存结果
-            node_outputs[node] = node_output_samples
-
-        # === 5. 聚合到 collapse 节点 ===
-        collapse_inputs = []  # List[Tuple[global_coord, List[Any]]]
-        for u, v, data in self.graph.in_edges("collapse", data=True):
-            local_idx = data.get("output_index")
-            global_coord = data.get("data_coord")
-            if local_idx is None or global_coord is None:
-                raise ValueError(f"Edge from {u} to collapse missing output_index or data_coord")
-
-            src_output = node_outputs[u]  # list of lists
-            feature_values = [sample_output[local_idx] for sample_output in src_output]
-            collapse_inputs.append((global_coord, feature_values))
-
-        if not collapse_inputs:
-            raise ValueError("No inputs connected to 'collapse' node.")
-
-        # 按 global_coord 排序以保证顺序一致
-        collapse_inputs.sort(key=lambda x: x[0])
-        all_features_per_sample = list(zip(*[feat_list for _, feat_list in collapse_inputs]))  # transpose
-
-        # === 6. 应用 collapse 函数 ===
-        collapsed_results = []
-        for sample_features in all_features_per_sample:
-            try:
-                # collapse 接收 list，返回任意对象（标量、向量、字符串等）
-                collapsed_val = self.collapse_manager.collapse(list(sample_features))
-                collapsed_results.append(collapsed_val)
-            except Exception as e:
-                raise RuntimeError(
-                    f"Error in collapse function with inputs {list(sample_features)}:\n{e}"
-                ) from e
-
-        # 返回结果列表（不强制转为 np.array）
-        return np.array(collapsed_results)
-    
     def infer_with_task_parallel(self, values, num_workers=4):
-        from concurrent.futures import ThreadPoolExecutor
-        import threading
-        import queue
-        import numpy as np
-        import traceback
-
-        # === 1. 标准化输入为 list of lists（与 infer_with_graph 一致）===
-        if isinstance(values, np.ndarray):
-            if values.ndim != 2:
-                raise ValueError(f"Input values must be 2D, got shape {values.shape}")
-            input_samples = [list(row) for row in values]
-        elif isinstance(values, list):
-            if not all(isinstance(row, (list, tuple)) for row in values):
-                raise ValueError("Each sample in values must be a list/tuple of features.")
-            input_samples = [list(row) for row in values]
-        else:
-            raise TypeError("values must be a 2D numpy array or list of lists.")
-
-        # 初始化
-        node_outputs = {"root": input_samples}
-        lock = threading.Lock()
-        in_degree_remaining = {}
-        ready_queue = queue.Queue()
-
-        # 构建拓扑依赖图，并初始化每个节点的待完成前驱数
-        for node in self.graph.nodes:
-            if node in ["root", "collapse"]:
-                continue
-            preds = list(self.graph.predecessors(node))
-            in_degree_remaining[node] = len(preds)
-            if len(preds) == 0:
-                ready_queue.put(node)
-
-        # 处理 root 的直接后继
-        for succ in self.graph.successors("root"):
-            if succ in in_degree_remaining:
-                in_degree_remaining[succ] -= 1
-                if in_degree_remaining[succ] == 0:
-                    ready_queue.put(succ)
-
-        # 检查 collapse 是否有输入
-        collapse_in_edges = list(self.graph.in_edges("collapse"))
-        if not collapse_in_edges:
-            return []
-
-        # 工作函数
-        def process_node(node):
-            try:
-                with lock:
-                    # === 收集所有输入特征（按输入槽组织）===
-                    predecessors = list(self.graph.predecessors(node))
-                    if not predecessors:
-                        raise ValueError(f"Node '{node}' has no predecessors.")
-
-                    # === 收集所有输入特征（按 input_slot 对齐）===
-                    # === 收集所有输入特征 ===
-                    input_pairs = []  # 用于新逻辑：(input_slot, extracted)
-                    input_feature_lists_old = []  # 用于老逻辑：直接 append
-
-                    has_input_slot = None  # None=未确定, True=有, False=无
-
-                    for src in predecessors:
-                        edges_from_src = self.graph[src][node]  # MultiEdge dict
-                        for edge_key, edge_data in edges_from_src.items():
-                            output_idx = edge_data.get("output_index")
-                            input_slot = edge_data.get("input_slot")  # 可能为 None
-                            src_output = node_outputs[src]
-
-                            if output_idx is None:
-                                extracted = [sample_output for sample_output in src_output]
-                            else:
-                                extracted = [sample_output[output_idx] for sample_output in src_output]
-
-                            # 判断是否使用 input_slot
-                            current_has_slot = input_slot is not None
-
-                            if has_input_slot is None:
-                                has_input_slot = current_has_slot
-                            elif has_input_slot != current_has_slot:
-                                raise ValueError(
-                                    f"Node '{node}': mixed use of 'input_slot' in incoming edges. "
-                                    "All edges must either have 'input_slot' or all must omit it."
-                                )
-
-                            if has_input_slot:
-                                if not isinstance(input_slot, int):
-                                    raise ValueError(f"input_slot must be an integer, got {input_slot} (type {type(input_slot)})")
-                                input_pairs.append((input_slot, extracted))
-                            else:
-                                input_feature_lists_old.append(extracted)
-
-                    # === 根据是否有 input_slot 选择路径 ===
-                    if has_input_slot:
-                        # --- 新逻辑：按 input_slot 排序 ---
-                        input_pairs.sort(key=lambda x: x[0])
-                        input_slots = [slot for slot, _ in input_pairs]
-                        expected_slots = list(range(len(input_pairs)))
-                        if input_slots != expected_slots:
-                            raise ValueError(
-                                f"Node '{node}' has inconsistent input_slot indices. "
-                                f"Expected {expected_slots}, got {input_slots}."
-                            )
-                        input_feature_lists = [data for _, data in input_pairs]
-                    else:
-                        # --- 老逻辑：保持边遍历顺序 ---
-                        input_feature_lists = input_feature_lists_old
-
-                # === 获取节点元信息 ===
-                node_data = self.graph.nodes[node]
-                method_name = node_data.get("method_name")
-
-                # 兼容老模型：推断 is_passthrough
-                if "is_passthrough" not in node_data:
-                    is_passthrough = (
-                        method_name is None or 
-                        (isinstance(method_name, str) and method_name.lower() == 'null')
-                    )
-                else:
-                    is_passthrough = bool(node_data.get("is_passthrough", False))
-
-                # === 处理 passthrough 节点 ===
-                if is_passthrough:
-                    if len(input_feature_lists) != 1:
-                        raise ValueError(f"Passthrough node '{node}' must have exactly one input, got {len(input_feature_lists)}")
-                    # 输入是 [obj, obj, ...]，输出需为 [[obj], [obj], ...]
-                    node_output_samples = [[x] for x in input_feature_lists[0]]
-                else:
-                    # === 正常方法执行 ===
-                    if not method_name:
-                        raise ValueError(f"Node '{node}'未指定 method_name 且非 passthrough")
-
-                    if method_name not in self.methods:
-                        raise KeyError(f"Method '{method_name}' not registered in self.methods")
-
-                    method_info = self.methods[method_name]
-                    func = method_info["function"]
-                    expected_input_count = method_info["input_count"]
-                    expected_output_count = method_info["output_count"]
-                    is_vectorized = method_info.get("vectorized", False)
-
-                    if len(input_feature_lists) != expected_input_count:
-                        raise ValueError(
-                            f"Node '{node}' method '{method_name}' expects {expected_input_count} inputs, "
-                            f"but got {len(input_feature_lists)}."
-                        )
-
-                    num_samples = len(input_feature_lists[0]) if input_feature_lists else 0
-                    node_output_samples = None
-
-                    # --- 尝试向量化执行 ---
-                    if is_vectorized and num_samples > 1:
-                        try:
-                            batched_inputs = []
-                            for input_list in input_feature_lists:
-                                first = input_list[0]
-                                # 情况1: 全是标量（int/float/np.number）
-                                if all(isinstance(x, (int, float, np.number)) for x in input_list):
-                                    batched = np.array(input_list)
-                                # 情况2: 全是 numpy 数组且 shape 一致
-                                elif all(isinstance(x, np.ndarray) for x in input_list):
-                                    shapes = [x.shape for x in input_list]
-                                    if all(s == shapes[0] for s in shapes):
-                                        batched = np.stack(input_list, axis=0)
-                                    else:
-                                        raise ValueError("Array shapes mismatch, cannot vectorize")
-                                # 情况3: 其他类型（str, dict, list, object）→ 无法向量化
-                                else:
-                                    raise ValueError("Non-numeric or mixed types, cannot vectorize")
-                                batched_inputs.append(batched)
-
-                            batched_outputs = func(*batched_inputs)
-
-                            # 标准化输出为 list of lists
-                            if isinstance(batched_outputs, tuple):
-                                if len(batched_outputs) != expected_output_count:
-                                    raise ValueError(f"Expected {expected_output_count} outputs, got {len(batched_outputs)}")
-                                node_output_samples = [
-                                    [batched_outputs[j][i] for j in range(expected_output_count)]
-                                    for i in range(num_samples)
-                                ]
-                            else:
-                                if batched_outputs.ndim == 1:
-                                    if expected_output_count != 1:
-                                        raise ValueError(f"Expected {expected_output_count} outputs, but got 1D array")
-                                    node_output_samples = [[x] for x in batched_outputs]
-                                elif batched_outputs.ndim == 2:
-                                    if batched_outputs.shape[1] != expected_output_count:
-                                        raise ValueError(f"Output shape {batched_outputs.shape} mismatches output_count={expected_output_count}")
-                                    node_output_samples = batched_outputs.tolist()
-                                else:
-                                    raise ValueError(f"Unsupported output ndim: {batched_outputs.ndim}")
-
-                        except Exception as e:
-                            logger.warning(
-                                f"Vectorized execution failed for method '{method_name}' (inputs: {[type(x[0]) for x in input_feature_lists]}), "
-                                f"fallback to sample-by-sample. Error: {e}"
-                            )
-                            is_vectorized = False
-
-                    # --- 回退：逐样本执行 ---
-                    else:
-                        node_output_samples = []
-                        for sample_idx in range(num_samples):
-                            sample_inputs = [slot[sample_idx] for slot in input_feature_lists]
-                            try:
-                                result = func(*sample_inputs)
-                            except Exception as e:
-                                raise RuntimeError(
-                                    f"Error in method '{method_name}' at sample {sample_idx}:\n"
-                                    f"  Inputs: {sample_inputs}\n"
-                                    f"  Error: {e}"
-                                ) from e
-
-                            if not isinstance(result, (list, tuple)):
-                                result = [result]
-                            result = list(result)
-
-                            if len(result) != expected_output_count:
-                                raise ValueError(
-                                    f"Method '{method_name}' returned {len(result)} outputs, "
-                                    f"but expected {expected_output_count}."
-                                )
-                            node_output_samples.append(result)
-
-                # === 保存结果并触发后继节点 ===
-                with lock:
-                    node_outputs[node] = node_output_samples
-                    for succ in self.graph.successors(node):
-                        if succ == "collapse":
-                            continue
-                        if succ in in_degree_remaining:
-                            in_degree_remaining[succ] -= 1
-                            if in_degree_remaining[succ] == 0:
-                                ready_queue.put(succ)
-
-            except Exception as e:
-                error_msg = f"[🔥 CRITICAL ERROR in process_node] Node '{node}' failed: {e}"
-                print(error_msg)
-                traceback.print_exc()
-                raise
-
-        # 启动线程池
-        with ThreadPoolExecutor(max_workers=num_workers) as executor:
-            futures = []
-            total_nodes_to_execute = len([n for n in self.graph.nodes if n not in {"root", "collapse"}])
-            submitted_nodes = set()
-
-            while len(submitted_nodes) < total_nodes_to_execute:
-                try:
-                    node = ready_queue.get(timeout=1)
-                    if node in submitted_nodes:
-                        continue
-                    submitted_nodes.add(node)
-                    futures.append(executor.submit(process_node, node))
-                except queue.Empty:
-                    continue
-
-            for f in futures:
-                f.result()
-
-        # === 5. 聚合到 collapse 节点（与 infer_with_graph 一致）===
-        collapse_inputs = []  # List[Tuple[global_coord, List[Any]]]
-        for u, v, data in self.graph.in_edges("collapse", data=True):
-            local_idx = data.get("output_index")
-            global_coord = data.get("data_coord")
-            if local_idx is None or global_coord is None:
-                raise ValueError(f"Edge from {u} to collapse missing output_index or data_coord")
-
-            src_output = node_outputs[u]  # list of lists
-            feature_values = [sample[local_idx] for sample in src_output]
-            collapse_inputs.append((global_coord, feature_values))
-
-        if not collapse_inputs:
-            return []
-
-        # 按 global_coord 排序以保证顺序一致
-        collapse_inputs.sort(key=lambda x: x[0])
-        all_features_per_sample = list(zip(*[feat_list for _, feat_list in collapse_inputs]))
-
-        # === 6. 应用 collapse 函数 ===
-        collapsed_results = []
-        for sample_features in all_features_per_sample:
-            try:
-                collapsed_val = self.collapse_manager.collapse(list(sample_features))
-                collapsed_results.append(collapsed_val)
-            except Exception as e:
-                raise RuntimeError(
-                    f"Error in collapse function with inputs {list(sample_features)}:\n{e}"
-                ) from e
-
-        return np.array(collapsed_results)  # 返回 list，与 infer_with_graph 一致
+        """仅并行执行数据依赖和副作用依赖都已经满足的节点。"""
+        return self._infer_with_execution_plan(values, workers=num_workers)
 
     def infer_with_graph_single(self, sample, use_pipeline=False, num_workers=4):
         # Step 1: 确保 sample 是 1D 可迭代（list/tuple/array）
@@ -850,72 +309,36 @@ class GraphProcessor:
         return result[0]
     
     # 在 GraphProcessor 类中
-    def replace_node_method(
-        self,
-        old_node_id: str,
-        new_method_name: str
-    ) -> str:
+    def replace_node_method(self, old_node_id: str, new_method_name: str) -> str:
+        """替换方法，但保留节点的稳定身份和语义位置。
+
+        显示名称可以改变，_atf_uid 不能因删除重建而丢失，否则候选评分和
+        接受后的状态访问顺序可能不同。先在副本上完成端口与计划验证，再
+        原地更新数据图，既保证失败不污染原模型，也维持 PathGenerator 引用。
         """
-        替换图中一个节点的方法，并更新其 ID 和所有相连的边。
-        不做图全节点刷新（全节点刷新耗能高并且推理不依赖具体id，可能后续做个单独方法）
-        该方法不做类型检测
-        
-        :param old_node_id: 要替换的旧节点 ID（如 "2_3_return_value"）
-        :param new_method_name: 新的方法名（如 "add_values"）
-        :return: 新节点的 ID（如 "2_0_add_values"）
-        """
-        if new_method_name not in self.methods:
-            raise ValueError(f"Method '{new_method_name}' not registered in methods.")
-        graph = self.graph
-
-        # === 1. 获取旧节点信息 ===
-        if old_node_id not in graph:
-            raise ValueError(f"Node '{old_node_id}' not found in graph.")
-        
-        old_data = graph.nodes[old_node_id]
-        old_method = old_data.get("method_name")
-        if old_method is None:
-            raise ValueError(f"Node '{old_node_id}' has no 'method_name' attribute.")
-
-        # === 2. 解析旧 ID 获取 layer 和 index 前缀 ===
-        # 旧 ID 格式: {layer}_{index}_{method_name} 或 {layer}_{index}_unmatched
-        layer = self.get_node_layer(old_node_id)
-        if layer < 0:
-            raise ValueError(f"Cannot extract valid layer from node ID: '{old_node_id}'")
-
-        # === 3. 生成新 ID ===
-        new_base_name = new_method_name  # ✅ 关键：定义 new_base_name
-        
-        new_node_id = self._generate_unique_node_id(layer, new_method_name)
-
-        if new_node_id in graph:
-            raise RuntimeError(f"Node ID collision: {new_node_id} already exists!")
-
-        # === 4. 保存旧节点的入边和出边 ===
-        in_edges = list(graph.in_edges(old_node_id, keys=True, data=True))
-        out_edges = list(graph.out_edges(old_node_id, keys=True, data=True))
-
-        # === 5. 删除旧节点 ===
-        graph.remove_node(old_node_id)
-
-        # === 6. 添加新节点 ===
-        is_passthrough = (new_method_name == self.discard_node_method_name)
-        graph.add_node(new_node_id, method_name=new_method_name, layer=layer, is_passthrough=is_passthrough)
-
-        # === 7. 重连入边（source -> new_node_id）===
-        for src, _, key, data in in_edges:
-            graph.add_edge(src, new_node_id, key=key, **data)
-
-        # === 8. 重连出边（new_node_id -> target）===
-        for _, dst, key, data in out_edges:
-            graph.add_edge(new_node_id, dst, key=key, **data)
-
-        logger.debug(
-            "Replaced node '%s' (%s) with '%s' (%s)",
-            old_node_id, old_method, new_node_id, new_method_name
-        )
-        
-        return new_node_id
+        import copy
+        with self._execution_lock:
+            self.prepare_execution_plan()
+            if new_method_name not in self.methods:
+                raise ValueError(f"Method {new_method_name!r} is not registered")
+            if old_node_id not in self.graph:
+                raise ValueError(f"Node {old_node_id!r} was not found")
+            old = self.graph.nodes[old_node_id]
+            if old.get("method_name") is None:
+                raise ValueError(f"Node {old_node_id!r} has no method")
+            layer = self.get_node_layer(old_node_id)
+            new_id = self._generate_unique_node_id(layer, new_method_name)
+            if new_id == old_node_id:
+                return old_node_id
+            candidate = nx.relabel_nodes(copy.deepcopy(self.graph), {old_node_id: new_id}, copy=True)
+            candidate.nodes[new_id].update(method_name=new_method_name, layer=layer,
+                                          is_passthrough=new_method_name == self.discard_node_method_name)
+            prepare_graph(candidate, self.methods)
+            self.graph.clear()
+            self.graph.graph.update(candidate.graph)
+            self.graph.add_nodes_from(candidate.nodes(data=True))
+            self.graph.add_edges_from(candidate.edges(keys=True, data=True))
+            return new_id
 
     def _is_processing_node(self, node):
         """
@@ -983,6 +406,7 @@ class GraphProcessor:
                 max_layer = layer
         return max_layer
 
+    @transactional_graph_edit
     def replace_subgraph_with_graph(
         self,
         subgraph_nodes: Set[str],

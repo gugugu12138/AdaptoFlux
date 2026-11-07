@@ -10,6 +10,7 @@ import json
 import traceback
 from ...PathGenerator.path_generator import PathGenerator
 from ...GraphProcessor.graph_processor import GraphProcessor
+from ...GraphProcessor.execution_plan import aggregate_effects
 from ...core.evolved_method import EvolvedMethod
 from collections import defaultdict
 import networkx as nx
@@ -871,6 +872,11 @@ class GraphEvoTrainer(ModelTrainer):
         仅用于兼容性保留，不推荐使用。
         """
         gp = adaptoflux_instance.graph_processor
+        if gp.prepare_execution_plan().has_effects:
+            # 旧数值压缩仅比较输出误差，没有证明状态转移或读写顺序等价。
+            # 对有副作用（含未声明效果）的图关闭这条旧路径，避免“数值相同”掩盖状态改变。
+            logger.warning("Legacy numeric compression cannot preserve state effects; skipping.")
+            return self._return_original_result(adaptoflux_instance, input_data, target)
         # 1. 采样子图
         subgraph = self.subgraph_sampler.sample(gp.graph)
         if subgraph is None:
@@ -986,6 +992,16 @@ class GraphEvoTrainer(ModelTrainer):
             for mapping in valid_matches:
                 subgraph_nodes = set(mapping.keys())
 
+                # 结构同构或代数规则没有提供状态转移等价性证明。当前仅允许
+                # 明确声明为 pure 的源子图替换成明确 pure 的目标子图。
+                # unknown 也会被拒绝，不能因节点类型/数值输出相同而跳过副作用检查。
+                source_effects = aggregate_effects(graph.subgraph(subgraph_nodes), adaptoflux_instance.methods)
+                target_effects = (aggregate_effects(tgt_spec, adaptoflux_instance.methods)
+                                  if isinstance(tgt_spec, nx.DiGraph) else {"kind": "unknown"})
+                if source_effects["kind"] != "pure" or target_effects["kind"] != "pure":
+                    logger.warning("Skipping symbolic compression without pure effect declarations.")
+                    continue
+
                 # 🔧 关键修复：构建 pattern_node -> host_node 的反向映射
                 pattern_to_host = {pattern_node: host_node for host_node, pattern_node in mapping.items()}
 
@@ -1046,5 +1062,3 @@ class GraphEvoTrainer(ModelTrainer):
             'compression_applied': total_compressed > 0,
             'compressed_subgraphs': total_compressed
         }
-
-    

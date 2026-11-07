@@ -15,6 +15,12 @@ import pandas as pd
 import copy
 from ..CollapseManager.collapse_functions import CollapseFunctionManager, CollapseMethod
 from ..GraphProcessor.graph_processor import GraphProcessor
+from ..GraphProcessor.execution_plan import (
+    compile_execution_plan,
+    effects_for_method,
+    export_execution_plan,
+    restore_execution_plan,
+)
 from ..PathGenerator.path_generator import PathGenerator
 from ..ModelTrainer.model_trainer import ModelTrainer
 
@@ -184,12 +190,18 @@ class AdaptoFlux:
         self.graph_processor.collapse_manager.set_custom_collapse(collapse_function)
 
     # 添加处理方法到字典
-    def add_method(self, method_name, method, input_count, output_count, input_types, output_types, group, weight, vectorized):
+    def add_method(self, method_name, method, input_count, output_count, input_types, output_types, group, weight, vectorized, effects=None):
         """
         添加方法到字典
         :param method_name: 方法名称
         :param method: 方法本身
         :param input_count: 方法所需的输入值数量
+        :param effects: 可选的显式副作用声明。优先使用这里的声明；否则从函数的
+            method_profile 元数据读取。旧函数没有声明时登记为 unknown，运行器
+            会采取保守顺序，不把未声明函数视为可自由并行的纯计算。
+
+        增量注册用于建图或训练准备阶段，不应与正在执行的推理并发调用。
+        替换完整方法池时使用 set_methods，由运行器加锁验证后再提交。
         """ 
         self.methods[method_name] = {
             "function" : method,
@@ -199,7 +211,10 @@ class AdaptoFlux:
             "output_types" : output_types,
             "group" : group,
             "weight" : weight,
-            "vectorized": vectorized
+            "vectorized": vectorized,
+            "effects": effects_for_method(
+                {"function": method, **({"effects": effects} if effects is not None else {})}
+            ),
         }
         self.method_inputs[method_name] = []
         self.method_input_values[method_name] = [] # 疑似没有必要
@@ -216,7 +231,7 @@ class AdaptoFlux:
             return
 
         # 动态加载模块
-        spec = importlib.util.spec_from_file_location("module.name", self.methods_path)
+        spec = importlib.util.spec_from_file_location("module.name", import_path)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
 
@@ -361,112 +376,115 @@ class AdaptoFlux:
 
     def save_model(self, folder="models"):
         """
-        保存模型的路径数据、图结构（.gexf）和相关文件。
-        
-        1. 确保目标文件夹存在，如果不存在则创建。
-        3. 将图结构保存为 graph.gexf（可读性强）。
-        4. 复制指定的 methods_path 文件到目标文件夹。
-        
-        参数:
-            folder (str): 用于保存模型的文件夹路径，默认为 "models"。
+        保存数据图和已经冻结的执行计划，保留状态访问的语义顺序。
+
+        graph.json 内嵌完整计划，可以独立恢复；execution_plan.json 为伴随文件，
+        用于 GEXF 恢复，因为 GEXF 不保留任意图级元数据。数据依赖和控制依赖
+        分别保存，控制依赖不会被转换为方法的数据参数。
+
+        本方法不序列化函数闭包、外部环境状态或自定义 collapse 函数。载入者仍需
+        提供相同的方法实现、聚合配置和初始外部状态，才能复现相同运行结果。
         """
         import json
         from networkx.readwrite import json_graph
 
-        # 确保文件夹存在，如果不存在则创建
-        if self.methods_path and os.path.exists(self.methods_path):
-            os.makedirs(folder, exist_ok=True)
+        self.graph_processor.prepare_execution_plan()
+        plan = export_execution_plan(self.graph, self.methods)
+        data = json_graph.node_link_data(self.graph, edges="edges")
+        data["execution_plan"] = plan
+        # 在真正写文件前先完成计划校验和 JSON 编码。类型/效果元数据不可序列化
+        # 时直接报错，不像旧实现那样打印错误后继续，留下看似成功的不完整模型。
+        graph_json = json.dumps(data, indent=2)
+        plan_json = json.dumps(plan, indent=2)
+        os.makedirs(folder, exist_ok=True)
+        with open(os.path.join(folder, "graph.json"), "w", encoding="utf-8") as f:
+            f.write(graph_json)
+        with open(os.path.join(folder, "execution_plan.json"), "w", encoding="utf-8") as f:
+            f.write(plan_json)
+        nx.write_gexf(self.graph, os.path.join(folder, "graph.gexf"))
 
-        # 保存图结构到 graph.gexf（可读性强）
-        gexf_file_path = os.path.join(folder, "graph.gexf")
-        nx.write_gexf(self.graph_processor.graph, gexf_file_path)
-
-        json_file_path = os.path.join(folder, "graph.json")
-        try:
-            data = json_graph.node_link_data(self.graph_processor.graph, edges="edges")  # 转换为可序列化的字典
-            with open(json_file_path, 'w', encoding='utf-8') as f:
-                json.dump(data, f, indent=2)
-        except Exception as e:
-            print(f"保存 JSON 文件时出错: {e}")
-
-        # 复制 methods_path 文件到保存的文件夹
-        if os.path.exists(self.methods_path):  # 确保源文件存在
-            shutil.copy(self.methods_path, folder)  # 复制文件到目标文件夹
+        if self.methods_path and os.path.isfile(self.methods_path):
+            destination = os.path.join(folder, os.path.basename(self.methods_path))
+            if os.path.abspath(self.methods_path) != os.path.abspath(destination):
+                shutil.copy(self.methods_path, destination)
 
     def load_model(self, path="models"):
         """
         从指定路径加载保存的模型：图结构（.gexf 或 .json）文件。
 
         支持两种用法：
-        - 传入文件夹路径（如 "models"）：自动查找 graph.gexf 或 graph.json。
+        - 传入文件夹路径（如 "models"）：优先读取 graph.json，其次 graph.gexf。
         - 传入具体文件路径（如 "models/custom.gexf"）：直接加载该文件。
 
         参数:
             path (str): 文件夹路径或具体模型文件路径（.gexf 或 .json），默认为 "models"。
+
+        当前方法库提供实际函数；方法签名及副作用声明必须与保存的计划一致。
+        文件解析、端口检查、效果检查和无环检查全部成功后才替换当前模型。
+        没有保存计划的旧模型在此次载入边界生成一次保守顺序，后续执行沿用它。
         """
         import os
         import json
         import networkx as nx
         from networkx.readwrite import json_graph
 
-        self.graph_processor.graph = None
-
-        # 判断 path 是文件还是目录
-        if os.path.isfile(path):
-            # 用户直接指定了文件
-            file_path = path
-            _, ext = os.path.splitext(file_path)
-            ext = ext.lower()
-
-            try:
-                if ext == '.gexf':
-                    self.graph_processor.set_graph(nx.read_gexf(file_path))
-                    print(f"成功从 {file_path} 加载 GEXF 图结构。")
-                elif ext == '.json':
-                    with open(file_path, 'r', encoding='utf-8') as f:
-                        data = json.load(f)
-                    # 兼容 node-link 格式（edges 字段）
-                    self.graph_processor.set_graph(json_graph.node_link_graph(data, edges="edges"))
-                    print(f"成功从 {file_path} 加载 JSON 图结构。")
-                else:
-                    raise ValueError(f"不支持的文件格式: {ext}。仅支持 .gexf 或 .json。")
-            except Exception as e:
-                raise RuntimeError(f"加载图文件失败 ({file_path}): {e}")
-
-        elif os.path.isdir(path):
-            # 原有逻辑：path 是文件夹
-            gexf_file = os.path.join(path, "graph.gexf")
-            json_file = os.path.join(path, "graph.json")
-
-            loaded = False
-            if os.path.exists(gexf_file):
-                try:
-                    self.graph_processor.set_graph(nx.read_gexf(gexf_file))
-                    print("成功从 graph.gexf 加载图结构。")
-                    loaded = True
-                except Exception as e:
-                    print(f"读取 graph.gexf 失败: {e}")
-
-            if not loaded and os.path.exists(json_file):
-                try:
-                    with open(json_file, 'r', encoding='utf-8') as f:
-                        data = json.load(f)
-                    self.graph_processor.set_graph(json_graph.node_link_graph(data, edges="edges"))
-                    print("成功从 graph.json 加载图结构。")
-                    loaded = True
-                except Exception as e:
-                    print(f"读取 graph.json 失败: {e}")
-
-            if not loaded:
-                raise FileNotFoundError("在文件夹中未找到有效的 graph.gexf 或 graph.json 文件。")
-
+        if os.path.isdir(path):
+            # JSON 是完整模型的首选来源。若它损坏或其计划不合法，必须报错；
+            # 不能静默回退到可能有另一种节点顺序的 GEXF 后继续运行。
+            candidates = [os.path.join(path, "graph.json"), os.path.join(path, "graph.gexf")]
+            file_path = next((p for p in candidates if os.path.isfile(p)), None)
+            if file_path is None:
+                raise FileNotFoundError("在文件夹中未找到 graph.json 或 graph.gexf 文件。")
+        elif os.path.isfile(path):
+            file_path = os.fspath(path)
         else:
             raise FileNotFoundError(f"指定的路径既不是有效文件也不是目录: {path}")
+        extension = os.path.splitext(file_path)[1].lower()
+        embedded_plan = None
+        if extension == ".json":
+            with open(file_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            embedded_plan = data.get("execution_plan")
+            if "execution_plan" in data and not isinstance(embedded_plan, dict):
+                raise ValueError("Invalid embedded execution plan.")
+            candidate_graph = json_graph.node_link_graph(data, edges="edges")
+        elif extension == ".gexf":
+            candidate_graph = nx.MultiDiGraph(nx.read_gexf(file_path))
+        else:
+            raise ValueError(f"不支持的文件格式: {extension}。仅支持 .gexf 或 .json。")
 
-        # 最终校验
-        if self.graph_processor.graph is None:
-            raise RuntimeError("图结构加载失败：未成功设置图对象。")
+        sidecar_path = os.path.join(os.path.dirname(file_path), "execution_plan.json")
+        sidecar_plan = None
+        if os.path.isfile(sidecar_path):
+            with open(sidecar_path, "r", encoding="utf-8") as f:
+                sidecar_plan = json.load(f)
+            if not isinstance(sidecar_plan, dict):
+                raise ValueError("Invalid execution_plan.json.")
+        if embedded_plan is not None and sidecar_plan is not None and embedded_plan != sidecar_plan:
+            raise ValueError("Embedded execution plan does not match execution_plan.json.")
+        # 两份计划都存在时要求完全一致，防止把旧侧车文件误配到新图。恢复函数
+        # 还会核对稳定节点身份、数据端口、方法签名、效果声明及控制依赖。
+        saved_plan = sidecar_plan if sidecar_plan is not None else embedded_plan
+        if saved_plan is not None:
+            restore_execution_plan(candidate_graph, self.methods, saved_plan)
+        else:
+            if any("_atf_uid" in d for _, d in candidate_graph.nodes(data=True)):
+                raise ValueError("A model with persistent node UIDs requires a saved execution plan (embedded JSON or execution_plan.json).")
+            # 旧文件第一次载入时选择并冻结保守顺序；这不是每次推理时根据当前
+            # 节点插入顺序重新决定语义。JSON 和 GEXF 都采用相同规则：带新 UID
+            # 却没有保存计划时直接拒绝，不能把损坏的新模型误认作旧模型重建顺序。
+            compile_execution_plan(candidate_graph, self.methods)
 
+        candidate_processor = self._create_graph_processor(candidate_graph)
+        candidate_processor.prepare_execution_plan()
+        # 先在独立候选图/运行器上完成所有校验，失败时原模型仍可继续使用。
+        # 正式替换后同步 PathGenerator 的图引用，避免下一次训练增长旧图。
+        self.graph_processor = candidate_processor
+        if getattr(self, "path_generator", None) is None:
+            self.path_generator = PathGenerator(graph=self.graph, methods=self.methods)
+        else:
+            self.path_generator.graph = self.graph
+            self.path_generator.methods = self.methods
         print(f"模型已成功从 '{path}' 加载。")
         
     def get_graph_entropy(self):
@@ -529,14 +547,14 @@ class AdaptoFlux:
 
     def clone(self):
         """
-        该方法未作测试，谨慎使用！
         创建当前 AdaptoFlux 实例的深拷贝副本。
         
         该方法确保：
         - 图结构（NetworkX MultiDiGraph）被完整复制
         - 方法字典（self.methods）中的函数引用被保留（函数本身不可 deep copy，但引用安全）
-        - 所有数据（values, labels）、历史记录、配置参数均被深拷贝
+        - 所有数据（values, labels）、历史记录、配置参数和执行计划均被深拷贝
         - graph_processor 和 path_generator 等内部组件被重新初始化以绑定新图和方法池
+        - 方法函数引用保留；函数闭包引用的外部状态不会因此产生独立环境
         
         返回:
             AdaptoFlux: 一个与当前实例完全独立的新实例
@@ -549,13 +567,9 @@ class AdaptoFlux:
             if attr in {'graph_processor', 'path_generator', 'model_trainer'}:
                 continue  # 跳过，后面单独处理
             if attr == 'methods':
-                # methods 中的 'function' 是函数对象，不能 deepcopy，但可以浅拷贝引用（安全）
-                cloned.methods = {}
-                for name, info in value.items():
-                    cloned.methods[name] = copy.copy(info)  # 浅拷贝 dict，保留 function 引用
-            elif attr == 'graph':
-                # NetworkX 图必须用 copy.deepcopy 才能完全独立
-                cloned.graph = copy.deepcopy(value)
+                # 深拷贝效果声明等列表/字典；Python 函数仍保留同一个引用。
+                # 所以模型副本有独立的图和计划，但不会自动获得独立的闭包环境。
+                cloned.methods = copy.deepcopy(value)
             else:
                 try:
                     setattr(cloned, attr, copy.deepcopy(value))
@@ -564,15 +578,26 @@ class AdaptoFlux:
                     setattr(cloned, attr, copy.copy(value))
 
         # 重新初始化 graph_processor，绑定新图和新方法池
+        self.graph_processor.prepare_execution_plan()
         cloned.graph_processor = GraphProcessor(
-            graph=cloned.graph,
+            graph=copy.deepcopy(self.graph),
             methods=cloned.methods,
-            collapse_method=cloned.graph_processor.collapse_manager.collapse_method
+            collapse_method=self.graph_processor.collapse_manager.collapse_method,
         )
+        cloned.graph_processor.collapse_manager = copy.deepcopy(self.graph_processor.collapse_manager)
+        cloned.graph_processor.prepare_execution_plan()
 
-        # 可选：重置 path_generator 和 model_trainer（它们通常是临时对象）
-        cloned.path_generator = None
-        cloned.model_trainer = ModelTrainer(adaptoflux_instance=cloned)
+        if getattr(self, "path_generator", None) is not None:
+            cloned.path_generator = copy.copy(self.path_generator)
+            for name, value in self.path_generator.__dict__.items():
+                if name not in {"graph", "methods"}:
+                    setattr(cloned.path_generator, name, copy.deepcopy(value))
+            cloned.path_generator.graph = cloned.graph
+            cloned.path_generator.methods = cloned.methods
+        else:
+            cloned.path_generator = PathGenerator(graph=cloned.graph, methods=cloned.methods)
+        # 训练会话的优化器状态不属于模型副本，后续需要训练时应重新绑定训练器。
+        cloned.model_trainer = None
 
         return cloned
 
@@ -580,9 +605,15 @@ class AdaptoFlux:
         """
         安全地更新方法池，并同步到所有子组件。
         """
-        self.methods = new_methods
-        # ✅ 关键：同步更新子组件
+        # 先规范化全部声明，任何条目非法时都不更改当前方法池；通过后再同步。
+        # 手工构造的方法字典、装饰器元数据和旧的无声明方法使用同一解释规则。
+        normalized = {name: {**info, "effects": effects_for_method(info)}
+                      for name, info in new_methods.items()}
+        # 先由运行器持有实例锁，在候选图上验证新方法池。若签名或效果声明不合法，
+        # 此处直接抛错，self.methods 和 PathGenerator 仍保留已接受的旧方法池。
+        # 不能直接赋值 graph_processor.methods，否则会绕过它的锁和验证边界。
         if hasattr(self, 'graph_processor'):
-            self.graph_processor.methods = new_methods
-        if hasattr(self, 'path_generator'):
-            self.path_generator.methods = new_methods
+            self.graph_processor.set_methods(normalized)
+        self.methods = normalized
+        if getattr(self, 'path_generator', None) is not None:
+            self.path_generator.methods = normalized

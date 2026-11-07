@@ -211,9 +211,8 @@ class EffectTrainingTests(unittest.TestCase):
         composite = EvolvedMethod("stateful", af.graph, af.methods,
                                   dict(name="stateful", output_count=1))
         self.assertEqual(composite.effects, dict(kind="declared", reads=["env"], writes=["env"]))
-        root = Path(__file__).resolve().parents[1] / "tmp" / "effect_training_tests"
-        root.mkdir(parents=True, exist_ok=True)
-        with tempfile.TemporaryDirectory(dir=root) as folder:
+        # 临时模型放到系统临时目录，离开上下文后清理，避免给仓库留下测试产物。
+        with tempfile.TemporaryDirectory(prefix="atf-effect-training-") as folder:
             composite.save(folder)
             path = Path(folder) / "stateful.json"
             payload = json.loads(path.read_text(encoding="utf-8"))
@@ -269,9 +268,7 @@ class EffectTrainingTests(unittest.TestCase):
         af, _ = make_case()
         composite = EvolvedMethod("stateful", af.graph, af.methods,
                                   dict(name="stateful", output_count=1))
-        root = Path(__file__).resolve().parents[1] / "tmp" / "effect_training_tests"
-        root.mkdir(parents=True, exist_ok=True)
-        with tempfile.TemporaryDirectory(dir=root) as folder:
+        with tempfile.TemporaryDirectory(prefix="atf-effect-training-") as folder:
             composite.save(folder)
             changed = {name: dict(info) for name, info in af.methods.items()}
             changed["noop"]["effects"] = dict(kind="pure", reads=[], writes=[])
@@ -284,9 +281,7 @@ class EffectTrainingTests(unittest.TestCase):
         af, _ = make_case()
         composite = EvolvedMethod("stateful", af.graph, af.methods,
                                   dict(name="stateful", output_count=1))
-        root = Path(__file__).resolve().parents[1] / "tmp" / "effect_training_tests"
-        root.mkdir(parents=True, exist_ok=True)
-        with tempfile.TemporaryDirectory(dir=root) as folder:
+        with tempfile.TemporaryDirectory(prefix="atf-effect-training-") as folder:
             composite.save(folder)
             path = Path(folder) / "stateful.json"
             payload = json.loads(path.read_text(encoding="utf-8"))
@@ -297,9 +292,7 @@ class EffectTrainingTests(unittest.TestCase):
 
     def test_composite_load_migrates_legacy_without_plan_or_uids(self):
         af, state = make_case()
-        root = Path(__file__).resolve().parents[1] / "tmp" / "effect_training_tests"
-        root.mkdir(parents=True, exist_ok=True)
-        with tempfile.TemporaryDirectory(dir=root) as folder:
+        with tempfile.TemporaryDirectory(prefix="atf-effect-training-") as folder:
             base = Path(folder) / "legacy"
             payload = nx.node_link_data(af.graph, edges="edges")
             self.assertTrue(all("_atf_uid" not in node for node in payload["nodes"]))

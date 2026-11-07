@@ -1,7 +1,8 @@
 """核验效果声明和保存重载：顺序改变不能悄悄改变外部状态的可观察结果。
 
 测试采用两个不交换的状态操作（先加一、再乘二）及后续读取；结果不只检查
-输出形状，还检查真实状态访问顺序。临时文件只创建在当前 ATF 的 tmp 目录。
+输出形状，还检查真实状态访问顺序。临时文件使用系统临时目录，并在测试结束后
+自动清理；测试不会在仓库中创建临时产物目录。
 """
 import contextlib
 import io
@@ -19,16 +20,11 @@ from ATF.GraphProcessor.execution_plan import export_execution_plan
 from ATF.methods.decorators import method_profile
 
 
-ROOT = Path(__file__).resolve().parents[1]
-
-
 class EffectPersistenceTests(unittest.TestCase):
     def setUp(self):
-        scratch = ROOT / "tmp"
-        scratch.mkdir(exist_ok=True)
-        self.directory = tempfile.TemporaryDirectory(prefix="effect-persistence-", dir=scratch)
+        # 不指定dir，由tempfile选择系统临时位置；addCleanup保证断言失败时也清理。
+        self.directory = tempfile.TemporaryDirectory(prefix="atf-effect-persistence-")
         self.path = Path(self.directory.name).resolve()
-        assert self.path.parent == scratch.resolve()
         self.addCleanup(self.directory.cleanup)
 
     @staticmethod

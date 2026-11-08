@@ -1,0 +1,574 @@
+\section{State-Access Ordering and Execution Consistency}
+\label{app:revision_effects}
+
+The revised executor makes the order of conflicting state accesses part of the
+stored program. This supplies the missing ordering information when two nodes
+have no data-dependency path but access the same external state. The original
+data edges continue to carry method arguments; additional control dependencies
+only determine when a node may execute.
+
+\paragraph{Execution versions and evidence.}
+We distinguish the original executor, denoted V0, from the revision with optional
+effect ordering, denoted V1. The three-level type experiment, matched state
+encoding experiment, CPU scaling measurement, and frozen-controller replay below
+were completed with V0 and frozen protocols. Their measurements remain associated
+with that implementation. V1 is evaluated separately by execution-consistency
+tests and frozen-model regression. The subsequent pool and continual-learning
+studies use their stated search procedures around the ATF representation and
+execution interfaces. This separation identifies which implementation produced
+each result while retaining the original experimental records.
+
+\paragraph{Program order and conflict relation.}
+For each method instance $v$, let $R_v$ and $W_v$ be its declared read and write
+resource sets. Two instances conflict when
+\begin{equation}
+ W_u\cap(R_v\cup W_v)\ne\varnothing
+ \quad\text{or}\quad
+ W_v\cap(R_u\cup W_u)\ne\varnothing .
+\label{eq:revision_conflict}
+\end{equation}
+Before the first evaluation of a candidate, a topological order $\tau$ of its
+data graph is selected and stored using stable node identities. For each
+conflicting pair, control dependencies preserve its order in $\tau$.
+The implementation maintains the latest writer and outstanding readers for
+each resource; transitive dependencies avoid storing every conflicting pair.
+Unknown effects form conservative barriers among effectful methods, and a
+wildcard resource denotes access to all resources. Read-only accesses and
+accesses to disjoint resources retain their available parallelism.
+
+All data and control dependencies point forward in $\tau$, so their union is
+acyclic. Assuming deterministic methods, complete resource declarations, and
+identical initial state and inputs, successful executions respecting this union
+produce the same outputs and final state. To see this, any two legal linear
+extensions are connected by adjacent swaps of incomparable nodes. Such nodes
+have neither a data dependency nor a conflicting state access, so each swap
+preserves their outputs and state updates. Repeating these swaps gives the
+claim. Resource declarations therefore concern actual shared objects, including
+random-number streams and external callbacks; type compatibility alone does
+not establish this property.
+
+\paragraph{Counterexample and positive control.}
+Starting at $s=1$, two independent data branches that perform $s\leftarrow s+1$
+and $s\leftarrow 2s$ yield $4$ or $3$ under opposite topological orders.
+Declaring both branches as writers of the same resource introduces the chosen
+control order and preserves the corresponding result in serial and threaded
+execution. The test suite also uses synchronization barriers to verify that
+independent branches actually overlap in time. It exercises read/write
+conflicts, wildcard resources, zero-output actions, graph edits, storage
+reordering, and failure propagation.
+
+\paragraph{Training and persistence.}
+Candidates are prepared before evaluation. An accepted candidate retains the
+evaluated graph and its semantic order; method replacement preserves stable
+node identities. Graph growth, replacement, and subprogram extraction validate
+the resulting dependencies. Explicitly changing the order creates a new
+candidate to evaluate. Saved plans contain the order, ports, method signatures,
+and effect declarations; loading checks these contracts before replacing the
+live model. The plan stores execution semantics rather than a copy of the
+external environment.
+
+\paragraph{Optional execution mode.}
+V1 enables effect ordering by default and records the choice with the model.
+With ordering enabled, a stateful batch completes one sample's graph before
+the next sample begins. With ordering disabled, scheduling uses data edges
+alone and retains node-major batch processing. Both modes validate graph ports
+and preserve the chosen setting through training, cloning, and persistence.
+Switching modes changes the program's execution contract and calls for a new
+evaluation. The ordering guarantee applies to successful executions; external
+effects already performed before a method failure are not rolled back.
+
+\paragraph{Frozen-model regression.}
+All 90 final models from the type experiment were replayed in V1 on their 20
+initial conditions. Across 1,800 model--initial-state pairs and 4,934 paired
+environment steps, serial and three-worker execution matched in trajectories,
+accuracy, and loss, including the saved V0 outcomes. The associated implementation
+suite passes 85 tests and 46 subtests. These results validate the integrated
+execution path without repeating model training.
+
+\section{Effect of Type Resolution on Stateful Search}
+\label{app:revision_types}
+
+Separating the roles of position and target produces the strongest search result
+in the finite attractor task: 29 of 30 runs solve every initial condition.
+Merging those roles lowers success to 15 of 30, and using scalar types throughout
+lowers it to 1 of 30. The experiment directly exposes the contribution of the
+supplied type prior.
+
+\paragraph{Protocol.}
+The three conditions share the nine original method implementations, arities,
+groups, weights, and registration order. Fine types distinguish
+\texttt{pos\_type} and \texttt{target\_type}. Coarse types merge both into
+\texttt{quantity}, which remains distinct from \texttt{scalar}. Flat types use
+\texttt{scalar} throughout. Every condition retains the goal-aware movement
+operator. Formal seeds are 110600--110629; pilot seed 110500 is excluded.
+Python and NumPy random generators are reset to the run seed for each condition.
+
+GraphEvo uses three fixed-mode initial models, three initialization layers,
+30 refinement steps per cycle, five maximum evolution cycles, the full
+candidate pool, and no method-pool evolution. Early stopping is enabled at zero
+loss. Every evaluation exhaustively visits the 20 ordered pairs
+$(p,g)\in\{-2,-1,0,1,2\}^2$ with $p\ne g$, resetting the external position and
+target for each episode. A graph receives at most four executions to reach the
+target. Loss is mean absolute final distance; a successful run reaches the
+target from all 20 initial states. Evaluation performs no random sampling and
+checks that it leaves the search random-number states unchanged.
+
+\begin{table}[tb]
+\centering
+\small
+\caption{Type resolution under the frozen V0 search protocol. Wilson intervals
+describe the run-level success proportion. Evaluation counts are means per run.}
+\label{tab:revision_types_full}
+\begin{tabular}{lrrrr}
+\toprule
+Type condition & Successes & 95\% interval & Evaluations & Distinct graphs \\
+\midrule
+Fine & 29/30 & 83.3--99.4\% & 59.47 & 6.87 \\
+Coarse & 15/30 & 33.2--66.8\% & 81.67 & 5.60 \\
+Flat & 1/30 & 0.6--16.7\% & 738.67 & 22.77 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Search progression and accounting.}
+Initialization alone succeeds in 20, 4, and 0 runs, respectively. Subsequent
+refinement raises these totals to 29, 15, and 1. Mean final accuracies are
+0.9667, 0.5033, and 0.3200, with mean losses 0.0667, 0.9900, and 1.0667.
+Nominal caps are shared; early stopping and the available replacements produce
+the different actual evaluation budgets in Table~\ref{tab:revision_types_full}.
+``Distinct graph'' means an ordered attributed-graph signature, with literal
+display names removed; it is an accounting unit rather than a functional
+equivalence class.
+
+The V0 early-stop path exits before updating some refinement counters and the
+best-model snapshot. We therefore evaluate the saved final graph and record
+every evaluation callback. Reconstructing accepted replacements from these
+callbacks gives totals of 9, 13, and 19, compared with native logged counters
+of 0, 1, and 18. This bookkeeping correction changes neither the trained graphs
+nor their measured outcomes. The earlier ten-seed experiment in
+Appendix~\ref{sec:appendix_exp4} uses a different episode-sampling protocol and
+remains a separate experiment. The present result establishes improved search
+success from a role-sensitive type prior in this fully enumerated task.
+
+\section{Matched Explicit and Implicit State Encodings}
+\label{app:revision_encoding}
+
+Explicit state threading and implicit external-state access reproduce the same
+program behavior when they preserve the same state-access order. We verified
+this correspondence across all exported records from the type experiment,
+including unsuccessful candidates.
+
+\paragraph{Construction.}
+For each run and condition, the candidate catalogue contains the first 20
+distinct ordered graph signatures encountered, where available, plus the final
+graph even when already recorded. The resulting 1,007 records include repeated
+final graphs. Every state-reading or state-writing method is translated to
+consume and return an immutable $(p,g)$ state token. Token edges follow the
+original serial state-access order, including reads. Each access adds one state
+input/output port and one state edge; a final edge returns the resulting state.
+No computation node is added. Numerical argument binding and output aggregation
+remain unchanged.
+
+\paragraph{Execution comparison.}
+Both encodings use the original native serial executor on the same 20 initial
+conditions and four-step episode limit. Checks compare per-node numerical
+outputs, state after each access, collapsed output, each environment transition,
+and the recorded final loss and accuracy. During explicit execution, the global
+implicit state is deliberately assigned unrelated values, which verifies that
+the token-based methods neither read nor modify it.
+
+\begin{table}[tb]
+\centering
+\small
+\caption{Matched state encoding results using V0. Ratios include the common
+adapter interface and state-token construction/extraction.}
+\label{tab:revision_encoding_full}
+\begin{tabular}{lr}
+\toprule
+Quantity & Result \\
+\midrule
+Candidate/final-model records & 1,007 \\
+Paired initial conditions & 20,140 \\
+Paired environment steps & 70,670 \\
+Native graph executions, both encodings & 141,340 \\
+Numerical, state, trajectory, and metric comparisons & All matched \\
+Mean additional state edges, final graphs & 2.189 \\
+Median explicit/implicit elapsed-time ratio & 1.137 \\
+Ratio interquartile range & 1.086--1.197 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Timing.}
+Each of the 90 final graphs receives one complete warm-up and five paired timing
+repetitions over all 20 episodes; the order of the two encodings is randomized
+within each pair. The median ratio is computed per model and then summarized
+across models. It measures this Python object-port implementation, including
+state construction, dispatch, and extraction. Both conditions use the same
+already-searched candidates, so the experiment isolates encoding and execution;
+independent search over explicit-state programs is a separate comparison.
+
+\section{Controlled Single-Graph Execution Scaling}
+\label{app:revision_scaling}
+
+At fixed depth and batch size, the native executor processes graphs from 32 to
+1,024 operations with consistent numerical results. Over this 32-fold increase
+in operation count, median serial time increases from 2.127 to 70.586\,ms.
+Type compatibility and topological preparation remain small relative to graph
+execution throughout the measured range.
+
+\paragraph{Graph and workload design.}
+Graphs have eight layers of width $w\in\{4,8,16,32,64,128\}$, four input
+features, and batch size 32. There are $8w$ operation nodes, two boundary nodes,
+and $2(8w)+w$ edges. Each operation has two inputs. Its first predecessor slot
+uses a permutation of the preceding layer, ensuring every earlier node
+contributes to an output, while the second slot selects a distinct predecessor.
+The first layer selects two of the four input features. Final-layer outputs
+are aggregated with the native average operation.
+
+Each scalar operation starts from $z=0.6a+0.4b$ and performs 16 iterations of
+$z\leftarrow0.98z+0.02\tanh(0.9z+0.05)$. This is ordinary CPU arithmetic,
+with vectorization disabled. Five independently wired graphs are evaluated at
+each width. Two disjoint pilot graphs precede the frozen formal protocol.
+The input seed is 2026110600, and formal graph seeds at width $w$ are
+$51000+1000w+i$, $i\in\{1,\ldots,5\}$.
+
+\begin{table}[tb]
+\centering
+\small
+\caption{V0 execution scaling, in milliseconds for batch size 32. Values are
+medians over five graph-level timing medians. Speedup is the median of paired
+serial/threaded ratios, so it need not equal the ratio of the displayed medians.}
+\label{tab:revision_scaling_full}
+\begin{tabular}{rrrrrrr}
+\toprule
+Operations & Edges & Type pass & Topology & Serial & 4 threads & Speedup \\
+\midrule
+32 & 68 & 0.051 & 0.090 & 2.127 & 3.478 & 0.610 \\
+64 & 136 & 0.096 & 0.164 & 4.086 & 5.782 & 0.697 \\
+128 & 272 & 0.181 & 0.305 & 8.022 & 10.482 & 0.754 \\
+256 & 544 & 0.367 & 0.598 & 16.894 & 20.436 & 0.805 \\
+512 & 1,088 & 0.753 & 1.163 & 32.621 & 40.360 & 0.808 \\
+1,024 & 2,176 & 1.448 & 2.310 & 70.586 & 82.379 & 0.811 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Measurement and validation.}
+Each metric receives two warm-ups and seven timed calls, with shuffled case and
+metric order. Timing uses a monotonic high-resolution clock without memory
+tracing. The environment is Windows, Python 3.12.9, NumPy 2.1.3, and NetworkX
+3.4.2, on a 16-core/24-thread Intel host. Serial timing includes topological
+sorting; threaded timing includes dependency bookkeeping and thread-pool
+creation/destruction. The separate topology column is not deducted from either.
+The type pass is an additional per-edge measurement calling the native type
+compatibility predicate on declared ports, including the final aggregation
+contract. It is distinct from an integrated whole-program compiler check.
+
+All 30 graphs satisfy the specified counts, depth, acyclicity, input slots, and
+declared type compatibility. A deliberately incompatible signature is rejected.
+Both execution paths agree with an independently implemented NumPy reference
+at tolerance $10^{-12}$; maximum observed reference error is
+$2.22\times10^{-16}$. Separately traced allocation peaks exclude pre-existing
+graphs and inputs, and measure Python allocations rather than total resident
+memory. At 1,024 operations, the median serial and threaded peaks are 3.60 and
+5.33\,MB, respectively.
+
+\paragraph{Observed scaling regime.}
+Four Python threads are slower than serial execution for this scalar CPU
+workload. Together with the earlier simulated I/O experiment, the measurements
+show how operator cost and GIL behavior determine whether available graph
+parallelism improves latency. The largest tested graph has 1,024 operations;
+the point at which preparation dominates has not been reached. Node and edge
+counts grow together at fixed arity, so this experiment measures a controlled
+width expansion rather than an independent edge-density sweep.
+
+\section{Shared-Feature Graphs for Action Selection}
+\label{app:revision_action}
+
+A shared-feature graph provides a concrete connection between numerical
+computation, persistent state, and discrete actions. One feature can contribute
+to several action scores while a mutually exclusive routing stage selects a
+zero-output action node. The same organization supports the four evaluated
+task families.
+
+\paragraph{Controller representation and optimization.}
+For observation $o_t$ and previous internal state $h_t$, the graph computes
+\begin{equation}
+ z_t=\phi_G(o_t,h_t),\qquad
+ q_{t,a}=\sum_j w_{a,j}z_{t,j},\qquad
+ a_t=\operatorname{route}(q_t,u_t),
+\label{eq:revision_action_model}
+\end{equation}
+where $u_t$ supplies any stochastic routing draw. Feature calculations read the
+old state, and a single commit stage writes the state used on the next step.
+The shared configuration has four storage slots arranged as two independent
+state channels. A decay factor of 0.9 and clipping are part of its specified
+update rule.
+
+The training procedure provides the shared-feature interface, per-action score
+branches, route selection, and state-update rule. CMA optimizes the score
+coefficients. Configurations permitting growth propose eight additional
+arithmetic features at each of the prescribed 15\%, 35\%, 55\%, and 75\%
+budget milestones and retarget state-emission sources. Thus learned coefficients
+and proposed features sit within a declared controller template. Models are
+selected by validation success, with progress breaking ties. Each task uses
+its own selected model; the task identity is supplied externally.
+
+\begin{table}[tb]
+\centering
+\small
+\caption{Held-out completion rates (\%) of the selected controller portfolio.
+Each cell uses 2,048 episodes; all five training seeds are shown. The mean row
+averages training seeds within each task.}
+\label{tab:revision_action_seeds}
+\begin{tabular}{rrrrr}
+\toprule
+Training seed & Catch & Maze & Snake & Bird \\
+\midrule
+101 & 99.22 & 96.09 & 91.65 & 100.00 \\
+102 & 61.28 & 75.98 & 0.78 & 100.00 \\
+103 & 100.00 & 98.88 & 32.18 & 100.00 \\
+104 & 100.00 & 96.24 & 93.12 & 100.00 \\
+105 & 100.00 & 96.53 & 0.05 & 100.00 \\
+\midrule
+Mean & 92.10 & 92.74 & 43.55 & 100.00 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The bird results are consistent across seeds, while Snake shows substantial
+variation. In the validation-selected representative system (seed 104), Catch,
+Maze, and Snake have no subsequent feature-growth event; Bird has four. Its
+controller contains 44 features and 88 coefficients. One saved feature is
+$z_{16}=\mathrm{gapBottom}+h_{1,t}$ and contributes with coefficients about
+$+3.001$ and $-6.538$ to the flap and coast scores. This is a direct example of
+shared numerical computation feeding distinct action branches.
+
+\paragraph{Execution on the original ATF backend.}
+The frozen representative Bird graph has 314 nodes and 411 edges. An explicit
+adapter expands the input, constant-trigger, state-commit, and observation
+interfaces, giving 316 nodes and 565 edges. Every feature operation, score
+coefficient, product, and accumulation is represented by graph operations.
+The commit stage sends a completion token to the router; enabled zero-output
+action sinks append action receipts to the step context, and the environment
+advances after graph execution.
+
+We replay the first 20 consecutive episodes of the pre-existing test stream
+(environment seed 200000104; episode indices starting at 83000000), using the
+same external random draw in all executors. Across 20,480 steps, V0 serial
+execution agrees exactly in features, scores, state, actions, and trajectories
+with the portable interpreter and the original kernel function body. A further
+2,048 of these steps match the previously archived trace. All 49 boundary
+probes and their 49 insertion-order-reordered counterparts pass. This replay
+establishes executable transfer of the frozen controller through the stated
+adapter; the performance results in Table~\ref{tab:revision_action_seeds}
+come from the preceding training and held-out evaluation.
+
+\section{Sensitivity to the Atomic Method Pool}
+\label{app:revision_pool}
+
+Expanding the atomic pool changes search quality non-monotonically. The best
+aggregate numerical result in this comparison comes from the six-operation
+core, while the best maze result comes from the nine-operation extension.
+The comparison covers nine pools spanning 6--20 operations.
+
+\paragraph{Pools and search protocol.}
+The core contains identity, addition, subtraction, multiplication, safe
+division, and duplication. The nested extensions add increment, decrement,
+and negation (9 operations); square, ReLU, absolute value, three-input mean,
+maximum, and minimum (15); then sine, cosine, two-argument arctangent, scaling,
+and safe square root (20). Five further pools vary polynomial, reciprocal,
+and trigonometric combinations. All use the same path-feedback procedure:
+each distinct executed route receives one terminal-loss update per episode,
+with exponential averaging coefficient 0.08, temperature 0.12, and exploration
+fraction 0.2. Candidates grow from identity scaffolds with periodic extension.
+
+Numerical tasks use 131,072 training input presentations per task and seed,
+sampled from 2,048 fixed training examples, 256 candidate opportunities, and a
+32-node limit per graph. Twelve tasks are grouped into ten equally weighted
+families, averaging the three equivalent two-variable multiplication tasks
+before aggregation. Four training seeds are used. Testing uses 1,024 inputs;
+the reported pass rate is the fraction with relative error at most 1\%.
+Action tasks use 65,536 training episodes per task and seed, 128 candidate
+opportunities, a 24-node graph limit, and two seeds. Checkpoint evaluation uses
+512 episodes per route-execution mode. Candidate generation, pool composition,
+and path feedback define this subsequent search host.
+
+\begin{table}[tb]
+\centering
+\small
+\caption{Atomic-pool sensitivity. Numerical values average ten task families
+and four seeds. Maze values average two seeds under within-episode route
+switching. Both columns are percentages with their own evaluation units.}
+\label{tab:revision_pool_full}
+\begin{tabular}{lrrr}
+\toprule
+Pool & Operations & Numerical input pass rate & Maze completion \\
+\midrule
+Arithmetic & 6 & 14.01 & 11.43 \\
+Square & 7 & 11.47 & 17.97 \\
+Basic & 9 & 11.45 & 58.01 \\
+Nonlinear & 15 & 7.72 & 37.89 \\
+Extended & 20 & 11.35 & 6.93 \\
+Algebra & 8 & 11.32 & 12.89 \\
+Polynomial & 9 & 8.57 & 31.84 \\
+Balanced & 12 & 13.62 & 27.44 \\
+General & 16 & 10.83 & 14.16 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The numerical comparison comprises 432 records, including 32 reused baseline
+records; the action comparison comprises 144 newly trained runs. The broader
+928-run study additionally includes mechanism ablations, so that total is not
+the number of pool-size comparisons. More operations offer new expressions
+while increasing the alternatives explored within the same nominal budget.
+Because operator identities and arities change with the extensions, the table
+describes practical pool sensitivity. Numerical input pass rates and action
+completion rates are reported separately, preserving their distinct meanings.
+
+\section{Large Continual-Learning Execution Workload}
+\label{app:revision_large}
+
+The ATF execution core also supports a sustained workload with 80 complete
+learning sequences and 3,200 stages. Across training and checkpoint evaluation,
+239,206,400 input rows are checked against native ATF outputs. This measures
+the substrate's use inside a long-running application, complementing the
+single-graph measurements in Appendix~\ref{app:revision_scaling}.
+
+\paragraph{Environment and design.}
+Each observation has 64 fields, one of 32 identities, and six available actions.
+The 40-stage sequence first presents 20 deterministic rule families and then
+returns to them in reverse order. Fields and identities are assigned by seed.
+Training uses 3,072 interactions per stage, at most 2,048 candidates per search
+refresh, 6,144 stored observations, and a 48-derived-node cap per candidate
+graph. Ten seeds are used:
+41113, 41213, 41317, 41423, 41527, 41631, 41741, 41847, 41957, and 42061.
+
+Six mechanisms are compared at concept-library capacity 32: direct reuse,
+small-set retrieval, retrieval with prediction history, reserved fresh search,
+reward/complexity selection, and their full combination. Direct reuse and the
+full combination are additionally run at capacity 128, yielding 80 sequences.
+Paired conditions share observations, exploration draws, action sets, and
+nominal training and candidate limits. ATF executes the risk-expression graph,
+identity lookup, and action-value computation. Candidate proposals, selection,
+and library management are supplied by the surrounding learner.
+
+\paragraph{Counting execution.}
+The completed runs contain 9,830,400 effective training actions and 229,376,000
+checkpoint-evaluation rows. Their sum is the 239,206,400 native-checked input
+rows reported above. One graph call can receive a NumPy array containing many
+rows, and the action-value head can perform a matrix computation within one
+node. Consequently, input rows, graph calls, concept entries, and graph nodes
+are distinct scale measures. The independent training units remain the ten
+seeds.
+
+\paragraph{Learning outcomes.}
+Learning cost is the earliest checkpoint after which both balanced risk accuracy
+of at least 90\% and optimal-action rate of at least 80\% in the carrying
+condition are maintained. Unsuccessful stages receive the fixed cost 3,200.
+A rule/first-or-return configuration counts as mastered when at least eight
+of ten seeds meet the criterion, giving 40 configurations in total.
+
+\begin{table}[tb]
+\centering
+\small
+\caption{Continual-learning results across ten paired seeds. Lower cost and
+training loss are better. Loss is accumulated reward shortfall relative to an
+oracle action over the 40 stages.}
+\label{tab:revision_large_results}
+\begin{tabular}{lrrrr}
+\toprule
+Mechanism (capacity) & Mean cost & Return cost & Training loss & Mastered/40 \\
+\midrule
+Direct reuse (32) & 1,792.32 & 1,749.76 & 62,809.12 & 21 \\
+Small-set retrieval (32) & 1,777.60 & 1,762.56 & 62,942.44 & 21 \\
+Retrieval + history (32) & 1,720.32 & 1,648.00 & 62,617.83 & 23 \\
+Reserved fresh search (32) & 1,817.92 & 1,739.52 & 63,083.45 & 21 \\
+Reward/complexity (32) & 1,800.64 & 1,767.68 & 62,681.52 & 21 \\
+Full combination (32) & 1,855.04 & 1,802.88 & 63,203.22 & 20 \\
+Direct reuse (128) & 1,691.52 & 1,512.96 & 61,926.77 & 21 \\
+Full combination (128) & 1,683.20 & 1,472.00 & 61,921.29 & 21 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The prespecified advantage criterion for the full combination at capacity 32
+requires at least eight of ten seeds to reduce cost by at least 10\%, without
+increasing average training loss. It is not met: zero seeds attain the cost
+threshold, mean cost increases by 3.50\%, and loss increases by approximately
+0.63\%. Retrieval with history has the lowest mean cost among the capacity-32
+conditions. Higher-order parity remains difficult: the three- and five-input
+XOR rules have approximately chance-level risk accuracy, with no seed reaching
+the mastery criterion on first or return exposure.
+
+\paragraph{Completion audit.}
+An initial 16\,MiB serialized-state guard stopped part of the experiment.
+The formal completion uniformly raises that guard to 256\,MiB while retaining
+the training, candidate, and concept budgets. Fifty-two completed sequences
+are preserved with identical file hashes; the remaining 28 start from their
+initial conditions. Three discarded prefixes account for 343,296 additional
+actions, recorded separately from the effective training count. Final frozen
+replay passes for all 80 models. Peak serialized state for the full combination
+is approximately 4.67\,MiB at capacity 32 and 18.67\,MiB at capacity 128.
+
+\section{Reusable-Library Capacity and Return to Earlier Tasks}
+\label{app:revision_capacity}
+
+Larger libraries help most when earlier tasks must be recovered after a longer
+sequence. In the 40-stage experiment, increasing capacity from 32 to 128 lowers
+mean cost by 5.62\% for direct reuse and 9.26\% for the full combination.
+For the full combination, return-stage cost drops from 1,802.88 to 1,472.00
+($18.35\%$), whereas first-exposure cost changes from 1,907.20 to 1,894.40.
+At the same capacity 128, the full combination and direct reuse are close:
+their mean cost difference is $-8.32$, with an exploratory paired-bootstrap
+95\% interval of $[-103.68,87.68]$. The larger-storage result therefore concerns
+capacity and reuse over time.
+
+\paragraph{Paired short-sequence comparison.}
+A complementary experiment changes only the library capacity to 8, 16, 32, or
+64, retaining the learner, tasks, admission and replacement rules, search
+budgets, and five training seeds. Three five-stage relationship sequences per
+seed give 60 sequences, 300 stages, and 460,800 interactions. Transfer cost
+averages the new-identity and return stages; a failure receives the fixed cost
+1,600. This is a paired capacity sensitivity test on the same seeds.
+
+\begin{table}[tb]
+\centering
+\small
+\caption{Short-sequence library capacity comparison. The actual peak counts
+show whether the configured limit was reached. All capacities master 14 of the
+15 sequence-stage configurations under the frozen criterion.}
+\label{tab:revision_capacity_short}
+\begin{tabular}{rrrrr}
+\toprule
+Capacity & Transfer cost & Training loss & Mastered/15 & Peak entries \\
+\midrule
+8 & 226.13 & 2,993.39 & 14 & 8 \\
+16 & 238.93 & 3,000.39 & 14 & 16 \\
+32 & 234.67 & 2,997.98 & 14 & 21 \\
+64 & 234.67 & 2,997.98 & 14 & 21 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Increasing capacity in these short sequences produces no stable learning gain.
+All three larger-capacity conditions have zero of five seeds achieving the
+prespecified 20\% transfer-cost improvement. Capacities 32 and 64 generate
+identical models, learning curves, libraries, and action trajectories in all
+15 paired sequences because occupancy never exceeds 21 entries. Meanwhile,
+the mean final single-model derived-node count is 15.87, 15.20, 15.19, and 15.19.
+Library capacity controls retained reusable structures; the final selected
+graph can remain small even when the collection of stored structures grows.
+
+\paragraph{Evidence organization.}
+The four V0 supplement records are organized under the relative artifact
+directories \path{experiments/rebuttal_20261106/type_search},
+\path{state_encoding}, \path{scaling}, and \path{action_example}; each contains
+its protocol, source-version record, and measurements. The subsequent studies
+are identified by their controller portfolio, atomic-pool sensitivity,
+40-stage continual-learning, and short-sequence capacity protocols. Their
+source snapshots and row-count audits distinguish training, evaluation, and
+diagnostic records. The results above use only completed formal records;
+planned extensions and withdrawn records do not enter the tables.

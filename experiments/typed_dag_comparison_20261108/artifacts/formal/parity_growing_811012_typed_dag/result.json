@@ -1,0 +1,516 @@
+{
+  "backend": "typed_dag",
+  "library": "growing",
+  "family": "parity",
+  "seed": 811012,
+  "budget_per_stage": 256,
+  "stages": [
+    {
+      "stage": 1,
+      "success": false,
+      "training_success": false,
+      "training_mse": 0.5,
+      "test_mse": 0.5,
+      "first_training_success_evaluation": null,
+      "evaluations": 256,
+      "unique_genotypes": 210,
+      "rejected_expanded_size_proposals": 0,
+      "expanded_ops": 1,
+      "active_nodes": 1,
+      "training_primitive_calls": 9136,
+      "verification_primitive_calls": 16,
+      "registry_before": {
+        "subtract": {
+          "input_types": [
+            "scalar",
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "absolute": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "multiply": {
+          "input_types": [
+            "scalar",
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "one_minus": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "add": {
+          "input_types": [
+            "scalar",
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        }
+      },
+      "best_program": {
+        "input_types": [
+          "scalar",
+          "scalar",
+          "scalar",
+          "scalar"
+        ],
+        "nodes": [
+          {
+            "method": "multiply",
+            "inputs": [
+              0,
+              0
+            ]
+          },
+          {
+            "method": "one_minus",
+            "inputs": [
+              0
+            ]
+          },
+          {
+            "method": "add",
+            "inputs": [
+              2,
+              1
+            ]
+          },
+          {
+            "method": "subtract",
+            "inputs": [
+              5,
+              6
+            ]
+          },
+          {
+            "method": "absolute",
+            "inputs": [
+              1
+            ]
+          },
+          {
+            "method": "absolute",
+            "inputs": [
+              2
+            ]
+          },
+          {
+            "method": "add",
+            "inputs": [
+              6,
+              1
+            ]
+          },
+          {
+            "method": "absolute",
+            "inputs": [
+              2
+            ]
+          }
+        ],
+        "output": 11
+      },
+      "final_prediction": [
+        0.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        1.0
+      ],
+      "trace_hash": "0ab990a700a28cb4d3cab58efc82e5b39c229d8133cd4d79c4835f2099b9f3f9",
+      "setup_seconds": 3.00002284348011e-07,
+      "compile_seconds": 0.011166099749971181,
+      "execution_seconds": 0.006525500153657049,
+      "module_added": null,
+      "admission_seconds": 2.00001522898674e-07
+    },
+    {
+      "stage": 2,
+      "success": false,
+      "training_success": false,
+      "training_mse": 0.375,
+      "test_mse": 0.375,
+      "first_training_success_evaluation": null,
+      "evaluations": 256,
+      "unique_genotypes": 209,
+      "rejected_expanded_size_proposals": 0,
+      "expanded_ops": 4,
+      "active_nodes": 4,
+      "training_primitive_calls": 11872,
+      "verification_primitive_calls": 64,
+      "registry_before": {
+        "subtract": {
+          "input_types": [
+            "scalar",
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "absolute": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "multiply": {
+          "input_types": [
+            "scalar",
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "one_minus": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "add": {
+          "input_types": [
+            "scalar",
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        }
+      },
+      "best_program": {
+        "input_types": [
+          "scalar",
+          "scalar",
+          "scalar",
+          "scalar"
+        ],
+        "nodes": [
+          {
+            "method": "multiply",
+            "inputs": [
+              0,
+              2
+            ]
+          },
+          {
+            "method": "multiply",
+            "inputs": [
+              2,
+              0
+            ]
+          },
+          {
+            "method": "absolute",
+            "inputs": [
+              1
+            ]
+          },
+          {
+            "method": "multiply",
+            "inputs": [
+              6,
+              5
+            ]
+          },
+          {
+            "method": "add",
+            "inputs": [
+              5,
+              1
+            ]
+          },
+          {
+            "method": "subtract",
+            "inputs": [
+              5,
+              4
+            ]
+          },
+          {
+            "method": "subtract",
+            "inputs": [
+              0,
+              8
+            ]
+          },
+          {
+            "method": "absolute",
+            "inputs": [
+              7
+            ]
+          }
+        ],
+        "output": 11
+      },
+      "final_prediction": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        1.0
+      ],
+      "trace_hash": "6c6f38a4ba900f991da285fd9caf94839479bf30c088acd4774e1e318a5f2914",
+      "setup_seconds": 2.00001522898674e-07,
+      "compile_seconds": 0.011510300042573363,
+      "execution_seconds": 0.006801100040320307,
+      "module_added": null,
+      "admission_seconds": 3.00002284348011e-07
+    },
+    {
+      "stage": 3,
+      "success": false,
+      "training_success": false,
+      "training_mse": 0.5,
+      "test_mse": 0.5,
+      "first_training_success_evaluation": null,
+      "evaluations": 256,
+      "unique_genotypes": 217,
+      "rejected_expanded_size_proposals": 0,
+      "expanded_ops": 1,
+      "active_nodes": 1,
+      "training_primitive_calls": 8944,
+      "verification_primitive_calls": 16,
+      "registry_before": {
+        "subtract": {
+          "input_types": [
+            "scalar",
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "absolute": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "multiply": {
+          "input_types": [
+            "scalar",
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "one_minus": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "add": {
+          "input_types": [
+            "scalar",
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        }
+      },
+      "best_program": {
+        "input_types": [
+          "scalar",
+          "scalar",
+          "scalar",
+          "scalar"
+        ],
+        "nodes": [
+          {
+            "method": "add",
+            "inputs": [
+              0,
+              0
+            ]
+          },
+          {
+            "method": "absolute",
+            "inputs": [
+              1
+            ]
+          },
+          {
+            "method": "absolute",
+            "inputs": [
+              3
+            ]
+          },
+          {
+            "method": "one_minus",
+            "inputs": [
+              1
+            ]
+          },
+          {
+            "method": "absolute",
+            "inputs": [
+              7
+            ]
+          },
+          {
+            "method": "one_minus",
+            "inputs": [
+              3
+            ]
+          },
+          {
+            "method": "subtract",
+            "inputs": [
+              0,
+              7
+            ]
+          },
+          {
+            "method": "one_minus",
+            "inputs": [
+              0
+            ]
+          }
+        ],
+        "output": 11
+      },
+      "final_prediction": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "trace_hash": "293c8157e4eeceb478b0825dc6cc74948dd8be27b2918e2cc576d0d97ea54f27",
+      "setup_seconds": 2.00001522898674e-07,
+      "compile_seconds": 0.010922899993602186,
+      "execution_seconds": 0.0062579993973486125,
+      "module_added": null,
+      "admission_seconds": 6.00004568696022e-07
+    }
+  ],
+  "wall_seconds": 0.09874929999932647,
+  "registry_final": {
+    "subtract": {
+      "input_types": [
+        "scalar",
+        "scalar"
+      ],
+      "output_types": [
+        "scalar"
+      ],
+      "expanded_cost": 1
+    },
+    "absolute": {
+      "input_types": [
+        "scalar"
+      ],
+      "output_types": [
+        "scalar"
+      ],
+      "expanded_cost": 1
+    },
+    "multiply": {
+      "input_types": [
+        "scalar",
+        "scalar"
+      ],
+      "output_types": [
+        "scalar"
+      ],
+      "expanded_cost": 1
+    },
+    "one_minus": {
+      "input_types": [
+        "scalar"
+      ],
+      "output_types": [
+        "scalar"
+      ],
+      "expanded_cost": 1
+    },
+    "add": {
+      "input_types": [
+        "scalar",
+        "scalar"
+      ],
+      "output_types": [
+        "scalar"
+      ],
+      "expanded_cost": 1
+    }
+  }
+}

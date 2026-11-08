@@ -1,0 +1,365 @@
+{
+  "study": "Action-effect anchoring mode sensitivity",
+  "effect_check_source_sha256": "868e8952b1b7f919b7666fe7f88125657d3384a0cdc45c11d3a1d6e0435063d7",
+  "action_source_sha256": "a85f68904c5bb93eb1c0bec05c1b6066f8449525eef7e3151b070c68a170f5c9",
+  "independent_process_per_mode": true,
+  "modes": [
+    {
+      "mode": "unoptimized",
+      "linker": "py",
+      "optimizer": null,
+      "pytensor_version": "3.3.8",
+      "effect_output_and_unanchored_probes": {
+        "success": true,
+        "result": {
+          "pytensor_anchored_effects": {
+            "positions": [
+              1,
+              7,
+              7
+            ],
+            "action_order": [
+              1,
+              2
+            ],
+            "sink_invocations": 6
+          },
+          "pytensor_unanchored_branch": {
+            "callbacks": 0,
+            "position": 0
+          },
+          "atf_zero_output_sinks": {
+            "positions": [
+              1,
+              7,
+              7
+            ],
+            "action_order": [
+              1,
+              2
+            ],
+            "sink_invocations": 6
+          },
+          "common_permits": [
+            [
+              true,
+              false
+            ],
+            [
+              false,
+              true
+            ],
+            [
+              false,
+              false
+            ]
+          ],
+          "environment_actions": [
+            "position = 2*position + 1",
+            "position = 3*position + 4"
+          ],
+          "all_expected_checks_passed": true,
+          "interpretation": "Both executors perform the same actual environment changes under mutually exclusive permits. ATF retains connected zero-output sinks; this PyTensor adapter adds an output-anchored completion token. This case needs no ordering between simultaneously permitted conflicting actions and proves no automatic concurrency safety."
+        }
+      },
+      "effect_shared_updates_with_empty_outputs": {
+        "success": true,
+        "result": {
+          "positions": [
+            1,
+            7,
+            7
+          ],
+          "action_order": [
+            1,
+            2
+          ],
+          "sink_invocations": 6,
+          "shared_token_after_calls": [
+            2,
+            4,
+            6
+          ],
+          "user_visible_outputs": [
+            [],
+            [],
+            []
+          ],
+          "effect_root": "shared_variable_update",
+          "common_permits": [
+            [
+              true,
+              false
+            ],
+            [
+              false,
+              true
+            ],
+            [
+              false,
+              false
+            ]
+          ],
+          "interpretation": "A shared-variable update anchors both callbacks even when the requested user-visible output list is empty."
+        }
+      },
+      "decorated_python_action_callbacks": {
+        "success": true,
+        "result": {
+          "decorator": "pytensor.wrap_py",
+          "native_generated_op": "FromFunctionOp",
+          "handwritten_op_subclasses": 0,
+          "input_types": [
+            "bool scalar",
+            "int64 scalar"
+          ],
+          "output_types": [
+            "int64 scalar"
+          ],
+          "roots": {
+            "requested_output": {
+              "positions": [
+                1,
+                7,
+                7
+              ],
+              "action_order": [
+                1,
+                2
+              ],
+              "sink_invocations": 6,
+              "user_visible_outputs": [
+                2,
+                2,
+                2
+              ],
+              "shared_token_after_calls": []
+            },
+            "shared_update": {
+              "positions": [
+                1,
+                7,
+                7
+              ],
+              "action_order": [
+                1,
+                2
+              ],
+              "sink_invocations": 6,
+              "user_visible_outputs": [
+                [],
+                [],
+                []
+              ],
+              "shared_token_after_calls": [
+                2,
+                4,
+                6
+              ]
+            },
+            "unanchored": {
+              "positions": [
+                0,
+                0,
+                0
+              ],
+              "action_order": [],
+              "sink_invocations": 0,
+              "user_visible_outputs": [
+                1,
+                1,
+                0
+              ],
+              "shared_token_after_calls": []
+            }
+          },
+          "interpretation": "The public decorator can wrap original Python action callbacks. Both explicit output anchoring and shared updates retain effects; an unanchored callback branch is not executed. A handwritten Op subclass is not necessary for this example."
+        }
+      },
+      "action_source_sha256": "a85f68904c5bb93eb1c0bec05c1b6066f8449525eef7e3151b070c68a170f5c9",
+      "core_source_files_checked": 443,
+      "core_and_action_sources_unchanged": true,
+      "all_checks_passed": true
+    },
+    {
+      "mode": "fast_run",
+      "linker": "py",
+      "optimizer": "fast_run",
+      "pytensor_version": "3.3.8",
+      "effect_output_and_unanchored_probes": {
+        "success": true,
+        "result": {
+          "pytensor_anchored_effects": {
+            "positions": [
+              1,
+              7,
+              7
+            ],
+            "action_order": [
+              1,
+              2
+            ],
+            "sink_invocations": 6
+          },
+          "pytensor_unanchored_branch": {
+            "callbacks": 0,
+            "position": 0
+          },
+          "atf_zero_output_sinks": {
+            "positions": [
+              1,
+              7,
+              7
+            ],
+            "action_order": [
+              1,
+              2
+            ],
+            "sink_invocations": 6
+          },
+          "common_permits": [
+            [
+              true,
+              false
+            ],
+            [
+              false,
+              true
+            ],
+            [
+              false,
+              false
+            ]
+          ],
+          "environment_actions": [
+            "position = 2*position + 1",
+            "position = 3*position + 4"
+          ],
+          "all_expected_checks_passed": true,
+          "interpretation": "Both executors perform the same actual environment changes under mutually exclusive permits. ATF retains connected zero-output sinks; this PyTensor adapter adds an output-anchored completion token. This case needs no ordering between simultaneously permitted conflicting actions and proves no automatic concurrency safety."
+        }
+      },
+      "effect_shared_updates_with_empty_outputs": {
+        "success": true,
+        "result": {
+          "positions": [
+            1,
+            7,
+            7
+          ],
+          "action_order": [
+            1,
+            2
+          ],
+          "sink_invocations": 6,
+          "shared_token_after_calls": [
+            2,
+            4,
+            6
+          ],
+          "user_visible_outputs": [
+            [],
+            [],
+            []
+          ],
+          "effect_root": "shared_variable_update",
+          "common_permits": [
+            [
+              true,
+              false
+            ],
+            [
+              false,
+              true
+            ],
+            [
+              false,
+              false
+            ]
+          ],
+          "interpretation": "A shared-variable update anchors both callbacks even when the requested user-visible output list is empty."
+        }
+      },
+      "decorated_python_action_callbacks": {
+        "success": true,
+        "result": {
+          "decorator": "pytensor.wrap_py",
+          "native_generated_op": "FromFunctionOp",
+          "handwritten_op_subclasses": 0,
+          "input_types": [
+            "bool scalar",
+            "int64 scalar"
+          ],
+          "output_types": [
+            "int64 scalar"
+          ],
+          "roots": {
+            "requested_output": {
+              "positions": [
+                1,
+                7,
+                7
+              ],
+              "action_order": [
+                1,
+                2
+              ],
+              "sink_invocations": 6,
+              "user_visible_outputs": [
+                2,
+                2,
+                2
+              ],
+              "shared_token_after_calls": []
+            },
+            "shared_update": {
+              "positions": [
+                1,
+                7,
+                7
+              ],
+              "action_order": [
+                1,
+                2
+              ],
+              "sink_invocations": 6,
+              "user_visible_outputs": [
+                [],
+                [],
+                []
+              ],
+              "shared_token_after_calls": [
+                2,
+                4,
+                6
+              ]
+            },
+            "unanchored": {
+              "positions": [
+                0,
+                0,
+                0
+              ],
+              "action_order": [],
+              "sink_invocations": 0,
+              "user_visible_outputs": [
+                1,
+                1,
+                0
+              ],
+              "shared_token_after_calls": []
+            }
+          },
+          "interpretation": "The public decorator can wrap original Python action callbacks. Both explicit output anchoring and shared updates retain effects; an unanchored callback branch is not executed. A handwritten Op subclass is not necessary for this example."
+        }
+      },
+      "action_source_sha256": "a85f68904c5bb93eb1c0bec05c1b6066f8449525eef7e3151b070c68a170f5c9",
+      "core_source_files_checked": 443,
+      "core_and_action_sources_unchanged": true,
+      "all_checks_passed": true
+    }
+  ],
+  "action_source_unchanged": true,
+  "all_checks_passed": true,
+  "scope": "Only the small mutually exclusive action-effect example is tested under both optimization modes. This does not validate the complete floating-point controller under FAST_RUN, measure speed, or establish automatic concurrency safety. Effects can be anchored by requested outputs or by shared-variable updates; user-visible completion-token outputs are not required. The native wrap_py decorator also supports these callbacks without a handwritten Op subclass."
+}

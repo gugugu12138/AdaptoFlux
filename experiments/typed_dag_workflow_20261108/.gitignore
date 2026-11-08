@@ -1,0 +1,7 @@
+# 仅纳入这次独立实验的数据；依赖与编译缓存不放入仓库。
+!*.json
+!*.csv
+!results/
+!results/**
+__pycache__/
+*.pyc

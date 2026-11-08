@@ -1,0 +1,254 @@
+{
+  "run_count": 120,
+  "paired_stages": 180,
+  "backend_pair_mismatches": [],
+  "groups": [
+    {
+      "family": "parity",
+      "library": "fixed",
+      "backend": "atf_v0",
+      "stage": 1,
+      "n": 30,
+      "successes": 16,
+      "success_wilson95": [
+        0.36142299619873297,
+        0.6976761109230025
+      ],
+      "mean_first_success_capped": 709.8,
+      "mean_training_primitive_calls": 41115.73333333333,
+      "mean_compile_seconds": 0.15495915341889485,
+      "mean_execution_seconds": 0.23715184988298763,
+      "modules_added": 0
+    },
+    {
+      "family": "parity",
+      "library": "fixed",
+      "backend": "atf_v0",
+      "stage": 2,
+      "n": 30,
+      "successes": 0,
+      "success_wilson95": [
+        0.0,
+        0.11351339317396876
+      ],
+      "mean_first_success_capped": 1025,
+      "mean_training_primitive_calls": 41263.46666666667,
+      "mean_compile_seconds": 0.1535617398893616,
+      "mean_execution_seconds": 0.2364555933260514,
+      "modules_added": 0
+    },
+    {
+      "family": "parity",
+      "library": "fixed",
+      "backend": "atf_v0",
+      "stage": 3,
+      "n": 30,
+      "successes": 0,
+      "success_wilson95": [
+        0.0,
+        0.11351339317396876
+      ],
+      "mean_first_success_capped": 1025,
+      "mean_training_primitive_calls": 41255.46666666667,
+      "mean_compile_seconds": 0.1588709566819792,
+      "mean_execution_seconds": 0.24067188331585687,
+      "modules_added": 0
+    },
+    {
+      "family": "parity",
+      "library": "fixed",
+      "backend": "typed_dag",
+      "stage": 1,
+      "n": 30,
+      "successes": 16,
+      "success_wilson95": [
+        0.36142299619873297,
+        0.6976761109230025
+      ],
+      "mean_first_success_capped": 709.8,
+      "mean_training_primitive_calls": 41115.73333333333,
+      "mean_compile_seconds": 0.09262577640086724,
+      "mean_execution_seconds": 0.0563370465572613,
+      "modules_added": 0
+    },
+    {
+      "family": "parity",
+      "library": "fixed",
+      "backend": "typed_dag",
+      "stage": 2,
+      "n": 30,
+      "successes": 0,
+      "success_wilson95": [
+        0.0,
+        0.11351339317396876
+      ],
+      "mean_first_success_capped": 1025,
+      "mean_training_primitive_calls": 41263.46666666667,
+      "mean_compile_seconds": 0.08370904006490794,
+      "mean_execution_seconds": 0.05167716017846639,
+      "modules_added": 0
+    },
+    {
+      "family": "parity",
+      "library": "fixed",
+      "backend": "typed_dag",
+      "stage": 3,
+      "n": 30,
+      "successes": 0,
+      "success_wilson95": [
+        0.0,
+        0.11351339317396876
+      ],
+      "mean_first_success_capped": 1025,
+      "mean_training_primitive_calls": 41255.46666666667,
+      "mean_compile_seconds": 0.0848181933669063,
+      "mean_execution_seconds": 0.05230411653174087,
+      "modules_added": 0
+    },
+    {
+      "family": "parity",
+      "library": "growing",
+      "backend": "atf_v0",
+      "stage": 1,
+      "n": 30,
+      "successes": 16,
+      "success_wilson95": [
+        0.36142299619873297,
+        0.6976761109230025
+      ],
+      "mean_first_success_capped": 709.8,
+      "mean_training_primitive_calls": 41115.73333333333,
+      "mean_compile_seconds": 0.1672592265647836,
+      "mean_execution_seconds": 0.2566175467412298,
+      "modules_added": 16
+    },
+    {
+      "family": "parity",
+      "library": "growing",
+      "backend": "atf_v0",
+      "stage": 2,
+      "n": 30,
+      "successes": 6,
+      "success_wilson95": [
+        0.0950510717728987,
+        0.3730569641314825
+      ],
+      "mean_first_success_capped": 858.2,
+      "mean_training_primitive_calls": 47235.73333333333,
+      "mean_compile_seconds": 0.17183929995905298,
+      "mean_execution_seconds": 0.4146623533762371,
+      "modules_added": 6
+    },
+    {
+      "family": "parity",
+      "library": "growing",
+      "backend": "atf_v0",
+      "stage": 3,
+      "n": 30,
+      "successes": 1,
+      "success_wilson95": [
+        0.005908590381612455,
+        0.16670390991409173
+      ],
+      "mean_first_success_capped": 1003.6666666666666,
+      "mean_training_primitive_calls": 47836.8,
+      "mean_compile_seconds": 0.18832442321969817,
+      "mean_execution_seconds": 0.4796759232607049,
+      "modules_added": 0
+    },
+    {
+      "family": "parity",
+      "library": "growing",
+      "backend": "typed_dag",
+      "stage": 1,
+      "n": 30,
+      "successes": 16,
+      "success_wilson95": [
+        0.36142299619873297,
+        0.6976761109230025
+      ],
+      "mean_first_success_capped": 709.8,
+      "mean_training_primitive_calls": 41115.73333333333,
+      "mean_compile_seconds": 0.08026805331658883,
+      "mean_execution_seconds": 0.04948458016927664,
+      "modules_added": 16
+    },
+    {
+      "family": "parity",
+      "library": "growing",
+      "backend": "typed_dag",
+      "stage": 2,
+      "n": 30,
+      "successes": 6,
+      "success_wilson95": [
+        0.0950510717728987,
+        0.3730569641314825
+      ],
+      "mean_first_success_capped": 858.2,
+      "mean_training_primitive_calls": 47235.73333333333,
+      "mean_compile_seconds": 0.08170483007755441,
+      "mean_execution_seconds": 0.050812283191286646,
+      "modules_added": 6
+    },
+    {
+      "family": "parity",
+      "library": "growing",
+      "backend": "typed_dag",
+      "stage": 3,
+      "n": 30,
+      "successes": 1,
+      "success_wilson95": [
+        0.005908590381612455,
+        0.16670390991409173
+      ],
+      "mean_first_success_capped": 1003.6666666666666,
+      "mean_training_primitive_calls": 47836.8,
+      "mean_compile_seconds": 0.08858232654553527,
+      "mean_execution_seconds": 0.05554419001370358,
+      "modules_added": 0
+    }
+  ],
+  "cumulative_costs": [
+    {
+      "family": "parity",
+      "library": "fixed",
+      "backend": "atf_v0",
+      "n": 30,
+      "mean_training_primitive_calls_all_stages": 123634.66666666667,
+      "mean_verification_primitive_calls_all_stages": 110.93333333333334,
+      "mean_setup_compile_execute_admission_seconds_all_stages": 1.1817026298434938,
+      "mean_wall_seconds_all_stages": 1.527186006664609
+    },
+    {
+      "family": "parity",
+      "library": "fixed",
+      "backend": "typed_dag",
+      "n": 30,
+      "mean_training_primitive_calls_all_stages": 123634.66666666667,
+      "mean_verification_primitive_calls_all_stages": 110.93333333333334,
+      "mean_setup_compile_execute_admission_seconds_all_stages": 0.42147756976191886,
+      "mean_wall_seconds_all_stages": 0.7689708233364703
+    },
+    {
+      "family": "parity",
+      "library": "growing",
+      "backend": "atf_v0",
+      "n": 30,
+      "mean_training_primitive_calls_all_stages": 136188.26666666666,
+      "mean_verification_primitive_calls_all_stages": 131.73333333333332,
+      "mean_setup_compile_execute_admission_seconds_all_stages": 1.6785712364517773,
+      "mean_wall_seconds_all_stages": 2.049218953338762
+    },
+    {
+      "family": "parity",
+      "library": "growing",
+      "backend": "typed_dag",
+      "n": 30,
+      "mean_training_primitive_calls_all_stages": 136188.26666666666,
+      "mean_verification_primitive_calls_all_stages": 131.73333333333332,
+      "mean_setup_compile_execute_admission_seconds_all_stages": 0.40649458665284327,
+      "mean_wall_seconds_all_stages": 0.7414002600028956
+    }
+  ],
+  "interpretation": "Backend trace equality is a control result, not a synthesis superiority claim. Growing-vs-fixed differences belong to the shared library-admission/search policy."
+}

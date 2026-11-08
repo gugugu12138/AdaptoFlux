@@ -1,0 +1,85 @@
+\documentclass{article} % For LaTeX2e
+\usepackage{iclr2027_conference,times}
+
+% Optional math commands from https://github.com/goodfeli/dlbook_notation.
+\input{math_commands.tex}
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{xcolor}         % colors
+
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{multirow}
+\usepackage{enumitem} % list customisation
+\usepackage{tabularx}
+\usepackage{float}
+\usepackage{needspace}
+% 在 float 等浮动体宏包之后加载，避免重复生成图表超链接目标。
+\usepackage{hyperref}
+\hypersetup{hidelinks,pdfauthor={},pdftitle={AdaptoFlux: A Typed Graph Substrate for Stateful Program Construction and Reuse}}
+
+
+% ---- graphics search path.  Body figures are referenced as images/<file>,
+% ---- so ../nips/ resolves them to the figure folder shared with the other
+% ---- conference versions; a local images/ copy, if present, wins.
+\graphicspath{{images/}{../nips/}}
+
+\lstset{
+    basicstyle=\small\ttfamily, 
+    breaklines=true,            
+    breakatwhitespace=false,    
+    frame=single,              
+    captionpos=b,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{red},
+    showstringspaces=false
+}
+
+\lstdefinestyle{plaincode}{
+    basicstyle=\small\ttfamily,
+    breaklines=true,
+    breakatwhitespace=false,
+    columns=fullflexible,
+    keepspaces=true,
+    numbers=none,
+    frame=none,
+    xleftmargin=0pt,
+    xrightmargin=0pt
+}
+
+\title{AdaptoFlux: A Typed Graph Substrate\\for Stateful Program Construction and Reuse}
+
+% Authors must not appear in the submitted version. They should be hidden
+% as long as the \iclrfinalcopy macro remains commented out below.
+% Non-anonymous submissions will be rejected without review.
+%
+% The NeurIPS source carries no author block (double-blind submission), so the
+% ICLR shell's anonymous author placeholder is kept.
+
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
+
+%\iclrfinalcopy % Uncomment for camera-ready version, but NOT for submission.
+\begin{document}
+
+\maketitle
+\input{rebuttal_revision_main}
+\bibliographystyle{iclr2027_conference}
+% 修订稿使用独立文献库，保留原投稿文献文件，并修正软件名称的拼写和大小写。
+\bibliography{rebuttal_revision_references}
+\clearpage
+\appendix
+\input{rebuttal_revision_supplement}
+\par\medskip
+\input{rebuttal_revision_legacy_appendices}
+\end{document}

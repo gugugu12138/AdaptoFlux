@@ -1,0 +1,231 @@
+{
+  "case_count_per_backend": 1,
+  "paired_stages": 3,
+  "native_candidate_evaluations": 234,
+  "all_paired_traces_match": true,
+  "all_stages_solved_and_verified": true,
+  "common_contracts": {
+    "atf_v0": {
+      "shared_fanout": true,
+      "native_nested_modules": true,
+      "local_replacement_and_recompile": true,
+      "original_compiled_graph_preserved": true,
+      "samples": 5
+    },
+    "pytensor": {
+      "shared_fanout": true,
+      "native_nested_modules": true,
+      "local_replacement_and_recompile": true,
+      "original_compiled_graph_preserved": true,
+      "samples": 5
+    }
+  },
+  "native_interface_probes": {
+    "atf_v0": {
+      "scalar_module": {
+        "status": "accepted",
+        "result": {
+          "outputs": [
+            2.0,
+            4.0,
+            6.0,
+            8.0,
+            10.0
+          ],
+          "expected_outputs": [
+            2.0,
+            4.0,
+            6.0,
+            8.0,
+            10.0
+          ]
+        }
+      },
+      "vector_primitive": {
+        "status": "accepted",
+        "result": [
+          [
+            2.0,
+            3.0
+          ]
+        ]
+      },
+      "vector_single_output_module": {
+        "status": "rejected",
+        "error_type": "ValueError",
+        "message": "Expected single output, got array of size 2"
+      },
+      "wrong_input_rank": {
+        "status": "rejected",
+        "error_type": "ValueError",
+        "message": "Input values must be 2D, got shape (5,)"
+      },
+      "shared_fanout": {
+        "status": "accepted",
+        "result": {
+          "outputs": [
+            2.0,
+            4.0,
+            6.0,
+            8.0,
+            10.0
+          ],
+          "counted_primitive_calls": 5,
+          "expected_calls": 5,
+          "sample_count": 5
+        }
+      },
+      "nested_shared_module": {
+        "status": "accepted",
+        "result": {
+          "outputs": [
+            4.0,
+            8.0,
+            12.0,
+            16.0,
+            20.0
+          ],
+          "counted_primitive_calls": 5,
+          "expected_calls": 5,
+          "sample_count": 5
+        }
+      },
+      "local_replacement": {
+        "status": "accepted",
+        "result": {
+          "original_outputs": [
+            1.0,
+            2.0,
+            3.0,
+            4.0,
+            5.0
+          ],
+          "revised_outputs": [
+            3.0,
+            4.0,
+            5.0,
+            6.0,
+            7.0
+          ],
+          "original_method_unchanged": true,
+          "revised_node": "1_0_add_3"
+        }
+      },
+      "observation_python_method": {
+        "status": "accepted",
+        "result": {
+          "output": 2.5,
+          "input_kind": "Observation"
+        }
+      },
+      "observation_scalar_module": {
+        "status": "accepted",
+        "result": {
+          "output": 2.5,
+          "input_kind": "Observation"
+        }
+      },
+      "observation_wrong_object": {
+        "status": "rejected",
+        "error_type": "RuntimeError",
+        "message": "Error in method 'read_observation' at sample 0: Inputs: [{'value': 2.5}] Error: 'dict' object has no attribute 'value'"
+      },
+      "observation_module_wrong_object": {
+        "status": "rejected",
+        "error_type": "RuntimeError",
+        "message": "Error in method 'read_observation' at sample 0: Inputs: [{'value': 2.5}] Error: 'dict' object has no attribute 'value'"
+      },
+      "append_primitive": {
+        "status": "accepted",
+        "result": {
+          "outputs": [
+            0.0,
+            1.0,
+            4.0,
+            9.0,
+            16.0
+          ],
+          "methods_before": 6,
+          "methods_after": 7,
+          "old_program_unchanged": true
+        }
+      }
+    },
+    "pytensor": {
+      "scalar_module": {
+        "success": true,
+        "observed": 8.0,
+        "input_dtype": "float64",
+        "input_rank": 0,
+        "native_module_class": "OpFromGraph"
+      },
+      "vector_input_output_module": {
+        "success": true,
+        "observed": [
+          2.0,
+          4.0,
+          6.0
+        ],
+        "output_rank": 1,
+        "output_dtype": "float64",
+        "native_module_class": "OpFromGraph"
+      },
+      "rank_incompatible_input_rejected": {
+        "success": true,
+        "observed": "rejected_before_compilation",
+        "error_class": "TypeError",
+        "expected_rank": 0,
+        "supplied_rank": 1
+      },
+      "shared_intermediate_executed_once": {
+        "success": true,
+        "observed": [
+          0.0,
+          2.0,
+          4.0,
+          6.0,
+          8.0
+        ],
+        "samples": 5,
+        "primitive_calls": 5,
+        "two_edges_reference_one_variable": true
+      },
+      "local_replace_preserves_original": {
+        "success": true,
+        "original_before": [
+          0.0,
+          2.0,
+          6.0
+        ],
+        "replaced": [
+          4.0,
+          6.0,
+          10.0
+        ],
+        "original_after": [
+          0.0,
+          2.0,
+          6.0
+        ],
+        "original_graph_unchanged": true
+      },
+      "custom_python_object_type": {
+        "success": true,
+        "observed": 5.0,
+        "wrong_python_class_rejected": true,
+        "error_class": "TypeError",
+        "extension_classes": [
+          "Type",
+          "Op"
+        ],
+        "core_source_modified": false
+      }
+    }
+  },
+  "core_files_modified": {
+    "ATF_V0": 0,
+    "PyTensor": 0
+  },
+  "native_source_hashes_before_after_equal": true,
+  "scope": "Workflow/API coverage. Twelve method-order permutations are coverage cases, not a task-level statistical sample or a state-of-the-art synthesis benchmark."
+}

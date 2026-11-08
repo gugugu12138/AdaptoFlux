@@ -1,0 +1,531 @@
+{
+  "backend": "atf_v0",
+  "library": "fixed",
+  "family": "affine",
+  "seed": 811021,
+  "budget_per_stage": 256,
+  "stages": [
+    {
+      "stage": 1,
+      "success": true,
+      "training_success": true,
+      "training_mse": 0.0,
+      "test_mse": 0.0,
+      "first_training_success_evaluation": 1,
+      "evaluations": 256,
+      "unique_genotypes": 180,
+      "rejected_expanded_size_proposals": 0,
+      "expanded_ops": 2,
+      "active_nodes": 2,
+      "training_primitive_calls": 14331,
+      "verification_primitive_calls": 64,
+      "registry_before": {
+        "increment": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "add_3": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "multiply_by_2": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "multiply_by_05": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "identity": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        }
+      },
+      "best_program": {
+        "input_types": [
+          "scalar"
+        ],
+        "nodes": [
+          {
+            "method": "increment",
+            "inputs": [
+              0
+            ]
+          },
+          {
+            "method": "increment",
+            "inputs": [
+              0
+            ]
+          },
+          {
+            "method": "add_3",
+            "inputs": [
+              1
+            ]
+          },
+          {
+            "method": "identity",
+            "inputs": [
+              1
+            ]
+          },
+          {
+            "method": "identity",
+            "inputs": [
+              2
+            ]
+          },
+          {
+            "method": "increment",
+            "inputs": [
+              2
+            ]
+          },
+          {
+            "method": "multiply_by_05",
+            "inputs": [
+              6
+            ]
+          },
+          {
+            "method": "multiply_by_2",
+            "inputs": [
+              1
+            ]
+          }
+        ],
+        "output": 8
+      },
+      "final_prediction": [
+        -13.375,
+        -12.375,
+        -11.375,
+        -10.375,
+        -9.375,
+        -8.375,
+        -7.375,
+        -6.375,
+        -5.375,
+        -4.375,
+        -3.375,
+        -2.375,
+        -1.375,
+        -0.375,
+        0.625,
+        1.625,
+        2.625,
+        3.625,
+        4.625,
+        5.625,
+        6.625,
+        7.625,
+        8.625,
+        9.625,
+        10.625,
+        11.625,
+        12.625,
+        13.625,
+        14.625,
+        15.625,
+        16.625,
+        17.625
+      ],
+      "trace_hash": "3560da42410e79be0cd514e0420608317e7f1fb017f92673393907a359723226",
+      "setup_seconds": 8.000002708286047e-06,
+      "compile_seconds": 0.022792499454226345,
+      "execution_seconds": 0.03499369998462498,
+      "module_added": null,
+      "admission_seconds": 2.00001522898674e-07
+    },
+    {
+      "stage": 2,
+      "success": false,
+      "training_success": false,
+      "training_mse": 1.0,
+      "test_mse": 1.0,
+      "first_training_success_evaluation": null,
+      "evaluations": 256,
+      "unique_genotypes": 194,
+      "rejected_expanded_size_proposals": 0,
+      "expanded_ops": 3,
+      "active_nodes": 3,
+      "training_primitive_calls": 9146,
+      "verification_primitive_calls": 96,
+      "registry_before": {
+        "increment": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "add_3": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "multiply_by_2": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "multiply_by_05": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "identity": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        }
+      },
+      "best_program": {
+        "input_types": [
+          "scalar"
+        ],
+        "nodes": [
+          {
+            "method": "identity",
+            "inputs": [
+              0
+            ]
+          },
+          {
+            "method": "multiply_by_2",
+            "inputs": [
+              0
+            ]
+          },
+          {
+            "method": "add_3",
+            "inputs": [
+              0
+            ]
+          },
+          {
+            "method": "identity",
+            "inputs": [
+              2
+            ]
+          },
+          {
+            "method": "add_3",
+            "inputs": [
+              2
+            ]
+          },
+          {
+            "method": "add_3",
+            "inputs": [
+              5
+            ]
+          },
+          {
+            "method": "multiply_by_05",
+            "inputs": [
+              3
+            ]
+          },
+          {
+            "method": "add_3",
+            "inputs": [
+              5
+            ]
+          }
+        ],
+        "output": 8
+      },
+      "final_prediction": [
+        -9.375,
+        -8.375,
+        -7.375,
+        -6.375,
+        -5.375,
+        -4.375,
+        -3.375,
+        -2.375,
+        -1.375,
+        -0.375,
+        0.625,
+        1.625,
+        2.625,
+        3.625,
+        4.625,
+        5.625,
+        6.625,
+        7.625,
+        8.625,
+        9.625,
+        10.625,
+        11.625,
+        12.625,
+        13.625,
+        14.625,
+        15.625,
+        16.625,
+        17.625,
+        18.625,
+        19.625,
+        20.625,
+        21.625
+      ],
+      "trace_hash": "9e53724290fa675e63cc76d8e1d062eec591d3d0cc6eb2679da2325805a73de2",
+      "setup_seconds": 3.5999692045152187e-06,
+      "compile_seconds": 0.0198814999894239,
+      "execution_seconds": 0.030083600198850036,
+      "module_added": null,
+      "admission_seconds": 2.00001522898674e-07
+    },
+    {
+      "stage": 3,
+      "success": false,
+      "training_success": false,
+      "training_mse": 0.25,
+      "test_mse": 0.25,
+      "first_training_success_evaluation": null,
+      "evaluations": 256,
+      "unique_genotypes": 180,
+      "rejected_expanded_size_proposals": 0,
+      "expanded_ops": 2,
+      "active_nodes": 2,
+      "training_primitive_calls": 12087,
+      "verification_primitive_calls": 64,
+      "registry_before": {
+        "increment": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "add_3": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "multiply_by_2": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "multiply_by_05": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "identity": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        }
+      },
+      "best_program": {
+        "input_types": [
+          "scalar"
+        ],
+        "nodes": [
+          {
+            "method": "add_3",
+            "inputs": [
+              0
+            ]
+          },
+          {
+            "method": "add_3",
+            "inputs": [
+              1
+            ]
+          },
+          {
+            "method": "identity",
+            "inputs": [
+              1
+            ]
+          },
+          {
+            "method": "identity",
+            "inputs": [
+              2
+            ]
+          },
+          {
+            "method": "identity",
+            "inputs": [
+              3
+            ]
+          },
+          {
+            "method": "identity",
+            "inputs": [
+              1
+            ]
+          },
+          {
+            "method": "add_3",
+            "inputs": [
+              2
+            ]
+          },
+          {
+            "method": "identity",
+            "inputs": [
+              1
+            ]
+          }
+        ],
+        "output": 8
+      },
+      "final_prediction": [
+        -4.6875,
+        -4.1875,
+        -3.6875,
+        -3.1875,
+        -2.6875,
+        -2.1875,
+        -1.6875,
+        -1.1875,
+        -0.6875,
+        -0.1875,
+        0.3125,
+        0.8125,
+        1.3125,
+        1.8125,
+        2.3125,
+        2.8125,
+        3.3125,
+        3.8125,
+        4.3125,
+        4.8125,
+        5.3125,
+        5.8125,
+        6.3125,
+        6.8125,
+        7.3125,
+        7.8125,
+        8.3125,
+        8.8125,
+        9.3125,
+        9.8125,
+        10.3125,
+        10.8125
+      ],
+      "trace_hash": "57b8b2d864c1777b2472e2fd62884fff76d628225e7a3bc745ba5f44c3a5059e",
+      "setup_seconds": 3.700028173625469e-06,
+      "compile_seconds": 0.02084269985789433,
+      "execution_seconds": 0.03200999996624887,
+      "module_added": null,
+      "admission_seconds": 6.00004568696022e-07
+    }
+  ],
+  "wall_seconds": 0.2097790000261739,
+  "registry_final": {
+    "increment": {
+      "input_types": [
+        "scalar"
+      ],
+      "output_types": [
+        "scalar"
+      ],
+      "expanded_cost": 1
+    },
+    "add_3": {
+      "input_types": [
+        "scalar"
+      ],
+      "output_types": [
+        "scalar"
+      ],
+      "expanded_cost": 1
+    },
+    "multiply_by_2": {
+      "input_types": [
+        "scalar"
+      ],
+      "output_types": [
+        "scalar"
+      ],
+      "expanded_cost": 1
+    },
+    "multiply_by_05": {
+      "input_types": [
+        "scalar"
+      ],
+      "output_types": [
+        "scalar"
+      ],
+      "expanded_cost": 1
+    },
+    "identity": {
+      "input_types": [
+        "scalar"
+      ],
+      "output_types": [
+        "scalar"
+      ],
+      "expanded_cost": 1
+    }
+  }
+}

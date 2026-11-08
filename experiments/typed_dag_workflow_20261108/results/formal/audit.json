@@ -1,0 +1,25 @@
+{
+  "all_checks_passed": true,
+  "audit_source_sha256": "191f96603a73b163a4d005a53bf780e5011fb8c0b25e66f91913b3eee5f16626",
+  "backends_executed_during_audit": false,
+  "run_count": 24,
+  "case_count_per_backend": 12,
+  "distinct_primitive_orders": 11,
+  "duplicate_order_seed_groups": [
+    [
+      811109,
+      811111
+    ]
+  ],
+  "paired_stages_checked": 36,
+  "independently_replayed_candidate_evaluations": 2638,
+  "disk_snapshots_independently_reconstructed": 24,
+  "stage_2_reuses_learned_1_in_every_run": true,
+  "stage_3_reuses_learned_2_and_nested_learned_1_in_every_run": true,
+  "frozen_native_source_files_matched": {
+    "ATF_V0": 38,
+    "PyTensor": 405
+  },
+  "frozen_experiment_source_hashes_matched": true,
+  "scope": "Deterministic workflow coverage with twelve order-seeded cases and eleven distinct primitive orders. JSON snapshots belong to shared outer logic; they are not native framework serialization. The audit verifies numeric traces and stored declarations, not all native interface probes."
+}

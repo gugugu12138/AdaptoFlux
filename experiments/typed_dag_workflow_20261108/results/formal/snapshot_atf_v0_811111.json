@@ -1,0 +1,70 @@
+{
+  "modules": [
+    {
+      "name": "learned_1",
+      "program": {
+        "input_types": [
+          "scalar"
+        ],
+        "nodes": [
+          {
+            "method": "increment",
+            "inputs": [
+              0
+            ]
+          },
+          {
+            "method": "multiply_by_2",
+            "inputs": [
+              1
+            ]
+          }
+        ],
+        "output": 2
+      }
+    },
+    {
+      "name": "learned_2",
+      "program": {
+        "input_types": [
+          "scalar"
+        ],
+        "nodes": [
+          {
+            "method": "learned_1",
+            "inputs": [
+              0
+            ]
+          },
+          {
+            "method": "add_3",
+            "inputs": [
+              1
+            ]
+          }
+        ],
+        "output": 2
+      }
+    }
+  ],
+  "program": {
+    "input_types": [
+      "scalar"
+    ],
+    "nodes": [
+      {
+        "method": "learned_2",
+        "inputs": [
+          0
+        ]
+      },
+      {
+        "method": "multiply_by_05",
+        "inputs": [
+          1
+        ]
+      }
+    ],
+    "output": 2
+  }
+}

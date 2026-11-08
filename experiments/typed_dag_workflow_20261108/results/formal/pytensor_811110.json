@@ -1,0 +1,1382 @@
+{
+  "backend": "pytensor",
+  "order_seed": 811110,
+  "stages": [
+    {
+      "stage": 1,
+      "evaluations": 25,
+      "program": {
+        "input_types": [
+          "scalar"
+        ],
+        "nodes": [
+          {
+            "method": "increment",
+            "inputs": [
+              0
+            ]
+          },
+          {
+            "method": "multiply_by_2",
+            "inputs": [
+              1
+            ]
+          }
+        ],
+        "output": 2
+      },
+      "expanded_calls": 2,
+      "verification_prediction": [
+        -13.375,
+        -12.375,
+        -11.375,
+        -10.375,
+        -9.375,
+        -8.375,
+        -7.375,
+        -6.375,
+        -5.375,
+        -4.375,
+        -3.375,
+        -2.375,
+        -1.375,
+        -0.375,
+        0.625,
+        1.625,
+        2.625,
+        3.625,
+        4.625,
+        5.625,
+        6.625,
+        7.625,
+        8.625,
+        9.625,
+        10.625,
+        11.625,
+        12.625,
+        13.625,
+        14.625,
+        15.625,
+        16.625,
+        17.625
+      ],
+      "verification_mse": 0.0,
+      "module_dependencies": [],
+      "module_added": "learned_1"
+    },
+    {
+      "stage": 2,
+      "evaluations": 38,
+      "program": {
+        "input_types": [
+          "scalar"
+        ],
+        "nodes": [
+          {
+            "method": "learned_1",
+            "inputs": [
+              0
+            ]
+          },
+          {
+            "method": "add_3",
+            "inputs": [
+              1
+            ]
+          }
+        ],
+        "output": 2
+      },
+      "expanded_calls": 3,
+      "verification_prediction": [
+        -10.375,
+        -9.375,
+        -8.375,
+        -7.375,
+        -6.375,
+        -5.375,
+        -4.375,
+        -3.375,
+        -2.375,
+        -1.375,
+        -0.375,
+        0.625,
+        1.625,
+        2.625,
+        3.625,
+        4.625,
+        5.625,
+        6.625,
+        7.625,
+        8.625,
+        9.625,
+        10.625,
+        11.625,
+        12.625,
+        13.625,
+        14.625,
+        15.625,
+        16.625,
+        17.625,
+        18.625,
+        19.625,
+        20.625
+      ],
+      "verification_mse": 0.0,
+      "module_dependencies": [
+        "learned_1"
+      ],
+      "module_added": "learned_2"
+    },
+    {
+      "stage": 3,
+      "evaluations": 50,
+      "program": {
+        "input_types": [
+          "scalar"
+        ],
+        "nodes": [
+          {
+            "method": "learned_2",
+            "inputs": [
+              0
+            ]
+          },
+          {
+            "method": "multiply_by_05",
+            "inputs": [
+              1
+            ]
+          }
+        ],
+        "output": 2
+      },
+      "expanded_calls": 4,
+      "verification_prediction": [
+        -5.1875,
+        -4.6875,
+        -4.1875,
+        -3.6875,
+        -3.1875,
+        -2.6875,
+        -2.1875,
+        -1.6875,
+        -1.1875,
+        -0.6875,
+        -0.1875,
+        0.3125,
+        0.8125,
+        1.3125,
+        1.8125,
+        2.3125,
+        2.8125,
+        3.3125,
+        3.8125,
+        4.3125,
+        4.8125,
+        5.3125,
+        5.8125,
+        6.3125,
+        6.8125,
+        7.3125,
+        7.8125,
+        8.3125,
+        8.8125,
+        9.3125,
+        9.8125,
+        10.3125
+      ],
+      "verification_mse": 0.0,
+      "module_dependencies": [
+        "learned_2"
+      ],
+      "module_added": null
+    }
+  ],
+  "trace": [
+    {
+      "stage": 1,
+      "evaluation": 1,
+      "chain": [
+        "multiply_by_05"
+      ],
+      "mse": 11.59375,
+      "expanded_calls": 1
+    },
+    {
+      "stage": 1,
+      "evaluation": 2,
+      "chain": [
+        "add_3"
+      ],
+      "mse": 4.375,
+      "expanded_calls": 1
+    },
+    {
+      "stage": 1,
+      "evaluation": 3,
+      "chain": [
+        "identity"
+      ],
+      "mse": 7.375,
+      "expanded_calls": 1
+    },
+    {
+      "stage": 1,
+      "evaluation": 4,
+      "chain": [
+        "increment"
+      ],
+      "mse": 4.375,
+      "expanded_calls": 1
+    },
+    {
+      "stage": 1,
+      "evaluation": 5,
+      "chain": [
+        "multiply_by_2"
+      ],
+      "mse": 4.0,
+      "expanded_calls": 1
+    },
+    {
+      "stage": 1,
+      "evaluation": 6,
+      "chain": [
+        "multiply_by_05",
+        "multiply_by_05"
+      ],
+      "mse": 14.3359375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 1,
+      "evaluation": 7,
+      "chain": [
+        "multiply_by_05",
+        "add_3"
+      ],
+      "mse": 8.59375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 1,
+      "evaluation": 8,
+      "chain": [
+        "multiply_by_05",
+        "identity"
+      ],
+      "mse": 11.59375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 1,
+      "evaluation": 9,
+      "chain": [
+        "multiply_by_05",
+        "increment"
+      ],
+      "mse": 8.59375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 1,
+      "evaluation": 10,
+      "chain": [
+        "multiply_by_05",
+        "multiply_by_2"
+      ],
+      "mse": 7.375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 1,
+      "evaluation": 11,
+      "chain": [
+        "add_3",
+        "multiply_by_05"
+      ],
+      "mse": 7.84375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 1,
+      "evaluation": 12,
+      "chain": [
+        "add_3",
+        "add_3"
+      ],
+      "mse": 19.375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 1,
+      "evaluation": 13,
+      "chain": [
+        "add_3",
+        "identity"
+      ],
+      "mse": 4.375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 1,
+      "evaluation": 14,
+      "chain": [
+        "add_3",
+        "increment"
+      ],
+      "mse": 7.375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 1,
+      "evaluation": 15,
+      "chain": [
+        "add_3",
+        "multiply_by_2"
+      ],
+      "mse": 16.0,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 1,
+      "evaluation": 16,
+      "chain": [
+        "identity",
+        "multiply_by_05"
+      ],
+      "mse": 11.59375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 1,
+      "evaluation": 17,
+      "chain": [
+        "identity",
+        "add_3"
+      ],
+      "mse": 4.375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 1,
+      "evaluation": 18,
+      "chain": [
+        "identity",
+        "identity"
+      ],
+      "mse": 7.375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 1,
+      "evaluation": 19,
+      "chain": [
+        "identity",
+        "increment"
+      ],
+      "mse": 4.375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 1,
+      "evaluation": 20,
+      "chain": [
+        "identity",
+        "multiply_by_2"
+      ],
+      "mse": 4.0,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 1,
+      "evaluation": 21,
+      "chain": [
+        "increment",
+        "multiply_by_05"
+      ],
+      "mse": 9.84375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 1,
+      "evaluation": 22,
+      "chain": [
+        "increment",
+        "add_3"
+      ],
+      "mse": 7.375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 1,
+      "evaluation": 23,
+      "chain": [
+        "increment",
+        "identity"
+      ],
+      "mse": 4.375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 1,
+      "evaluation": 24,
+      "chain": [
+        "increment",
+        "increment"
+      ],
+      "mse": 3.375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 1,
+      "evaluation": 25,
+      "chain": [
+        "increment",
+        "multiply_by_2"
+      ],
+      "mse": 0.0,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 2,
+      "evaluation": 1,
+      "chain": [
+        "multiply_by_05"
+      ],
+      "mse": 32.59375,
+      "expanded_calls": 1
+    },
+    {
+      "stage": 2,
+      "evaluation": 2,
+      "chain": [
+        "add_3"
+      ],
+      "mse": 7.375,
+      "expanded_calls": 1
+    },
+    {
+      "stage": 2,
+      "evaluation": 3,
+      "chain": [
+        "identity"
+      ],
+      "mse": 28.375,
+      "expanded_calls": 1
+    },
+    {
+      "stage": 2,
+      "evaluation": 4,
+      "chain": [
+        "increment"
+      ],
+      "mse": 19.375,
+      "expanded_calls": 1
+    },
+    {
+      "stage": 2,
+      "evaluation": 5,
+      "chain": [
+        "multiply_by_2"
+      ],
+      "mse": 25.0,
+      "expanded_calls": 1
+    },
+    {
+      "stage": 2,
+      "evaluation": 6,
+      "chain": [
+        "learned_1"
+      ],
+      "mse": 9.0,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 2,
+      "evaluation": 7,
+      "chain": [
+        "multiply_by_05",
+        "multiply_by_05"
+      ],
+      "mse": 35.3359375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 2,
+      "evaluation": 8,
+      "chain": [
+        "multiply_by_05",
+        "add_3"
+      ],
+      "mse": 11.59375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 2,
+      "evaluation": 9,
+      "chain": [
+        "multiply_by_05",
+        "identity"
+      ],
+      "mse": 32.59375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 2,
+      "evaluation": 10,
+      "chain": [
+        "multiply_by_05",
+        "increment"
+      ],
+      "mse": 23.59375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 2,
+      "evaluation": 11,
+      "chain": [
+        "multiply_by_05",
+        "multiply_by_2"
+      ],
+      "mse": 28.375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 2,
+      "evaluation": 12,
+      "chain": [
+        "multiply_by_05",
+        "learned_1"
+      ],
+      "mse": 12.375,
+      "expanded_calls": 3
+    },
+    {
+      "stage": 2,
+      "evaluation": 13,
+      "chain": [
+        "add_3",
+        "multiply_by_05"
+      ],
+      "mse": 19.84375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 2,
+      "evaluation": 14,
+      "chain": [
+        "add_3",
+        "add_3"
+      ],
+      "mse": 4.375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 2,
+      "evaluation": 15,
+      "chain": [
+        "add_3",
+        "identity"
+      ],
+      "mse": 7.375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 2,
+      "evaluation": 16,
+      "chain": [
+        "add_3",
+        "increment"
+      ],
+      "mse": 4.375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 2,
+      "evaluation": 17,
+      "chain": [
+        "add_3",
+        "multiply_by_2"
+      ],
+      "mse": 1.0,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 2,
+      "evaluation": 18,
+      "chain": [
+        "add_3",
+        "learned_1"
+      ],
+      "mse": 9.0,
+      "expanded_calls": 3
+    },
+    {
+      "stage": 2,
+      "evaluation": 19,
+      "chain": [
+        "identity",
+        "multiply_by_05"
+      ],
+      "mse": 32.59375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 2,
+      "evaluation": 20,
+      "chain": [
+        "identity",
+        "add_3"
+      ],
+      "mse": 7.375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 2,
+      "evaluation": 21,
+      "chain": [
+        "identity",
+        "identity"
+      ],
+      "mse": 28.375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 2,
+      "evaluation": 22,
+      "chain": [
+        "identity",
+        "increment"
+      ],
+      "mse": 19.375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 2,
+      "evaluation": 23,
+      "chain": [
+        "identity",
+        "multiply_by_2"
+      ],
+      "mse": 25.0,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 2,
+      "evaluation": 24,
+      "chain": [
+        "identity",
+        "learned_1"
+      ],
+      "mse": 9.0,
+      "expanded_calls": 3
+    },
+    {
+      "stage": 2,
+      "evaluation": 25,
+      "chain": [
+        "increment",
+        "multiply_by_05"
+      ],
+      "mse": 27.84375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 2,
+      "evaluation": 26,
+      "chain": [
+        "increment",
+        "add_3"
+      ],
+      "mse": 4.375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 2,
+      "evaluation": 27,
+      "chain": [
+        "increment",
+        "identity"
+      ],
+      "mse": 19.375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 2,
+      "evaluation": 28,
+      "chain": [
+        "increment",
+        "increment"
+      ],
+      "mse": 12.375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 2,
+      "evaluation": 29,
+      "chain": [
+        "increment",
+        "multiply_by_2"
+      ],
+      "mse": 9.0,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 2,
+      "evaluation": 30,
+      "chain": [
+        "increment",
+        "learned_1"
+      ],
+      "mse": 1.0,
+      "expanded_calls": 3
+    },
+    {
+      "stage": 2,
+      "evaluation": 31,
+      "chain": [
+        "multiply_by_2",
+        "multiply_by_05"
+      ],
+      "mse": 28.375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 2,
+      "evaluation": 32,
+      "chain": [
+        "multiply_by_2",
+        "add_3"
+      ],
+      "mse": 4.0,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 2,
+      "evaluation": 33,
+      "chain": [
+        "multiply_by_2",
+        "identity"
+      ],
+      "mse": 25.0,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 2,
+      "evaluation": 34,
+      "chain": [
+        "multiply_by_2",
+        "increment"
+      ],
+      "mse": 16.0,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 2,
+      "evaluation": 35,
+      "chain": [
+        "multiply_by_2",
+        "multiply_by_2"
+      ],
+      "mse": 38.5,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 2,
+      "evaluation": 36,
+      "chain": [
+        "multiply_by_2",
+        "learned_1"
+      ],
+      "mse": 22.5,
+      "expanded_calls": 3
+    },
+    {
+      "stage": 2,
+      "evaluation": 37,
+      "chain": [
+        "learned_1",
+        "multiply_by_05"
+      ],
+      "mse": 19.375,
+      "expanded_calls": 3
+    },
+    {
+      "stage": 2,
+      "evaluation": 38,
+      "chain": [
+        "learned_1",
+        "add_3"
+      ],
+      "mse": 0.0,
+      "expanded_calls": 3
+    },
+    {
+      "stage": 3,
+      "evaluation": 1,
+      "chain": [
+        "multiply_by_05"
+      ],
+      "mse": 7.09375,
+      "expanded_calls": 1
+    },
+    {
+      "stage": 3,
+      "evaluation": 2,
+      "chain": [
+        "add_3"
+      ],
+      "mse": 0.25,
+      "expanded_calls": 1
+    },
+    {
+      "stage": 3,
+      "evaluation": 3,
+      "chain": [
+        "identity"
+      ],
+      "mse": 6.25,
+      "expanded_calls": 1
+    },
+    {
+      "stage": 3,
+      "evaluation": 4,
+      "chain": [
+        "increment"
+      ],
+      "mse": 2.25,
+      "expanded_calls": 1
+    },
+    {
+      "stage": 3,
+      "evaluation": 5,
+      "chain": [
+        "multiply_by_2"
+      ],
+      "mse": 9.625,
+      "expanded_calls": 1
+    },
+    {
+      "stage": 3,
+      "evaluation": 6,
+      "chain": [
+        "learned_1"
+      ],
+      "mse": 3.625,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 3,
+      "evaluation": 7,
+      "chain": [
+        "learned_2"
+      ],
+      "mse": 9.625,
+      "expanded_calls": 3
+    },
+    {
+      "stage": 3,
+      "evaluation": 8,
+      "chain": [
+        "multiply_by_05",
+        "multiply_by_05"
+      ],
+      "mse": 8.1484375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 3,
+      "evaluation": 9,
+      "chain": [
+        "multiply_by_05",
+        "add_3"
+      ],
+      "mse": 1.09375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 3,
+      "evaluation": 10,
+      "chain": [
+        "multiply_by_05",
+        "identity"
+      ],
+      "mse": 7.09375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 3,
+      "evaluation": 11,
+      "chain": [
+        "multiply_by_05",
+        "increment"
+      ],
+      "mse": 3.09375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 3,
+      "evaluation": 12,
+      "chain": [
+        "multiply_by_05",
+        "multiply_by_2"
+      ],
+      "mse": 6.25,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 3,
+      "evaluation": 13,
+      "chain": [
+        "multiply_by_05",
+        "learned_1"
+      ],
+      "mse": 0.25,
+      "expanded_calls": 3
+    },
+    {
+      "stage": 3,
+      "evaluation": 14,
+      "chain": [
+        "multiply_by_05",
+        "learned_2"
+      ],
+      "mse": 6.25,
+      "expanded_calls": 4
+    },
+    {
+      "stage": 3,
+      "evaluation": 15,
+      "chain": [
+        "add_3",
+        "multiply_by_05"
+      ],
+      "mse": 1.84375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 3,
+      "evaluation": 16,
+      "chain": [
+        "add_3",
+        "add_3"
+      ],
+      "mse": 12.25,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 3,
+      "evaluation": 17,
+      "chain": [
+        "add_3",
+        "identity"
+      ],
+      "mse": 0.25,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 3,
+      "evaluation": 18,
+      "chain": [
+        "add_3",
+        "increment"
+      ],
+      "mse": 2.25,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 3,
+      "evaluation": 19,
+      "chain": [
+        "add_3",
+        "multiply_by_2"
+      ],
+      "mse": 15.625,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 3,
+      "evaluation": 20,
+      "chain": [
+        "add_3",
+        "learned_1"
+      ],
+      "mse": 33.625,
+      "expanded_calls": 3
+    },
+    {
+      "stage": 3,
+      "evaluation": 21,
+      "chain": [
+        "add_3",
+        "learned_2"
+      ],
+      "mse": 75.625,
+      "expanded_calls": 4
+    },
+    {
+      "stage": 3,
+      "evaluation": 22,
+      "chain": [
+        "identity",
+        "multiply_by_05"
+      ],
+      "mse": 7.09375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 3,
+      "evaluation": 23,
+      "chain": [
+        "identity",
+        "add_3"
+      ],
+      "mse": 0.25,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 3,
+      "evaluation": 24,
+      "chain": [
+        "identity",
+        "identity"
+      ],
+      "mse": 6.25,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 3,
+      "evaluation": 25,
+      "chain": [
+        "identity",
+        "increment"
+      ],
+      "mse": 2.25,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 3,
+      "evaluation": 26,
+      "chain": [
+        "identity",
+        "multiply_by_2"
+      ],
+      "mse": 9.625,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 3,
+      "evaluation": 27,
+      "chain": [
+        "identity",
+        "learned_1"
+      ],
+      "mse": 3.625,
+      "expanded_calls": 3
+    },
+    {
+      "stage": 3,
+      "evaluation": 28,
+      "chain": [
+        "identity",
+        "learned_2"
+      ],
+      "mse": 9.625,
+      "expanded_calls": 4
+    },
+    {
+      "stage": 3,
+      "evaluation": 29,
+      "chain": [
+        "increment",
+        "multiply_by_05"
+      ],
+      "mse": 4.84375,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 3,
+      "evaluation": 30,
+      "chain": [
+        "increment",
+        "add_3"
+      ],
+      "mse": 2.25,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 3,
+      "evaluation": 31,
+      "chain": [
+        "increment",
+        "identity"
+      ],
+      "mse": 2.25,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 3,
+      "evaluation": 32,
+      "chain": [
+        "increment",
+        "increment"
+      ],
+      "mse": 0.25,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 3,
+      "evaluation": 33,
+      "chain": [
+        "increment",
+        "multiply_by_2"
+      ],
+      "mse": 3.625,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 3,
+      "evaluation": 34,
+      "chain": [
+        "increment",
+        "learned_1"
+      ],
+      "mse": 5.625,
+      "expanded_calls": 3
+    },
+    {
+      "stage": 3,
+      "evaluation": 35,
+      "chain": [
+        "increment",
+        "learned_2"
+      ],
+      "mse": 23.625,
+      "expanded_calls": 4
+    },
+    {
+      "stage": 3,
+      "evaluation": 36,
+      "chain": [
+        "multiply_by_2",
+        "multiply_by_05"
+      ],
+      "mse": 6.25,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 3,
+      "evaluation": 37,
+      "chain": [
+        "multiply_by_2",
+        "add_3"
+      ],
+      "mse": 3.625,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 3,
+      "evaluation": 38,
+      "chain": [
+        "multiply_by_2",
+        "identity"
+      ],
+      "mse": 9.625,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 3,
+      "evaluation": 39,
+      "chain": [
+        "multiply_by_2",
+        "increment"
+      ],
+      "mse": 5.625,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 3,
+      "evaluation": 40,
+      "chain": [
+        "multiply_by_2",
+        "multiply_by_2"
+      ],
+      "mse": 36.625,
+      "expanded_calls": 2
+    },
+    {
+      "stage": 3,
+      "evaluation": 41,
+      "chain": [
+        "multiply_by_2",
+        "learned_1"
+      ],
+      "mse": 30.625,
+      "expanded_calls": 3
+    },
+    {
+      "stage": 3,
+      "evaluation": 42,
+      "chain": [
+        "multiply_by_2",
+        "learned_2"
+      ],
+      "mse": 36.625,
+      "expanded_calls": 4
+    },
+    {
+      "stage": 3,
+      "evaluation": 43,
+      "chain": [
+        "learned_1",
+        "multiply_by_05"
+      ],
+      "mse": 2.25,
+      "expanded_calls": 3
+    },
+    {
+      "stage": 3,
+      "evaluation": 44,
+      "chain": [
+        "learned_1",
+        "add_3"
+      ],
+      "mse": 9.625,
+      "expanded_calls": 3
+    },
+    {
+      "stage": 3,
+      "evaluation": 45,
+      "chain": [
+        "learned_1",
+        "identity"
+      ],
+      "mse": 3.625,
+      "expanded_calls": 3
+    },
+    {
+      "stage": 3,
+      "evaluation": 46,
+      "chain": [
+        "learned_1",
+        "increment"
+      ],
+      "mse": 3.625,
+      "expanded_calls": 3
+    },
+    {
+      "stage": 3,
+      "evaluation": 47,
+      "chain": [
+        "learned_1",
+        "multiply_by_2"
+      ],
+      "mse": 32.625,
+      "expanded_calls": 3
+    },
+    {
+      "stage": 3,
+      "evaluation": 48,
+      "chain": [
+        "learned_1",
+        "learned_1"
+      ],
+      "mse": 42.625,
+      "expanded_calls": 4
+    },
+    {
+      "stage": 3,
+      "evaluation": 49,
+      "chain": [
+        "learned_1",
+        "learned_2"
+      ],
+      "mse": 72.625,
+      "expanded_calls": 5
+    },
+    {
+      "stage": 3,
+      "evaluation": 50,
+      "chain": [
+        "learned_2",
+        "multiply_by_05"
+      ],
+      "mse": 0.0,
+      "expanded_calls": 4
+    }
+  ],
+  "declarative_snapshot": {
+    "modules": [
+      {
+        "name": "learned_1",
+        "program": {
+          "input_types": [
+            "scalar"
+          ],
+          "nodes": [
+            {
+              "method": "increment",
+              "inputs": [
+                0
+              ]
+            },
+            {
+              "method": "multiply_by_2",
+              "inputs": [
+                1
+              ]
+            }
+          ],
+          "output": 2
+        }
+      },
+      {
+        "name": "learned_2",
+        "program": {
+          "input_types": [
+            "scalar"
+          ],
+          "nodes": [
+            {
+              "method": "learned_1",
+              "inputs": [
+                0
+              ]
+            },
+            {
+              "method": "add_3",
+              "inputs": [
+                1
+              ]
+            }
+          ],
+          "output": 2
+        }
+      }
+    ],
+    "program": {
+      "input_types": [
+        "scalar"
+      ],
+      "nodes": [
+        {
+          "method": "learned_2",
+          "inputs": [
+            0
+          ]
+        },
+        {
+          "method": "multiply_by_05",
+          "inputs": [
+            1
+          ]
+        }
+      ],
+      "output": 2
+    }
+  },
+  "snapshot_reconstruction_passed": true,
+  "wall_seconds": 0.5507663000025786
+}

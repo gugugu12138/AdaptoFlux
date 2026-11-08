@@ -1,0 +1,686 @@
+{
+  "backend": "atf_v0",
+  "library": "growing",
+  "family": "affine",
+  "seed": 811010,
+  "budget_per_stage": 256,
+  "stages": [
+    {
+      "stage": 1,
+      "success": true,
+      "training_success": true,
+      "training_mse": 0.0,
+      "test_mse": 0.0,
+      "first_training_success_evaluation": 187,
+      "evaluations": 256,
+      "unique_genotypes": 188,
+      "rejected_expanded_size_proposals": 0,
+      "expanded_ops": 2,
+      "active_nodes": 2,
+      "training_primitive_calls": 8262,
+      "verification_primitive_calls": 64,
+      "registry_before": {
+        "increment": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "add_3": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "multiply_by_2": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "multiply_by_05": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "identity": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        }
+      },
+      "best_program": {
+        "input_types": [
+          "scalar"
+        ],
+        "nodes": [
+          {
+            "method": "multiply_by_05",
+            "inputs": [
+              0
+            ]
+          },
+          {
+            "method": "increment",
+            "inputs": [
+              0
+            ]
+          },
+          {
+            "method": "add_3",
+            "inputs": [
+              0
+            ]
+          },
+          {
+            "method": "multiply_by_05",
+            "inputs": [
+              2
+            ]
+          },
+          {
+            "method": "increment",
+            "inputs": [
+              0
+            ]
+          },
+          {
+            "method": "increment",
+            "inputs": [
+              1
+            ]
+          },
+          {
+            "method": "multiply_by_05",
+            "inputs": [
+              4
+            ]
+          },
+          {
+            "method": "multiply_by_2",
+            "inputs": [
+              5
+            ]
+          }
+        ],
+        "output": 8
+      },
+      "final_prediction": [
+        -13.375,
+        -12.375,
+        -11.375,
+        -10.375,
+        -9.375,
+        -8.375,
+        -7.375,
+        -6.375,
+        -5.375,
+        -4.375,
+        -3.375,
+        -2.375,
+        -1.375,
+        -0.375,
+        0.625,
+        1.625,
+        2.625,
+        3.625,
+        4.625,
+        5.625,
+        6.625,
+        7.625,
+        8.625,
+        9.625,
+        10.625,
+        11.625,
+        12.625,
+        13.625,
+        14.625,
+        15.625,
+        16.625,
+        17.625
+      ],
+      "trace_hash": "211ba12ad8ffc74036db65afc719f30b06329d5cb58bdb09ca0b7c7d5cee306a",
+      "setup_seconds": 5.199981387704611e-06,
+      "compile_seconds": 0.018813500297255814,
+      "execution_seconds": 0.028738400025758892,
+      "module_added": "learned_stage_1",
+      "admission_seconds": 6.220000796020031e-05
+    },
+    {
+      "stage": 2,
+      "success": true,
+      "training_success": true,
+      "training_mse": 0.0,
+      "test_mse": 0.0,
+      "first_training_success_evaluation": 236,
+      "evaluations": 256,
+      "unique_genotypes": 200,
+      "rejected_expanded_size_proposals": 0,
+      "expanded_ops": 3,
+      "active_nodes": 2,
+      "training_primitive_calls": 13413,
+      "verification_primitive_calls": 96,
+      "registry_before": {
+        "increment": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "add_3": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "multiply_by_2": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "multiply_by_05": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "identity": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "learned_stage_1": {
+          "body": {
+            "input_types": [
+              "scalar"
+            ],
+            "nodes": [
+              {
+                "method": "increment",
+                "inputs": [
+                  0
+                ]
+              },
+              {
+                "method": "multiply_by_2",
+                "inputs": [
+                  1
+                ]
+              }
+            ],
+            "output": 2
+          },
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 2,
+          "source_stage": 1,
+          "source_program_hash": "12ebede616eda7f0102187457a06623325c8df5abe454f3f8e6fba0937a6da35"
+        }
+      },
+      "best_program": {
+        "input_types": [
+          "scalar"
+        ],
+        "nodes": [
+          {
+            "method": "add_3",
+            "inputs": [
+              0
+            ]
+          },
+          {
+            "method": "add_3",
+            "inputs": [
+              1
+            ]
+          },
+          {
+            "method": "learned_stage_1",
+            "inputs": [
+              0
+            ]
+          },
+          {
+            "method": "identity",
+            "inputs": [
+              3
+            ]
+          },
+          {
+            "method": "multiply_by_05",
+            "inputs": [
+              3
+            ]
+          },
+          {
+            "method": "identity",
+            "inputs": [
+              5
+            ]
+          },
+          {
+            "method": "add_3",
+            "inputs": [
+              4
+            ]
+          },
+          {
+            "method": "add_3",
+            "inputs": [
+              3
+            ]
+          }
+        ],
+        "output": 8
+      },
+      "final_prediction": [
+        -10.375,
+        -9.375,
+        -8.375,
+        -7.375,
+        -6.375,
+        -5.375,
+        -4.375,
+        -3.375,
+        -2.375,
+        -1.375,
+        -0.375,
+        0.625,
+        1.625,
+        2.625,
+        3.625,
+        4.625,
+        5.625,
+        6.625,
+        7.625,
+        8.625,
+        9.625,
+        10.625,
+        11.625,
+        12.625,
+        13.625,
+        14.625,
+        15.625,
+        16.625,
+        17.625,
+        18.625,
+        19.625,
+        20.625
+      ],
+      "trace_hash": "3e0863b44064a409dfcbeb7f12568757922c218abe735db1108cbfcdf6abbe63",
+      "setup_seconds": 2.540001878514886e-05,
+      "compile_seconds": 0.02450419939123094,
+      "execution_seconds": 0.0815555999870412,
+      "module_added": "learned_stage_2",
+      "admission_seconds": 6.340001709759235e-05
+    },
+    {
+      "stage": 3,
+      "success": false,
+      "training_success": false,
+      "training_mse": 0.25,
+      "test_mse": 0.25,
+      "first_training_success_evaluation": null,
+      "evaluations": 256,
+      "unique_genotypes": 202,
+      "rejected_expanded_size_proposals": 0,
+      "expanded_ops": 2,
+      "active_nodes": 2,
+      "training_primitive_calls": 13209,
+      "verification_primitive_calls": 64,
+      "registry_before": {
+        "increment": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "add_3": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "multiply_by_2": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "multiply_by_05": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "identity": {
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 1
+        },
+        "learned_stage_1": {
+          "body": {
+            "input_types": [
+              "scalar"
+            ],
+            "nodes": [
+              {
+                "method": "increment",
+                "inputs": [
+                  0
+                ]
+              },
+              {
+                "method": "multiply_by_2",
+                "inputs": [
+                  1
+                ]
+              }
+            ],
+            "output": 2
+          },
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 2,
+          "source_stage": 1,
+          "source_program_hash": "12ebede616eda7f0102187457a06623325c8df5abe454f3f8e6fba0937a6da35"
+        },
+        "learned_stage_2": {
+          "body": {
+            "input_types": [
+              "scalar"
+            ],
+            "nodes": [
+              {
+                "method": "learned_stage_1",
+                "inputs": [
+                  0
+                ]
+              },
+              {
+                "method": "add_3",
+                "inputs": [
+                  1
+                ]
+              }
+            ],
+            "output": 2
+          },
+          "input_types": [
+            "scalar"
+          ],
+          "output_types": [
+            "scalar"
+          ],
+          "expanded_cost": 3,
+          "source_stage": 2,
+          "source_program_hash": "4ffdef4262adc136445a70e47002a3e854f408876313c3f088f68b62b977d302"
+        }
+      },
+      "best_program": {
+        "input_types": [
+          "scalar"
+        ],
+        "nodes": [
+          {
+            "method": "learned_stage_2",
+            "inputs": [
+              0
+            ]
+          },
+          {
+            "method": "increment",
+            "inputs": [
+              0
+            ]
+          },
+          {
+            "method": "learned_stage_2",
+            "inputs": [
+              0
+            ]
+          },
+          {
+            "method": "learned_stage_2",
+            "inputs": [
+              2
+            ]
+          },
+          {
+            "method": "learned_stage_2",
+            "inputs": [
+              3
+            ]
+          },
+          {
+            "method": "add_3",
+            "inputs": [
+              5
+            ]
+          },
+          {
+            "method": "add_3",
+            "inputs": [
+              1
+            ]
+          },
+          {
+            "method": "increment",
+            "inputs": [
+              2
+            ]
+          }
+        ],
+        "output": 8
+      },
+      "final_prediction": [
+        -5.6875,
+        -5.1875,
+        -4.6875,
+        -4.1875,
+        -3.6875,
+        -3.1875,
+        -2.6875,
+        -2.1875,
+        -1.6875,
+        -1.1875,
+        -0.6875,
+        -0.1875,
+        0.3125,
+        0.8125,
+        1.3125,
+        1.8125,
+        2.3125,
+        2.8125,
+        3.3125,
+        3.8125,
+        4.3125,
+        4.8125,
+        5.3125,
+        5.8125,
+        6.3125,
+        6.8125,
+        7.3125,
+        7.8125,
+        8.3125,
+        8.8125,
+        9.3125,
+        9.8125
+      ],
+      "trace_hash": "3e30119598f71e2915e784e189cb424fe3230a02e5366df4924b92c485f7fbdf",
+      "setup_seconds": 3.3100019209086895e-05,
+      "compile_seconds": 0.0266342997783795,
+      "execution_seconds": 0.08614310040138662,
+      "module_added": null,
+      "admission_seconds": 3.00002284348011e-07
+    }
+  ],
+  "wall_seconds": 0.3176132999942638,
+  "registry_final": {
+    "increment": {
+      "input_types": [
+        "scalar"
+      ],
+      "output_types": [
+        "scalar"
+      ],
+      "expanded_cost": 1
+    },
+    "add_3": {
+      "input_types": [
+        "scalar"
+      ],
+      "output_types": [
+        "scalar"
+      ],
+      "expanded_cost": 1
+    },
+    "multiply_by_2": {
+      "input_types": [
+        "scalar"
+      ],
+      "output_types": [
+        "scalar"
+      ],
+      "expanded_cost": 1
+    },
+    "multiply_by_05": {
+      "input_types": [
+        "scalar"
+      ],
+      "output_types": [
+        "scalar"
+      ],
+      "expanded_cost": 1
+    },
+    "identity": {
+      "input_types": [
+        "scalar"
+      ],
+      "output_types": [
+        "scalar"
+      ],
+      "expanded_cost": 1
+    },
+    "learned_stage_1": {
+      "body": {
+        "input_types": [
+          "scalar"
+        ],
+        "nodes": [
+          {
+            "method": "increment",
+            "inputs": [
+              0
+            ]
+          },
+          {
+            "method": "multiply_by_2",
+            "inputs": [
+              1
+            ]
+          }
+        ],
+        "output": 2
+      },
+      "input_types": [
+        "scalar"
+      ],
+      "output_types": [
+        "scalar"
+      ],
+      "expanded_cost": 2,
+      "source_stage": 1,
+      "source_program_hash": "12ebede616eda7f0102187457a06623325c8df5abe454f3f8e6fba0937a6da35"
+    },
+    "learned_stage_2": {
+      "body": {
+        "input_types": [
+          "scalar"
+        ],
+        "nodes": [
+          {
+            "method": "learned_stage_1",
+            "inputs": [
+              0
+            ]
+          },
+          {
+            "method": "add_3",
+            "inputs": [
+              1
+            ]
+          }
+        ],
+        "output": 2
+      },
+      "input_types": [
+        "scalar"
+      ],
+      "output_types": [
+        "scalar"
+      ],
+      "expanded_cost": 3,
+      "source_stage": 2,
+      "source_program_hash": "4ffdef4262adc136445a70e47002a3e854f408876313c3f088f68b62b977d302"
+    }
+  }
+}

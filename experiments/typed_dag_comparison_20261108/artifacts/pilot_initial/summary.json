@@ -1,0 +1,416 @@
+{
+  "run_count": 16,
+  "paired_stages": 24,
+  "backend_pair_mismatches": [],
+  "groups": [
+    {
+      "family": "affine",
+      "library": "fixed",
+      "backend": "atf_v0",
+      "stage": 1,
+      "n": 2,
+      "successes": 1,
+      "success_wilson95": [
+        0.09453120573423074,
+        0.9054687942657693
+      ],
+      "mean_first_success_capped": 40.5,
+      "mean_training_primitive_calls": 3340.5,
+      "mean_compile_seconds": 0.005530149937840179,
+      "mean_execution_seconds": 0.008706450200406834,
+      "modules_added": 0
+    },
+    {
+      "family": "affine",
+      "library": "fixed",
+      "backend": "atf_v0",
+      "stage": 2,
+      "n": 2,
+      "successes": 0,
+      "success_wilson95": [
+        0.0,
+        0.6576197724933469
+      ],
+      "mean_first_success_capped": 65,
+      "mean_training_primitive_calls": 2983.5,
+      "mean_compile_seconds": 0.00522355004795827,
+      "mean_execution_seconds": 0.008044099929975346,
+      "modules_added": 0
+    },
+    {
+      "family": "affine",
+      "library": "fixed",
+      "backend": "atf_v0",
+      "stage": 3,
+      "n": 2,
+      "successes": 0,
+      "success_wilson95": [
+        0.0,
+        0.6576197724933469
+      ],
+      "mean_first_success_capped": 65,
+      "mean_training_primitive_calls": 2278,
+      "mean_compile_seconds": 0.005017050134483725,
+      "mean_execution_seconds": 0.0076688498083967716,
+      "modules_added": 0
+    },
+    {
+      "family": "affine",
+      "library": "fixed",
+      "backend": "typed_dag",
+      "stage": 1,
+      "n": 2,
+      "successes": 1,
+      "success_wilson95": [
+        0.09453120573423074,
+        0.9054687942657693
+      ],
+      "mean_first_success_capped": 40.5,
+      "mean_training_primitive_calls": 3340.5,
+      "mean_compile_seconds": 0.004607399896485731,
+      "mean_execution_seconds": 0.001711350167170167,
+      "modules_added": 0
+    },
+    {
+      "family": "affine",
+      "library": "fixed",
+      "backend": "typed_dag",
+      "stage": 2,
+      "n": 2,
+      "successes": 0,
+      "success_wilson95": [
+        0.0,
+        0.6576197724933469
+      ],
+      "mean_first_success_capped": 65,
+      "mean_training_primitive_calls": 2983.5,
+      "mean_compile_seconds": 0.004455800110008568,
+      "mean_execution_seconds": 0.0016325000615324825,
+      "modules_added": 0
+    },
+    {
+      "family": "affine",
+      "library": "fixed",
+      "backend": "typed_dag",
+      "stage": 3,
+      "n": 2,
+      "successes": 0,
+      "success_wilson95": [
+        0.0,
+        0.6576197724933469
+      ],
+      "mean_first_success_capped": 65,
+      "mean_training_primitive_calls": 2278,
+      "mean_compile_seconds": 0.004230749880662188,
+      "mean_execution_seconds": 0.0014165002212394029,
+      "modules_added": 0
+    },
+    {
+      "family": "affine",
+      "library": "growing",
+      "backend": "atf_v0",
+      "stage": 1,
+      "n": 2,
+      "successes": 1,
+      "success_wilson95": [
+        0.09453120573423074,
+        0.9054687942657693
+      ],
+      "mean_first_success_capped": 40.5,
+      "mean_training_primitive_calls": 3340.5,
+      "mean_compile_seconds": 0.005591000081039965,
+      "mean_execution_seconds": 0.008678400074131787,
+      "modules_added": 1
+    },
+    {
+      "family": "affine",
+      "library": "growing",
+      "backend": "atf_v0",
+      "stage": 2,
+      "n": 2,
+      "successes": 0,
+      "success_wilson95": [
+        0.0,
+        0.6576197724933469
+      ],
+      "mean_first_success_capped": 65,
+      "mean_training_primitive_calls": 3833.5,
+      "mean_compile_seconds": 0.005817450088215992,
+      "mean_execution_seconds": 0.015207799937343225,
+      "modules_added": 0
+    },
+    {
+      "family": "affine",
+      "library": "growing",
+      "backend": "atf_v0",
+      "stage": 3,
+      "n": 2,
+      "successes": 0,
+      "success_wilson95": [
+        0.0,
+        0.6576197724933469
+      ],
+      "mean_first_success_capped": 65,
+      "mean_training_primitive_calls": 2567,
+      "mean_compile_seconds": 0.0052006498735863715,
+      "mean_execution_seconds": 0.008927199960453436,
+      "modules_added": 0
+    },
+    {
+      "family": "affine",
+      "library": "growing",
+      "backend": "typed_dag",
+      "stage": 1,
+      "n": 2,
+      "successes": 1,
+      "success_wilson95": [
+        0.09453120573423074,
+        0.9054687942657693
+      ],
+      "mean_first_success_capped": 40.5,
+      "mean_training_primitive_calls": 3340.5,
+      "mean_compile_seconds": 0.015429099934408441,
+      "mean_execution_seconds": 0.001698800129815936,
+      "modules_added": 1
+    },
+    {
+      "family": "affine",
+      "library": "growing",
+      "backend": "typed_dag",
+      "stage": 2,
+      "n": 2,
+      "successes": 0,
+      "success_wilson95": [
+        0.0,
+        0.6576197724933469
+      ],
+      "mean_first_success_capped": 65,
+      "mean_training_primitive_calls": 3833.5,
+      "mean_compile_seconds": 0.004867899871896952,
+      "mean_execution_seconds": 0.0018148001690860838,
+      "modules_added": 0
+    },
+    {
+      "family": "affine",
+      "library": "growing",
+      "backend": "typed_dag",
+      "stage": 3,
+      "n": 2,
+      "successes": 0,
+      "success_wilson95": [
+        0.0,
+        0.6576197724933469
+      ],
+      "mean_first_success_capped": 65,
+      "mean_training_primitive_calls": 2567,
+      "mean_compile_seconds": 0.004734450165415183,
+      "mean_execution_seconds": 0.0015107498329598457,
+      "modules_added": 0
+    },
+    {
+      "family": "parity",
+      "library": "fixed",
+      "backend": "atf_v0",
+      "stage": 1,
+      "n": 2,
+      "successes": 0,
+      "success_wilson95": [
+        0.0,
+        0.6576197724933469
+      ],
+      "mean_first_success_capped": 65,
+      "mean_training_primitive_calls": 3248,
+      "mean_compile_seconds": 0.006299199798377231,
+      "mean_execution_seconds": 0.008866050164215267,
+      "modules_added": 0
+    },
+    {
+      "family": "parity",
+      "library": "fixed",
+      "backend": "atf_v0",
+      "stage": 2,
+      "n": 2,
+      "successes": 0,
+      "success_wilson95": [
+        0.0,
+        0.6576197724933469
+      ],
+      "mean_first_success_capped": 65,
+      "mean_training_primitive_calls": 1984,
+      "mean_compile_seconds": 0.005633599997963756,
+      "mean_execution_seconds": 0.007683699834160507,
+      "modules_added": 0
+    },
+    {
+      "family": "parity",
+      "library": "fixed",
+      "backend": "atf_v0",
+      "stage": 3,
+      "n": 2,
+      "successes": 0,
+      "success_wilson95": [
+        0.0,
+        0.6576197724933469
+      ],
+      "mean_first_success_capped": 65,
+      "mean_training_primitive_calls": 2976,
+      "mean_compile_seconds": 0.006210450024809688,
+      "mean_execution_seconds": 0.00884670004597865,
+      "modules_added": 0
+    },
+    {
+      "family": "parity",
+      "library": "fixed",
+      "backend": "typed_dag",
+      "stage": 1,
+      "n": 2,
+      "successes": 0,
+      "success_wilson95": [
+        0.0,
+        0.6576197724933469
+      ],
+      "mean_first_success_capped": 65,
+      "mean_training_primitive_calls": 3248,
+      "mean_compile_seconds": 0.00520145011250861,
+      "mean_execution_seconds": 0.0019156501221004874,
+      "modules_added": 0
+    },
+    {
+      "family": "parity",
+      "library": "fixed",
+      "backend": "typed_dag",
+      "stage": 2,
+      "n": 2,
+      "successes": 0,
+      "success_wilson95": [
+        0.0,
+        0.6576197724933469
+      ],
+      "mean_first_success_capped": 65,
+      "mean_training_primitive_calls": 1984,
+      "mean_compile_seconds": 0.005113550112582743,
+      "mean_execution_seconds": 0.0015885998727753758,
+      "modules_added": 0
+    },
+    {
+      "family": "parity",
+      "library": "fixed",
+      "backend": "typed_dag",
+      "stage": 3,
+      "n": 2,
+      "successes": 0,
+      "success_wilson95": [
+        0.0,
+        0.6576197724933469
+      ],
+      "mean_first_success_capped": 65,
+      "mean_training_primitive_calls": 2976,
+      "mean_compile_seconds": 0.005364049866329879,
+      "mean_execution_seconds": 0.0019010000687558204,
+      "modules_added": 0
+    },
+    {
+      "family": "parity",
+      "library": "growing",
+      "backend": "atf_v0",
+      "stage": 1,
+      "n": 2,
+      "successes": 0,
+      "success_wilson95": [
+        0.0,
+        0.6576197724933469
+      ],
+      "mean_first_success_capped": 65,
+      "mean_training_primitive_calls": 3248,
+      "mean_compile_seconds": 0.045168350159656256,
+      "mean_execution_seconds": 0.06929100016714074,
+      "modules_added": 0
+    },
+    {
+      "family": "parity",
+      "library": "growing",
+      "backend": "atf_v0",
+      "stage": 2,
+      "n": 2,
+      "successes": 0,
+      "success_wilson95": [
+        0.0,
+        0.6576197724933469
+      ],
+      "mean_first_success_capped": 65,
+      "mean_training_primitive_calls": 1984,
+      "mean_compile_seconds": 0.03913025005022064,
+      "mean_execution_seconds": 0.06216469992068596,
+      "modules_added": 0
+    },
+    {
+      "family": "parity",
+      "library": "growing",
+      "backend": "atf_v0",
+      "stage": 3,
+      "n": 2,
+      "successes": 0,
+      "success_wilson95": [
+        0.0,
+        0.6576197724933469
+      ],
+      "mean_first_success_capped": 65,
+      "mean_training_primitive_calls": 2976,
+      "mean_compile_seconds": 0.041812349983956665,
+      "mean_execution_seconds": 0.06859275003080256,
+      "modules_added": 0
+    },
+    {
+      "family": "parity",
+      "library": "growing",
+      "backend": "typed_dag",
+      "stage": 1,
+      "n": 2,
+      "successes": 0,
+      "success_wilson95": [
+        0.0,
+        0.6576197724933469
+      ],
+      "mean_first_success_capped": 65,
+      "mean_training_primitive_calls": 3248,
+      "mean_compile_seconds": 0.02832175008370541,
+      "mean_execution_seconds": 0.011231249896809459,
+      "modules_added": 0
+    },
+    {
+      "family": "parity",
+      "library": "growing",
+      "backend": "typed_dag",
+      "stage": 2,
+      "n": 2,
+      "successes": 0,
+      "success_wilson95": [
+        0.0,
+        0.6576197724933469
+      ],
+      "mean_first_success_capped": 65,
+      "mean_training_primitive_calls": 1984,
+      "mean_compile_seconds": 0.038965949846897274,
+      "mean_execution_seconds": 0.0150162001082208,
+      "modules_added": 0
+    },
+    {
+      "family": "parity",
+      "library": "growing",
+      "backend": "typed_dag",
+      "stage": 3,
+      "n": 2,
+      "successes": 0,
+      "success_wilson95": [
+        0.0,
+        0.6576197724933469
+      ],
+      "mean_first_success_capped": 65,
+      "mean_training_primitive_calls": 2976,
+      "mean_compile_seconds": 0.04270495008677244,
+      "mean_execution_seconds": 0.015014549950137734,
+      "modules_added": 0
+    }
+  ],
+  "interpretation": "Backend trace equality is a control result, not a synthesis superiority claim. Growing-vs-fixed differences belong to the shared library-admission/search policy."
+}

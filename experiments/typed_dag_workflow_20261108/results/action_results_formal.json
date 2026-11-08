@@ -1,0 +1,786 @@
+{
+  "all_checks_passed": true,
+  "tasks": [
+    {
+      "task": "catch",
+      "episodes": 2,
+      "steps": 320,
+      "all_matched": true,
+      "max_absolute_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "outcomes": [
+        {
+          "episode": 83000000,
+          "success": 1,
+          "steps": 160,
+          "progress": 1.0
+        },
+        {
+          "episode": 83000001,
+          "success": 1,
+          "steps": 160,
+          "progress": 1.0
+        }
+      ],
+      "features": 9,
+      "score_coefficients": 27,
+      "pytensor_apply_nodes": 167,
+      "pytensor_action_ops": 3,
+      "atf_nodes": 98,
+      "atf_zero_output_sinks": 3
+    },
+    {
+      "task": "maze",
+      "episodes": 2,
+      "steps": 163,
+      "all_matched": true,
+      "max_absolute_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "outcomes": [
+        {
+          "episode": 83000000,
+          "success": 1,
+          "steps": 62,
+          "progress": 1.0
+        },
+        {
+          "episode": 83000001,
+          "success": 1,
+          "steps": 101,
+          "progress": 1.0
+        }
+      ],
+      "features": 14,
+      "score_coefficients": 56,
+      "pytensor_apply_nodes": 264,
+      "pytensor_action_ops": 4,
+      "atf_nodes": 190,
+      "atf_zero_output_sinks": 4
+    },
+    {
+      "task": "snake",
+      "episodes": 2,
+      "steps": 237,
+      "all_matched": true,
+      "max_absolute_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "outcomes": [
+        {
+          "episode": 83000000,
+          "success": 1,
+          "steps": 135,
+          "progress": 1.0
+        },
+        {
+          "episode": 83000001,
+          "success": 1,
+          "steps": 102,
+          "progress": 1.0
+        }
+      ],
+      "features": 14,
+      "score_coefficients": 42,
+      "pytensor_apply_nodes": 227,
+      "pytensor_action_ops": 3,
+      "atf_nodes": 148,
+      "atf_zero_output_sinks": 3
+    },
+    {
+      "task": "bird",
+      "episodes": 20,
+      "steps": 20480,
+      "all_matched": true,
+      "max_absolute_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "outcomes": [
+        {
+          "episode": 83000000,
+          "success": 1,
+          "steps": 1024,
+          "progress": 1.0
+        },
+        {
+          "episode": 83000001,
+          "success": 1,
+          "steps": 1024,
+          "progress": 1.0
+        },
+        {
+          "episode": 83000002,
+          "success": 1,
+          "steps": 1024,
+          "progress": 1.0
+        },
+        {
+          "episode": 83000003,
+          "success": 1,
+          "steps": 1024,
+          "progress": 1.0
+        },
+        {
+          "episode": 83000004,
+          "success": 1,
+          "steps": 1024,
+          "progress": 1.0
+        },
+        {
+          "episode": 83000005,
+          "success": 1,
+          "steps": 1024,
+          "progress": 1.0
+        },
+        {
+          "episode": 83000006,
+          "success": 1,
+          "steps": 1024,
+          "progress": 1.0
+        },
+        {
+          "episode": 83000007,
+          "success": 1,
+          "steps": 1024,
+          "progress": 1.0
+        },
+        {
+          "episode": 83000008,
+          "success": 1,
+          "steps": 1024,
+          "progress": 1.0
+        },
+        {
+          "episode": 83000009,
+          "success": 1,
+          "steps": 1024,
+          "progress": 1.0
+        },
+        {
+          "episode": 83000010,
+          "success": 1,
+          "steps": 1024,
+          "progress": 1.0
+        },
+        {
+          "episode": 83000011,
+          "success": 1,
+          "steps": 1024,
+          "progress": 1.0
+        },
+        {
+          "episode": 83000012,
+          "success": 1,
+          "steps": 1024,
+          "progress": 1.0
+        },
+        {
+          "episode": 83000013,
+          "success": 1,
+          "steps": 1024,
+          "progress": 1.0
+        },
+        {
+          "episode": 83000014,
+          "success": 1,
+          "steps": 1024,
+          "progress": 1.0
+        },
+        {
+          "episode": 83000015,
+          "success": 1,
+          "steps": 1024,
+          "progress": 1.0
+        },
+        {
+          "episode": 83000016,
+          "success": 1,
+          "steps": 1024,
+          "progress": 1.0
+        },
+        {
+          "episode": 83000017,
+          "success": 1,
+          "steps": 1024,
+          "progress": 1.0
+        },
+        {
+          "episode": 83000018,
+          "success": 1,
+          "steps": 1024,
+          "progress": 1.0
+        },
+        {
+          "episode": 83000019,
+          "success": 1,
+          "steps": 1024,
+          "progress": 1.0
+        }
+      ],
+      "features": 44,
+      "score_coefficients": 88,
+      "pytensor_apply_nodes": 503,
+      "pytensor_action_ops": 2,
+      "atf_nodes": 316,
+      "atf_zero_output_sinks": 2
+    }
+  ],
+  "total_steps": 21200,
+  "bird_archived_steps_matched": 20480,
+  "boundary_probes": [
+    {
+      "configuration": "frozen",
+      "u": 0,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "frozen",
+      "u": 0.049,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "frozen",
+      "u": 0.05,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "frozen",
+      "u": 0.099999,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "frozen",
+      "u": 0.1,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "frozen",
+      "u": 0.5,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "frozen",
+      "u": 0.999999999,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "uniform_ties",
+      "u": 0,
+      "action": 1,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "uniform_ties",
+      "u": 0.049,
+      "action": 1,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "uniform_ties",
+      "u": 0.05,
+      "action": 1,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "uniform_ties",
+      "u": 0.099999,
+      "action": 1,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "uniform_ties",
+      "u": 0.1,
+      "action": 1,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "uniform_ties",
+      "u": 0.5,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "uniform_ties",
+      "u": 0.999999999,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "exploration_and_ties",
+      "u": 0,
+      "action": 1,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "exploration_and_ties",
+      "u": 0.049,
+      "action": 1,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "exploration_and_ties",
+      "u": 0.05,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "exploration_and_ties",
+      "u": 0.099999,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "exploration_and_ties",
+      "u": 0.1,
+      "action": 1,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "exploration_and_ties",
+      "u": 0.5,
+      "action": 1,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "exploration_and_ties",
+      "u": 0.999999999,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "disabled",
+      "u": 0,
+      "action": 0,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "disabled",
+      "u": 0.049,
+      "action": 0,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "disabled",
+      "u": 0.05,
+      "action": 0,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "disabled",
+      "u": 0.099999,
+      "action": 0,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "disabled",
+      "u": 0.1,
+      "action": 0,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "disabled",
+      "u": 0.5,
+      "action": 0,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "disabled",
+      "u": 0.999999999,
+      "action": 0,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "no_state",
+      "u": 0,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "no_state",
+      "u": 0.049,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "no_state",
+      "u": 0.05,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "no_state",
+      "u": 0.099999,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "no_state",
+      "u": 0.1,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "no_state",
+      "u": 0.5,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "no_state",
+      "u": 0.999999999,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "instant_shared",
+      "u": 0,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "instant_shared",
+      "u": 0.049,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "instant_shared",
+      "u": 0.05,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "instant_shared",
+      "u": 0.099999,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "instant_shared",
+      "u": 0.1,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "instant_shared",
+      "u": 0.5,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "instant_shared",
+      "u": 0.999999999,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "private_memory",
+      "u": 0,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "private_memory",
+      "u": 0.049,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "private_memory",
+      "u": 0.05,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "private_memory",
+      "u": 0.099999,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "private_memory",
+      "u": 0.1,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "private_memory",
+      "u": 0.5,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "configuration": "private_memory",
+      "u": 0.999999999,
+      "action": 2,
+      "max_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  ],
+  "effect_probes": {
+    "pytensor_anchored_effects": {
+      "positions": [
+        1,
+        7,
+        7
+      ],
+      "action_order": [
+        1,
+        2
+      ],
+      "sink_invocations": 6
+    },
+    "pytensor_unanchored_branch": {
+      "callbacks": 0,
+      "position": 0
+    },
+    "atf_zero_output_sinks": {
+      "positions": [
+        1,
+        7,
+        7
+      ],
+      "action_order": [
+        1,
+        2
+      ],
+      "sink_invocations": 6
+    },
+    "common_permits": [
+      [
+        true,
+        false
+      ],
+      [
+        false,
+        true
+      ],
+      [
+        false,
+        false
+      ]
+    ],
+    "environment_actions": [
+      "position = 2*position + 1",
+      "position = 3*position + 4"
+    ],
+    "all_expected_checks_passed": true,
+    "interpretation": "Both executors perform the same actual environment changes under mutually exclusive permits. ATF retains connected zero-output sinks; this PyTensor adapter adds an output-anchored completion token. This case needs no ordering between simultaneously permitted conflicting actions and proves no automatic concurrency safety."
+  },
+  "protected_sources_unchanged": true,
+  "backend_core_sources_unchanged": true,
+  "backend_core_files_checked": 443,
+  "seconds": 207.6658984000096,
+  "interpretation": "Both backends execute the same learned action controllers. PyTensor needs explicit action anchoring and adapters; this tests execution and integration, not synthesis superiority or novel test generalization."
+}

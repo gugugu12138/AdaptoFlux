@@ -1,0 +1,6 @@
+# 本目录仅例外纳入可复现的科学协议与结果，不改变仓库其他忽略规则。
+!*.json
+!artifacts/
+!artifacts/**
+__pycache__/
+*.pyc

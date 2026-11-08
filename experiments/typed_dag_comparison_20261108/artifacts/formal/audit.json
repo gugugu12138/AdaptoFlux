@@ -1,0 +1,45 @@
+{
+  "runs": 240,
+  "independently_replayed_candidates": 184320,
+  "paired_stages_with_identical_search": 360,
+  "all_checks_passed": true,
+  "timing_ratios": [
+    {
+      "family": "affine",
+      "library": "fixed",
+      "median_atf_over_typed_dag_setup_compile_execute_ratio": 3.2768715130735853,
+      "quartiles": [
+        3.2011356499132293,
+        3.3245327024100346
+      ]
+    },
+    {
+      "family": "affine",
+      "library": "growing",
+      "median_atf_over_typed_dag_setup_compile_execute_ratio": 5.558996529637988,
+      "quartiles": [
+        5.072020911030906,
+        6.115993905275742
+      ]
+    },
+    {
+      "family": "parity",
+      "library": "fixed",
+      "median_atf_over_typed_dag_setup_compile_execute_ratio": 3.053888356411978,
+      "quartiles": [
+        3.0170312107139603,
+        3.085053942333927
+      ]
+    },
+    {
+      "family": "parity",
+      "library": "growing",
+      "median_atf_over_typed_dag_setup_compile_execute_ratio": 3.0998502138040345,
+      "quartiles": [
+        3.077793118071715,
+        3.187309009067042
+      ]
+    }
+  ],
+  "timing_scope": "Descriptive same-host scalar Python implementation timings; reference expands modules at compile time whereas V0 EvolvedMethod calls a nested interpreter. Not a representation-level speed theorem."
+}

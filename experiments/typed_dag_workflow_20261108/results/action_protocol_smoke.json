@@ -1,0 +1,26 @@
+{
+  "purpose": "Frozen learned-controller execution migration and action-interface comparison; no retraining",
+  "pytensor_version": "3.3.8",
+  "bird_episodes": 1,
+  "other_task_episodes": 1,
+  "episode_start": 83000000,
+  "environment_seed": 200000104,
+  "selection": "Consecutive prefix of the existing frozen evaluation stream",
+  "compilation": "Python linker, optimizer=None; explicit state and externally supplied routing randomness",
+  "action_adapter": "Real custom action callbacks with explicit chained completion tokens requested as an output",
+  "environment_advance": "Outside both controller graphs, matching the frozen study",
+  "tolerance": {
+    "rtol": 1e-12,
+    "atol": 1e-12
+  },
+  "protected_source_sha256": {
+    "experiments/rebuttal_20261106/action_example/reference/reproduce.py": "2d2dd66ab9ef5b805bce1462235897d007fe68ebcc954a8592b5803040b48898",
+    "experiments/rebuttal_20261106/action_example/reference/kernel.py": "1893336762e544fa80e7ae8a70dc505e6a7e6d5cb0e08b0152591d05aff7284d",
+    "experiments/rebuttal_20261106/action_example/verify_native.py": "c5b9faacb3967272e9d59ef80cb7c3ae9c7e5dc21f339aeae6dfda60ad3f46f1",
+    "experiments/rebuttal_20261106/action_example/reference/models/system_s104.json": "4c09052e01ae14ba75fa1f08bab41535eac3189874c9a6433d33370c1a295a06",
+    "experiments/rebuttal_20261106/action_example/reference/world_test.npz": "08482bc0cefc27f8d8ab9c1bb5eb8bbfc4d090a087e88e627c06f83936bcd0dc",
+    "experiments/rebuttal_20261106/action_example/native_trace_bird_formal.npz": "6e657bac30aa260fcd6a47b9e1b8b6b480af08a79e3d772efef688450660dfa6",
+    "experiments/rebuttal_20261106/runtime_v0/ATF/GraphProcessor/graph_processor.py": "ddbe87b8f0a56c41437e6e2de0294bb8a998b12012f0522f87c442c0d7c39048",
+    "experiments/rebuttal_20261106/runtime_v0/ATF/CollapseManager/collapse_functions.py": "8495b0650c7c33a50e822bf7566e051f6ee7f74325296876b649e1f743649db5"
+  }
+}

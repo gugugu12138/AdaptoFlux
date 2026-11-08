@@ -1,0 +1,82 @@
+{
+  "protocol": {
+    "experiment": "paired_typed_dag_search_and_library_control",
+    "date": "2026-11-08",
+    "backends": [
+      "atf_v0",
+      "typed_dag"
+    ],
+    "libraries": [
+      "fixed",
+      "growing"
+    ],
+    "families": [
+      "affine",
+      "parity"
+    ],
+    "pilot_seeds": [
+      810901,
+      810902
+    ],
+    "formal_seeds": [
+      811000,
+      811001,
+      811002,
+      811003,
+      811004,
+      811005,
+      811006,
+      811007,
+      811008,
+      811009,
+      811010,
+      811011,
+      811012,
+      811013,
+      811014,
+      811015,
+      811016,
+      811017,
+      811018,
+      811019,
+      811020,
+      811021,
+      811022,
+      811023,
+      811024,
+      811025,
+      811026,
+      811027,
+      811028,
+      811029
+    ],
+    "pilot_evaluations_per_stage": 64,
+    "formal_evaluations_per_stage": 256,
+    "genome_slots": 8,
+    "max_expanded_primitive_operations": 8,
+    "restart_every": 32,
+    "success_mse": 1e-12,
+    "search": "One shared CGP-style proposal implementation. Fixed eight-slot feed-forward genomes; final slot is output. First candidate and every 32nd restart use a fresh genome; otherwise one function or input-reference mutation. Neutral moves accepted. Fixed evaluation count, including after success. No fitness cache. Invalid expanded-size proposals are rejected before evaluation and counted.",
+    "library_admission": "After stages 1 and 2 only, promote the best training-successful active graph with at least two expanded primitives. Project only used root inputs to module ports. No oracle injection, no test feedback. Both growing arms use this exact rule; both support nested shared-node module bodies.",
+    "capacity": "Eight slots and eight expanded active primitive operations for every arm. An invoked module costs its internal expanded operations, not one operation. All targets have explicit witnesses within the fixed-pool limit.",
+    "data": "Affine: 17 fixed dyadic training points and 32 distinct dyadic extrapolation/interpolation checks. Parity: the complete 16-row four-bit truth table; no held-out generalization claim. All method interfaces are scalar.",
+    "search_budget": "Equal realized candidate evaluations, not equal time or primitive calls; record both actual primitive calls and setup/compile/evaluation time. All three acquisition stages included in cumulative cost.",
+    "primary_comparison": "ATF-growing vs typed-DAG-growing, and ATF-fixed vs typed-DAG-fixed. Library growing vs fixed is a mechanism ablation, not an ATF-specific representational advantage.",
+    "scope": "Small pure-function synthesis control with a newly implemented typed-DAG baseline, not a benchmark of MT-CGP/ECGP/DreamCoder. Affine and parity are restricted task families. The common search and successful-module admission policy are experimental controls, not the historical GraphEvo trainer or its frequency extractor."
+  },
+  "sources": {
+    "run_comparison.py": "ab8c46ec3c4ac4a5270f03c22d593793f27a065e142b5d088cd43791ca90a662",
+    "reference_dag.py": "63f75b3123ba1c26d5767476eff35c1fc84a47bdfd821e7f5a4a1d4fb60e3136",
+    "reachability_audit.py": "7e6a3fada0dabf0f3d0e4dfa42eaa2f5ba101972976212b74cb566ddf7fd1a04",
+    "runtime_v0/ATF/GraphProcessor/graph_processor.py": "ddbe87b8f0a56c41437e6e2de0294bb8a998b12012f0522f87c442c0d7c39048",
+    "runtime_v0/ATF/core/evolved_method.py": "2c4a5e310ccb65dccb12eae94c32a1239b33e6642de7cb71721c717c8ae07b87"
+  },
+  "runtime_import": "runtime_v0/ATF",
+  "environment": {
+    "python": "3.12.9",
+    "numpy": "2.1.3",
+    "networkx": "3.4.2",
+    "platform": "Windows",
+    "machine": "AMD64"
+  }
+}

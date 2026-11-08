@@ -1,0 +1,163 @@
+{
+  "all_checks_passed": true,
+  "tasks": [
+    {
+      "task": "catch",
+      "episodes": 1,
+      "steps": 160,
+      "all_matched": true,
+      "max_absolute_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "outcomes": [
+        {
+          "episode": 83000000,
+          "success": 1,
+          "steps": 160,
+          "progress": 1.0
+        }
+      ],
+      "features": 9,
+      "score_coefficients": 27,
+      "pytensor_apply_nodes": 167,
+      "pytensor_action_ops": 3,
+      "atf_nodes": 98,
+      "atf_zero_output_sinks": 3
+    },
+    {
+      "task": "maze",
+      "episodes": 1,
+      "steps": 62,
+      "all_matched": true,
+      "max_absolute_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "outcomes": [
+        {
+          "episode": 83000000,
+          "success": 1,
+          "steps": 62,
+          "progress": 1.0
+        }
+      ],
+      "features": 14,
+      "score_coefficients": 56,
+      "pytensor_apply_nodes": 264,
+      "pytensor_action_ops": 4,
+      "atf_nodes": 190,
+      "atf_zero_output_sinks": 4
+    },
+    {
+      "task": "snake",
+      "episodes": 1,
+      "steps": 135,
+      "all_matched": true,
+      "max_absolute_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "outcomes": [
+        {
+          "episode": 83000000,
+          "success": 1,
+          "steps": 135,
+          "progress": 1.0
+        }
+      ],
+      "features": 14,
+      "score_coefficients": 42,
+      "pytensor_apply_nodes": 227,
+      "pytensor_action_ops": 3,
+      "atf_nodes": 148,
+      "atf_zero_output_sinks": 3
+    },
+    {
+      "task": "bird",
+      "episodes": 1,
+      "steps": 1024,
+      "all_matched": true,
+      "max_absolute_errors_state_features_scores": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "outcomes": [
+        {
+          "episode": 83000000,
+          "success": 1,
+          "steps": 1024,
+          "progress": 1.0
+        }
+      ],
+      "features": 44,
+      "score_coefficients": 88,
+      "pytensor_apply_nodes": 503,
+      "pytensor_action_ops": 2,
+      "atf_nodes": 316,
+      "atf_zero_output_sinks": 2
+    }
+  ],
+  "total_steps": 1381,
+  "bird_archived_steps_matched": 1024,
+  "boundary_probes": [],
+  "effect_probes": {
+    "pytensor_anchored_effects": {
+      "positions": [
+        1,
+        7,
+        7
+      ],
+      "action_order": [
+        1,
+        2
+      ],
+      "sink_invocations": 6
+    },
+    "pytensor_unanchored_branch": {
+      "callbacks": 0,
+      "position": 0
+    },
+    "atf_zero_output_sinks": {
+      "positions": [
+        1,
+        7,
+        7
+      ],
+      "action_order": [
+        1,
+        2
+      ],
+      "sink_invocations": 6
+    },
+    "common_permits": [
+      [
+        true,
+        false
+      ],
+      [
+        false,
+        true
+      ],
+      [
+        false,
+        false
+      ]
+    ],
+    "environment_actions": [
+      "position = 2*position + 1",
+      "position = 3*position + 4"
+    ],
+    "all_expected_checks_passed": true,
+    "interpretation": "Both executors perform the same actual environment changes under mutually exclusive permits. ATF retains connected zero-output sinks; this PyTensor adapter adds an output-anchored completion token. This case needs no ordering between simultaneously permitted conflicting actions and proves no automatic concurrency safety."
+  },
+  "protected_sources_unchanged": true,
+  "backend_core_sources_unchanged": true,
+  "backend_core_files_checked": 443,
+  "seconds": 8.28660510003101,
+  "interpretation": "Both backends execute the same learned action controllers. PyTensor needs explicit action anchoring and adapters; this tests execution and integration, not synthesis superiority or novel test generalization."
+}
